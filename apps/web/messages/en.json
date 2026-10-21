@@ -1,0 +1,73 @@
+{
+  "Metadata": {
+    "siteName": "Shevent",
+    "title": "Shevent: plan your event in Lahore",
+    "description": "Plan weddings, birthdays and corporate events in Lahore with AI price ranges and vendors matched to your budget. Coming soon."
+  },
+  "Home": {
+    "eyebrow": "Coming soon to Lahore",
+    "title": "Plan your event with real price ranges, not guesswork",
+    "subtitle": "Shevent splits your budget across venue, catering, decor, DJ & sound and lighting, shows typical prices for your area and date, and matches you with vendors that fit. Join the waitlist and we'll tell you when it opens."
+  },
+  "Waitlist": {
+    "label": "Email or WhatsApp number",
+    "placeholder": "you@example.com or 03xx xxxxxxx",
+    "submit": "Join the waitlist",
+    "submitting": "Joining…",
+    "success": "You're on the list. We'll let you know when Shevent opens.",
+    "privacy": "We only use this to tell you when Shevent opens. We never share it.",
+    "errors": {
+      "invalid": "Enter an email address or a phone number.",
+      "unavailable": "Sign-ups aren't open yet. Please try again later.",
+      "failed": "Something went wrong. Please try again."
+    }
+  },
+  "Nav": {
+    "signIn": "Sign in"
+  },
+  "Auth": {
+    "title": "Sign in to Shevent",
+    "intro": "We'll email you a one-time sign-in link. No password needed.",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "sendLink": "Email me a sign-in link",
+    "sending": "Sending…",
+    "sent": "Check your email. We sent a sign-in link to {email}.",
+    "or": "or",
+    "google": "Continue with Google",
+    "errors": {
+      "invalid_email": "Enter a valid email address.",
+      "unavailable": "Sign-in isn't available yet. Please try again later.",
+      "failed": "We couldn't send the link. Please wait a minute and try again.",
+      "link": "That sign-in link has expired or was already used. Ask for a new one.",
+      "google": "Google sign-in didn't work. Try the email link instead."
+    }
+  },
+  "App": {
+    "plans": "My plans",
+    "vendorDashboard": "Vendor dashboard",
+    "signOut": "Sign out",
+    "loading": "Loading…"
+  },
+  "Plans": {
+    "title": "My plans",
+    "empty": "You haven't made a plan yet. The planner will open here soon.",
+    "guests": "{count} guests",
+    "loadError": "We couldn't load your plans. Please refresh the page."
+  },
+  "Vendor": {
+    "dashboardTitle": "Vendor dashboard",
+    "dashboardIntro": "Your listing, inquiries and quotes will appear here.",
+    "onboardingTitle": "List your business on Shevent",
+    "onboardingIntro": "Switch this account to a vendor account to set up your listing and answer inquiries from hosts.",
+    "becomeVendor": "Continue as a vendor",
+    "error": "Something went wrong. Please try again."
+  },
+  "Footer": {
+    "note": "Shevent is a NETSOL AI/ML capstone project."
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "back": "Back to the home page"
+  }
+}

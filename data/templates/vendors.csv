@@ -1,0 +1,2 @@
+vendor_id,name,category,sub_type,base_area,areas_served,capacity_min,capacity_max,price_tier,event_types,rating,review_count,instagram_url,facebook_url,website_url,maps_url,years_active,reached_by_us,collected_by,collected_date,notes
+EXAMPLE-CAT-001,Example Caterers,catering,traditional,Johar Town,Johar Town|Model Town|DHA,50,800,mid,wedding_mehndi|wedding_walima|birthday,4.3,212,https://instagram.com/example,,,https://maps.google.com/?cid=000,8,no,A,2026-10-19,Delete this example row before adding real data

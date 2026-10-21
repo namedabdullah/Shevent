@@ -1,0 +1,20 @@
+-- Local development only (supabase db reset). Fictional demo vendors, identical to
+-- packages/core/fixtures/vendors.json, so the database and the fixtures show the same listings.
+-- Generated from vendors.json: keep the two in sync.
+
+insert into public.vendors
+  (id, slug, name, category, base_area, areas_served, capacity_max, price_tier, event_types, verified, is_demo)
+values
+  ('00000000-0000-4000-8000-000000000101', 'demo-marquee-gulberg', 'Demo Marquee Gulberg', 'venue', 'Gulberg', array['Gulberg', 'Model Town', 'Cantt']::public.lahore_area[], 600, 'mid', array['wedding_mehndi', 'wedding_baraat', 'wedding_walima']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000102', 'demo-banquet-hall-model-town', 'Demo Banquet Hall Model Town', 'venue', 'Model Town', array['Model Town', 'Gulberg', 'Garden Town']::public.lahore_area[], 400, 'budget', array['wedding_walima', 'engagement', 'corporate_dinner']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000103', 'demo-farmhouse-raiwind-road', 'Demo Farmhouse Raiwind Road', 'venue', 'Raiwind Road', array['Raiwind Road', 'DHA']::public.lahore_area[], 800, 'premium', array['wedding_mehndi', 'private_party']::public.event_type[], false, true),
+  ('00000000-0000-4000-8000-000000000104', 'demo-rooftop-dha', 'Demo Rooftop DHA', 'venue', 'DHA', array['DHA', 'Cantt']::public.lahore_area[], 150, 'premium', array['birthday', 'private_party', 'corporate_dinner']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000201', 'demo-caterers-johar-town', 'Demo Caterers Johar Town', 'catering', 'Johar Town', array['Johar Town', 'Model Town', 'Gulberg', 'DHA']::public.lahore_area[], 1000, 'mid', array['wedding_mehndi', 'wedding_walima', 'birthday']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000202', 'demo-catering-co-gulberg', 'Demo Catering Co Gulberg', 'catering', 'Gulberg', array['Gulberg', 'DHA', 'Cantt']::public.lahore_area[], 600, 'premium', array['wedding_baraat', 'corporate_dinner']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000203', 'demo-bbq-nights-wapda-town', 'Demo BBQ Nights Wapda Town', 'catering', 'Wapda Town', array['Wapda Town', 'Johar Town']::public.lahore_area[], 250, 'budget', array['birthday', 'private_party']::public.event_type[], false, true),
+  ('00000000-0000-4000-8000-000000000301', 'demo-stage-decor-dha', 'Demo Stage Decor DHA', 'decor', 'DHA', array['DHA', 'Gulberg', 'Cantt']::public.lahore_area[], null, 'mid', array['wedding_mehndi', 'wedding_baraat']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000302', 'demo-floral-studio-gulberg', 'Demo Floral Studio Gulberg', 'decor', 'Gulberg', array['Gulberg', 'Model Town']::public.lahore_area[], null, 'premium', array['wedding_mehndi', 'engagement']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000401', 'demo-dj-and-dhol-cantt', 'Demo DJ & Dhol Cantt', 'dj_sound', 'Cantt', array['Cantt', 'Gulberg', 'DHA']::public.lahore_area[], null, 'mid', array['wedding_mehndi', 'birthday', 'university_gala']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000402', 'demo-sound-systems-johar-town', 'Demo Sound Systems Johar Town', 'dj_sound', 'Johar Town', array['Johar Town', 'Model Town', 'Gulberg']::public.lahore_area[], null, 'budget', array['corporate_dinner', 'concert']::public.event_type[], false, true),
+  ('00000000-0000-4000-8000-000000000501', 'demo-lights-model-town', 'Demo Lights Model Town', 'lighting', 'Model Town', array['Model Town', 'Gulberg', 'Johar Town']::public.lahore_area[], null, 'mid', array['wedding_mehndi', 'wedding_baraat']::public.event_type[], true, true),
+  ('00000000-0000-4000-8000-000000000502', 'demo-led-and-lighting-gulberg', 'Demo LED & Lighting Gulberg', 'lighting', 'Gulberg', array['Gulberg', 'DHA']::public.lahore_area[], null, 'premium', array['concert', 'corporate_dinner', 'wedding_mehndi']::public.event_type[], true, true);

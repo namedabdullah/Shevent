@@ -1,0 +1,9 @@
+{
+  "event_type": "wedding_mehndi",
+  "guest_count": 300,
+  "area": "Gulberg",
+  "venue_type": "marquee",
+  "event_date": "2026-12-19",
+  "total_budget_pkr": 2500000,
+  "preferences": ["decor_heavy", "live_dhol"]
+}

@@ -1,0 +1,6 @@
+category,id_prefix,allowed_units,sub_types,description
+venue,VEN,per_slot|per_head|per_event|per_package,marquee|banquet|farmhouse|rooftop|lawn|hotel|other,"Marquees, banquet halls, farmhouses, rooftops, hotel halls"
+catering,CAT,per_head|per_package|per_event,traditional|fusion|corporate|bbq|desserts|other,Food and drinks service
+decor,DEC,per_package|per_event|per_setup,stage|floral|theme|mehndi_setup|entrance|full_setup|other,"Stage, floral, theme and entrance decoration"
+dj_sound,DJS,per_event|per_hour|per_package,dj|sound_system|live_band|dhol|other,"DJs, sound systems, live music"
+lighting,LGT,per_event|per_setup|per_package|per_hour,stage_lighting|fairy_lights|led_screens|full_setup|other,Event and stage lighting

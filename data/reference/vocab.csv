@@ -1,0 +1,48 @@
+field,value,description
+event_type,wedding_mehndi,Mehndi / mayun / dholki
+event_type,wedding_baraat,Baraat
+event_type,wedding_walima,Walima
+event_type,engagement,Engagement / nikah ceremony
+event_type,birthday,Birthday party
+event_type,corporate_dinner,Corporate dinner or gala
+event_type,corporate_other,Conference / launch / office event
+event_type,university_gala,University event / gala / farewell
+event_type,concert,Concert / music night
+event_type,private_party,Other private party
+event_type,any,Price applies to any event type
+unit,per_head,Price per guest
+unit,per_event,Flat price for the whole event
+unit,per_hour,Price per hour
+unit,per_package,Named package with fixed contents
+unit,per_slot,Venue booking for one time slot
+unit,per_setup,One complete setup (decor / lighting)
+price_tier,budget,Cheaper than most in the area
+price_tier,mid,Typical for the area
+price_tier,premium,More expensive than most in the area
+source_type,rate_card,Rate card / price list sent by the vendor
+source_type,website,Vendor or venue website
+source_type,social_post,Public Facebook / Instagram post or page
+source_type,directory,Directory or listing site (incl. OLX)
+source_type,quote,Quote given directly to us (WhatsApp / call)
+source_type,survey,Host survey answer
+source_type,interview,Planner / vendor interview
+source_type,google_maps,Google Maps listing or review
+confidence,high,Exact price from the vendor or an official price list
+confidence,medium,Public post or 'starting from' price
+confidence,low,Second-hand / approximate / old
+season_note,peak,Vendor said this is the peak-season price
+season_note,off_peak,Vendor said this is the off-season price
+season_note,ramadan,Price during Ramadan
+season_note,unspecified,Season not mentioned
+language,en,English
+language,ur,Urdu script
+language,roman_ur,Roman Urdu
+language,mixed,Mix of English and Urdu / Roman Urdu
+yes_no,yes,
+yes_no,no,
+outreach_status,not_contacted,
+outreach_status,contacted,Message sent / called
+outreach_status,replied,Replied but no prices yet
+outreach_status,quote_received,Got rate card or scenario quotes
+outreach_status,declined,Said no
+outreach_status,no_response,No reply after the follow-up

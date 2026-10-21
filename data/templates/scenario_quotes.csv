@@ -1,0 +1,2 @@
+quote_id,vendor_id,category,scenario_id,quoted_pkr,unit,inclusions,exclusions,negotiable,quote_date,source_type,collected_by,notes
+EXAMPLE-Q-001,EXAMPLE-CAT-001,catering,S1,2100,per_head,chicken korma|pulao|gajar halwa|drinks|staff,generator fuel|crockery upgrade,yes,2026-10-20,quote,A,Delete this example row

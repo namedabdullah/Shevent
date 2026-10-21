@@ -1,0 +1,2 @@
+review_id,vendor_id,rating,text,language,source,review_date,collected_by,collected_date
+EXAMPLE-R-0001,EXAMPLE-CAT-001,4,"Khana bohat acha tha but staff thora late aya",mixed,google_maps,2026-09-14,A,2026-10-22

@@ -1,0 +1,29 @@
+{
+  "name": "@shevent/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared code for the Shevent web and mobile apps: API client, types, schemas, enums, formatting, labels, fixtures",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./api": "./api/index.ts",
+    "./database": "./types/supabase.ts",
+    "./enums": "./enums/index.ts",
+    "./fixtures": "./fixtures/index.ts",
+    "./format": "./format/index.ts",
+    "./labels": "./labels/index.ts",
+    "./schemas": "./schemas/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "typescript": "^5",
+    "vitest": "4.1.12"
+  }
+}

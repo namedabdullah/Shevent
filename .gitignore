@@ -1,0 +1,28 @@
+# Private outreach contacts: never commit
+private_contacts*.csv
+!data/templates/private_contacts.csv
+
+# Collected data and images stay out of git (shared via Google Drive)
+data/raw/*
+!data/raw/.gitkeep
+data/images/
+
+# Markdown docs, plans, slides and PDFs stay local
+*.md
+*.pdf
+*.ppt
+*.pptx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node / web
+node_modules/
+.next/
+.vercel/
+coverage/
+*.tsbuildinfo
+.env*.local
+

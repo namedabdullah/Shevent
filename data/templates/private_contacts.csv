@@ -1,0 +1,2 @@
+vendor_id,contact_role,phone_or_whatsapp,instagram_handle,first_contacted,last_contacted,outreach_status,notes
+EXAMPLE-CAT-001,owner,03xx-xxxxxxx,@example,2026-10-20,2026-10-22,quote_received,PRIVATE: never share this sheet or commit it to git

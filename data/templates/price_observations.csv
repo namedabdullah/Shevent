@@ -1,0 +1,2 @@
+obs_id,vendor_id,category,package_name,unit,price_min_pkr,price_max_pkr,guest_min,guest_max,hours,inclusions,exclusions,event_type,season_note,price_date,source_type,source_ref,collected_by,collected_date,confidence,notes
+EXAMPLE-P-0001,EXAMPLE-CAT-001,catering,Silver Mehndi Menu,per_head,1800,1800,150,,,chicken karahi|biryani|kheer|cold drinks|serving staff,crockery upgrade|generator,wedding_mehndi,unspecified,2026-10-01,social_post,https://instagram.com/p/example,A,2026-10-19,medium,"Posted as 'starting from'; delete this example row"
