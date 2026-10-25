@@ -300,6 +300,11 @@ isOneToOne: false
               "area": Database["public"]['Enums']["lahore_area"],"estimate": Json,"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"total_budget_pkr": number,"venue_type": Database["public"]['Enums']["venue_type"]
             }[]
                            },
+"inquiry_brief":
+{ Args: { "target": string }; Returns: {
+              "area": Database["public"]['Enums']["lahore_area"],"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"preferences": (string)[],"venue_type": Database["public"]['Enums']["venue_type"]
+            }[]
+                           },
 "share_plan":
 { Args: { "target": string }; Returns: string
                            }

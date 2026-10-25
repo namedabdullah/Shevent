@@ -27,9 +27,11 @@ function trimDecimals(value: number, maxDecimals: number): string {
 type CompactUnit = 'none' | 'lakh' | 'crore';
 
 function compactUnit(value: number): CompactUnit {
+  // Decide on the rounded value, so 9,999,999 prints as "1 crore" (not "100 lakh") and 99,999.6
+  // as "1 lakh" (not "100,000").
   const abs = Math.abs(value);
-  if (abs >= CRORE) return 'crore';
-  if (abs >= LAKH) return 'lakh';
+  if (abs >= CRORE || Math.round((abs / LAKH) * 100) / 100 >= 100) return 'crore';
+  if (abs >= LAKH || Math.round(abs) >= LAKH) return 'lakh';
   return 'none';
 }
 
