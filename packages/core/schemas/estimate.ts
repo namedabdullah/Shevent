@@ -17,6 +17,10 @@ export const estimateRequestSchema = z.object({
 });
 export type EstimateRequest = z.infer<typeof estimateRequestSchema>;
 
+/** The event itself, without the host's budget (what a vendor may see; what #5 prices). */
+export const eventSpecSchema = estimateRequestSchema.omit({ total_budget_pkr: true });
+export type EventSpec = z.infer<typeof eventSpecSchema>;
+
 export const allocationItemSchema = z.object({
   /** Share of the total budget, 0–1. */
   share: z.number().min(0).max(1),

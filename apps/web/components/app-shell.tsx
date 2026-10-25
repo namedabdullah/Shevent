@@ -19,6 +19,9 @@ export async function AppShell({ gate: Gate, children }: { gate: (props: { child
           <Link href="/plans" className="text-sm underline-offset-4 hover:underline">
             {t('App.plans')}
           </Link>
+          <Link href="/plan/new" className="text-sm underline-offset-4 hover:underline">
+            {t('App.newPlan')}
+          </Link>
         </nav>
         <Suspense fallback={null}>
           <AccountMenu />

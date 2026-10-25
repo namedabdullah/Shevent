@@ -26,3 +26,7 @@ coverage/
 *.tsbuildinfo
 .env*.local
 
+
+# Test reports: keep the Markdown, not the generated HTML/JSON
+testing/reports/*.html
+testing/reports/*.json

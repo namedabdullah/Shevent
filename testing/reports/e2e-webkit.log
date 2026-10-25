@@ -1,0 +1,78 @@
+
+Running 59 tests using 1 worker
+
+  ✓   1 [webkit] › tests\e2e\accessibility.spec.ts:15:5 › public pages (13.5s)
+
+  ✓   2 [webkit] › tests\e2e\accessibility.spec.ts:23:5 › signed-in pages (30.5s)
+
+  ✓   3 [webkit] › tests\e2e\accessibility.spec.ts:47:5 › every form control has a label and the chart has a table alternative (3.9s)
+  -   4 [webkit] › tests\e2e\accessibility.spec.ts:67:5 › the planner works with the keyboard only
+  ✓   5 [webkit] › tests\e2e\accessibility.spec.ts:86:7 › with the OS set to dark mode › pages stay light and readable (4.3s)
+  ✓   6 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /plan sends you to sign-in and remembers where you were going (528ms)
+  ✓   7 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /plan/new sends you to sign-in and remembers where you were going (452ms)
+  ✓   8 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /plans sends you to sign-in and remembers where you were going (461ms)
+  ✓   9 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /plans/1 sends you to sign-in and remembers where you were going (482ms)
+  ✓  10 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /inquiries/1 sends you to sign-in and remembers where you were going (447ms)
+  ✓  11 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /bookings/1 sends you to sign-in and remembers where you were going (443ms)
+  ✓  12 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /assistant sends you to sign-in and remembers where you were going (465ms)
+  ✓  13 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /vendor sends you to sign-in and remembers where you were going (626ms)
+  ✓  14 [webkit] › tests\e2e\auth.spec.ts:9:9 › signed out › /vendor/onboarding sends you to sign-in and remembers where you were going (545ms)
+  ✓  15 [webkit] › tests\e2e\auth.spec.ts:15:7 › signed out › public pages stay public (610ms)
+  ✓  16 [webkit] › tests\e2e\auth.spec.ts:21:7 › signed out › an invalid email is rejected and kept in the box (774ms)
+  ✓  17 [webkit] › tests\e2e\auth.spec.ts:30:5 › magic-link sign-in lands where you were going, then sign-out locks the pages again (2.4s)
+  ✓  18 [webkit] › tests\e2e\auth.spec.ts:50:5 › a used magic link cannot sign in again and says so (2.7s)
+  ✓  19 [webkit] › tests\e2e\auth.spec.ts:65:5 › a host cannot open the vendor dashboard and can become a vendor (2.7s)
+  ✓  20 [webkit] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=//evil.example never leaves the site (82ms)
+  ✓  21 [webkit] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=https://evil.example never leaves the site (46ms)
+  ✓  22 [webkit] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=/\evil.example never leaves the site (33ms)
+  ✓  23 [webkit] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=http://evil.example/plans never leaves the site (12ms)
+  ✓  24 [webkit] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=javascript:alert(1) never leaves the site (87ms)
+  ✓  25 [webkit] › tests\e2e\auth.spec.ts:89:7 › open redirects › a hostile next on the sign-in page is ignored after signing in (1.5s)
+
+  ✓  26 [webkit] › tests\e2e\auth.spec.ts:113:7 › another host's data › is never shown to someone else (9.4s)
+
+  ✓  27 [webkit] › tests\e2e\early-tap.spec.ts:12:5 › tapping Book the moment it appears is not lost (2.8s)
+
+  ✓  28 [webkit] › tests\e2e\host-flow.spec.ts:8:5 › host plans an event, chats with a vendor, books and gives feedback (11.1s)
+
+  ✓  29 [webkit] › tests\e2e\host-flow.spec.ts:160:5 › a failed estimate keeps the plan and offers a retry (3.1s)
+  ✓  30 [webkit] › tests\e2e\host-flow.spec.ts:174:5 › the planner can be pre-filled from the URL (for the landing-page widget) (1.9s)
+
+  ✓  31 [webkit] › tests\e2e\leads.spec.ts:7:5 › invalid input shows a message, keeps what was typed, and saves nothing (1.0s)
+
+  ✓  32 [webkit] › tests\e2e\leads.spec.ts:18:5 › a valid sign-up saves one row with its UTM values and landing path (1.0s)
+
+  ✓  33 [webkit] › tests\e2e\leads.spec.ts:29:5 › a Pakistani phone number is accepted (1.1s)
+
+  ✓  34 [webkit] › tests\e2e\leads.spec.ts:39:5 › double-clicking submit saves exactly one row (998ms)
+
+  ✓  35 [webkit] › tests\e2e\leads.spec.ts:48:5 › a bot that fills the hidden field is not saved (1.0s)
+  ✓  36 [webkit] › tests\e2e\leads.spec.ts:58:5 › over-long input is rejected on the server side too (883ms)
+
+  ✓  37 [webkit] › tests\e2e\leads.spec.ts:66:5 › script-like input is stored and shown as plain text, never run (2.6s)
+  ✓  38 [webkit] › tests\e2e\marketing.spec.ts:4:5 › landing page says what Shevent does and has no NETSOL text (467ms)
+  ✓  39 [webkit] › tests\e2e\marketing.spec.ts:14:5 › header links work (1.1s)
+  ✓  40 [webkit] › tests\e2e\marketing.spec.ts:23:5 › unknown URLs show the not-found page with a real 404 (752ms)
+  ✓  41 [webkit] › tests\e2e\marketing.spec.ts:31:5 › the Urdu pages were removed (23ms)
+  ✓  42 [webkit] › tests\e2e\marketing.spec.ts:35:5 › metadata: title, description, canonical and social tags (532ms)
+  ✓  43 [webkit] › tests\e2e\marketing.spec.ts:45:5 › sign-in page is not indexed (465ms)
+  ✓  44 [webkit] › tests\e2e\marketing.spec.ts:50:5 › robots.txt blocks the signed-in areas but not public vendor profiles (24ms)
+  ✓  45 [webkit] › tests\e2e\marketing.spec.ts:59:5 › sitemap lists public pages only (14ms)
+  ✓  46 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/docs is not forwarded (13ms)
+  ✓  47 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/openapi.json is not forwarded (12ms)
+  ✓  48 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v2/x is not forwarded (11ms)
+  ✓  49 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/..%2F..%2Fdocs is not forwarded (10ms)
+  ✓  50 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/%2e%2e/docs is not forwarded (10ms)
+  ✓  51 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/.hidden is not forwarded (18ms)
+  ✓  52 [webkit] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai is not forwarded (105ms)
+  ✓  53 [webkit] › tests\e2e\security.spec.ts:13:9 › AI proxy › PUT is not allowed (27ms)
+  ✓  54 [webkit] › tests\e2e\security.spec.ts:13:9 › AI proxy › DELETE is not allowed (23ms)
+  ✓  55 [webkit] › tests\e2e\security.spec.ts:13:9 › AI proxy › PATCH is not allowed (14ms)
+  ✓  56 [webkit] › tests\e2e\security.spec.ts:19:7 › AI proxy › without a configured model server it answers 503 with a plain message (18ms)
+  ✓  57 [webkit] › tests\e2e\security.spec.ts:28:5 › no secret or server-only value reaches the browser (652ms)
+  ✓  58 [webkit] › tests\e2e\security.spec.ts:41:5 › response headers (37ms)
+  ✓  59 [webkit] › tests\e2e\security.spec.ts:52:7 › server-side validation (skipping the browser forms) › the database rejects bad leads sent straight to the API (59ms)
+
+  1 skipped
+  58 passed (1.9m)
+exit 0

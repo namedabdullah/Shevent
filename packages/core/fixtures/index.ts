@@ -167,9 +167,14 @@ const INCLUSION_CHECKLIST: Record<Category, { label: string; keywords: string[] 
   ],
 };
 
-/** #5: the 🟢 / 🟡 up to 25% above / 🔴 rule applied to the fixture estimate's range. */
+/**
+ * #5: the 🟢 / 🟡 up to 25% above / 🔴 rule applied to the fixture's range, scaled by guest count
+ * (the request carries no budget).
+ */
 export function fixtureQuoteCheck(request: QuoteCheckRequest): QuoteCheckResponse {
-  const [low, high] = fixtureEstimate(request.plan).allocation[request.category].range;
+  const base = estimateResponseFixture.allocation[request.category].range;
+  const scale = request.plan.guest_count / estimateRequestFixture.guest_count;
+  const [low, high] = base.map((bound) => bound * scale) as PriceRange;
   const divisor =
     request.unit === 'per_head' ? request.plan.guest_count : request.unit === 'per_hour' ? (request.hours ?? 4) : 1;
   const typical_range: PriceRange = [Math.round(low / divisor), Math.round(high / divisor)];

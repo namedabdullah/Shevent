@@ -5,10 +5,11 @@ import { z } from 'zod';
 import { CATEGORIES, PRICE_UNITS } from '../enums';
 import { FAIRNESS_LEVELS } from '../labels';
 import { modelVersionSchema, priceRangeSchema } from './common';
-import { estimateRequestSchema } from './estimate';
+import { eventSpecSchema } from './estimate';
 
 export const quoteCheckRequestSchema = z.object({
-  plan: estimateRequestSchema,
+  /** The event, without the host's budget: a fair price doesn't depend on it, and vendors never see it. */
+  plan: eventSpecSchema,
   category: z.enum(CATEGORIES),
   quoted_pkr: z.number().positive(),
   unit: z.enum(PRICE_UNITS),

@@ -1,0 +1,77 @@
+
+Running 59 tests using 1 worker
+
+  ✓   1 [android] › tests\e2e\accessibility.spec.ts:15:5 › public pages (3.8s)
+
+  ✓   2 [android] › tests\e2e\accessibility.spec.ts:23:5 › signed-in pages (13.4s)
+
+  ✓   3 [android] › tests\e2e\accessibility.spec.ts:47:5 › every form control has a label and the chart has a table alternative (1.6s)
+  ✓   4 [android] › tests\e2e\accessibility.spec.ts:67:5 › the planner works with the keyboard only (1.5s)
+  ✓   5 [android] › tests\e2e\accessibility.spec.ts:86:7 › with the OS set to dark mode › pages stay light and readable (2.3s)
+  ✓   6 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /plan sends you to sign-in and remembers where you were going (253ms)
+  ✓   7 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /plan/new sends you to sign-in and remembers where you were going (250ms)
+  ✓   8 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /plans sends you to sign-in and remembers where you were going (278ms)
+  ✓   9 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /plans/1 sends you to sign-in and remembers where you were going (262ms)
+  ✓  10 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /inquiries/1 sends you to sign-in and remembers where you were going (358ms)
+  ✓  11 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /bookings/1 sends you to sign-in and remembers where you were going (281ms)
+  ✓  12 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /assistant sends you to sign-in and remembers where you were going (278ms)
+  ✓  13 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /vendor sends you to sign-in and remembers where you were going (277ms)
+  ✓  14 [android] › tests\e2e\auth.spec.ts:9:9 › signed out › /vendor/onboarding sends you to sign-in and remembers where you were going (309ms)
+  ✓  15 [android] › tests\e2e\auth.spec.ts:15:7 › signed out › public pages stay public (393ms)
+  ✓  16 [android] › tests\e2e\auth.spec.ts:21:7 › signed out › an invalid email is rejected and kept in the box (375ms)
+  ✓  17 [android] › tests\e2e\auth.spec.ts:30:5 › magic-link sign-in lands where you were going, then sign-out locks the pages again (1.8s)
+  ✓  18 [android] › tests\e2e\auth.spec.ts:50:5 › a used magic link cannot sign in again and says so (1.2s)
+  ✓  19 [android] › tests\e2e\auth.spec.ts:65:5 › a host cannot open the vendor dashboard and can become a vendor (2.1s)
+  ✓  20 [android] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=//evil.example never leaves the site (16ms)
+  ✓  21 [android] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=https://evil.example never leaves the site (12ms)
+  ✓  22 [android] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=/\evil.example never leaves the site (11ms)
+  ✓  23 [android] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=http://evil.example/plans never leaves the site (10ms)
+  ✓  24 [android] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=javascript:alert(1) never leaves the site (12ms)
+  ✓  25 [android] › tests\e2e\auth.spec.ts:89:7 › open redirects › a hostile next on the sign-in page is ignored after signing in (770ms)
+
+  ✓  26 [android] › tests\e2e\auth.spec.ts:113:7 › another host's data › is never shown to someone else (3.5s)
+
+  ✓  27 [android] › tests\e2e\early-tap.spec.ts:12:5 › tapping Book the moment it appears is not lost (1.9s)
+
+  ✓  28 [android] › tests\e2e\host-flow.spec.ts:8:5 › host plans an event, chats with a vendor, books and gives feedback (5.9s)
+
+  ✓  29 [android] › tests\e2e\host-flow.spec.ts:160:5 › a failed estimate keeps the plan and offers a retry (1.7s)
+  ✓  30 [android] › tests\e2e\host-flow.spec.ts:174:5 › the planner can be pre-filled from the URL (for the landing-page widget) (1.0s)
+
+  ✓  31 [android] › tests\e2e\leads.spec.ts:7:5 › invalid input shows a message, keeps what was typed, and saves nothing (416ms)
+
+  ✓  32 [android] › tests\e2e\leads.spec.ts:18:5 › a valid sign-up saves one row with its UTM values and landing path (591ms)
+
+  ✓  33 [android] › tests\e2e\leads.spec.ts:29:5 › a Pakistani phone number is accepted (637ms)
+
+  ✓  34 [android] › tests\e2e\leads.spec.ts:39:5 › double-clicking submit saves exactly one row (575ms)
+
+  ✓  35 [android] › tests\e2e\leads.spec.ts:48:5 › a bot that fills the hidden field is not saved (482ms)
+  ✓  36 [android] › tests\e2e\leads.spec.ts:58:5 › over-long input is rejected on the server side too (427ms)
+
+  ✓  37 [android] › tests\e2e\leads.spec.ts:66:5 › script-like input is stored and shown as plain text, never run (1.1s)
+  ✓  38 [android] › tests\e2e\marketing.spec.ts:4:5 › landing page says what Shevent does and has no NETSOL text (406ms)
+  ✓  39 [android] › tests\e2e\marketing.spec.ts:14:5 › header links work (476ms)
+  ✓  40 [android] › tests\e2e\marketing.spec.ts:23:5 › unknown URLs show the not-found page with a real 404 (384ms)
+  ✓  41 [android] › tests\e2e\marketing.spec.ts:31:5 › the Urdu pages were removed (20ms)
+  ✓  42 [android] › tests\e2e\marketing.spec.ts:35:5 › metadata: title, description, canonical and social tags (328ms)
+  ✓  43 [android] › tests\e2e\marketing.spec.ts:45:5 › sign-in page is not indexed (270ms)
+  ✓  44 [android] › tests\e2e\marketing.spec.ts:50:5 › robots.txt blocks the signed-in areas but not public vendor profiles (15ms)
+  ✓  45 [android] › tests\e2e\marketing.spec.ts:59:5 › sitemap lists public pages only (13ms)
+  ✓  46 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/docs is not forwarded (13ms)
+  ✓  47 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/openapi.json is not forwarded (11ms)
+  ✓  48 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v2/x is not forwarded (14ms)
+  ✓  49 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/..%2F..%2Fdocs is not forwarded (10ms)
+  ✓  50 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/%2e%2e/docs is not forwarded (12ms)
+  ✓  51 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/.hidden is not forwarded (13ms)
+  ✓  52 [android] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai is not forwarded (12ms)
+  ✓  53 [android] › tests\e2e\security.spec.ts:13:9 › AI proxy › PUT is not allowed (10ms)
+  ✓  54 [android] › tests\e2e\security.spec.ts:13:9 › AI proxy › DELETE is not allowed (11ms)
+  ✓  55 [android] › tests\e2e\security.spec.ts:13:9 › AI proxy › PATCH is not allowed (9ms)
+  ✓  56 [android] › tests\e2e\security.spec.ts:19:7 › AI proxy › without a configured model server it answers 503 with a plain message (18ms)
+  ✓  57 [android] › tests\e2e\security.spec.ts:28:5 › no secret or server-only value reaches the browser (429ms)
+  ✓  58 [android] › tests\e2e\security.spec.ts:41:5 › response headers (25ms)
+  ✓  59 [android] › tests\e2e\security.spec.ts:52:7 › server-side validation (skipping the browser forms) › the database rejects bad leads sent straight to the API (76ms)
+
+  59 passed (55.2s)
+exit 0
