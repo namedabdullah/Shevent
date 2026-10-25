@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import { locale as rootLocale } from 'next/root-params';
 import Script from 'next/script';
 import { AttributionCapture } from '@/components/attribution-capture';
-import { routing, RTL_LOCALES } from '@/i18n/routing';
+import { routing } from '@/i18n/routing';
 import { getSiteUrl, isIndexable } from '@/lib/site';
 import '../globals.css';
 
@@ -45,11 +45,7 @@ export default async function RootLayout({ children }: LayoutProps<'/[locale]'>)
   if (!hasLocale(routing.locales, locale)) notFound();
 
   return (
-    <html
-      lang={locale}
-      dir={RTL_LOCALES.includes(locale) ? 'rtl' : 'ltr'}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
         <AttributionCapture />
