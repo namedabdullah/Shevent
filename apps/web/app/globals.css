@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
+/* The site is light-only for now. The pages use fixed light-theme text colours (text-zinc-*), which
+   fall below 2:1 contrast on a dark background, so an OS dark-mode switch must not change the page.
+   A real dark theme (every text, surface and chart colour) belongs with the design system. */
 :root {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #171717;
 }
@@ -12,15 +16,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Chart colours: one fixed slot per category, in CATEGORIES order, so a category keeps its
+   colour on every chart. Steps from the dataviz reference palette, validated (CVD separation,
+   lightness band and graphics contrast) against the white page. They are for marks only, never
+   for text, because they do not reach 4.5:1. The validated dark steps are: venue #3987e5,
+   catering #d95926, decor #199e70, dj_sound #c98500, lighting #d55181. */
+:root {
+  --series-venue: #2a78d6;
+  --series-catering: #eb6834;
+  --series-decor: #1baf7a;
+  --series-dj_sound: #eda100;
+  --series-lighting: #e87ba4;
 }

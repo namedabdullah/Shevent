@@ -1,0 +1,78 @@
+
+Running 59 tests using 1 worker
+
+  ✓   1 [iphone] › tests\e2e\accessibility.spec.ts:15:5 › public pages (5.0s)
+
+  ✓   2 [iphone] › tests\e2e\accessibility.spec.ts:23:5 › signed-in pages (18.8s)
+
+  ✓   3 [iphone] › tests\e2e\accessibility.spec.ts:47:5 › every form control has a label and the chart has a table alternative (2.9s)
+  -   4 [iphone] › tests\e2e\accessibility.spec.ts:67:5 › the planner works with the keyboard only
+  ✓   5 [iphone] › tests\e2e\accessibility.spec.ts:86:7 › with the OS set to dark mode › pages stay light and readable (3.4s)
+  ✓   6 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /plan sends you to sign-in and remembers where you were going (577ms)
+  ✓   7 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /plan/new sends you to sign-in and remembers where you were going (454ms)
+  ✓   8 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /plans sends you to sign-in and remembers where you were going (420ms)
+  ✓   9 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /plans/1 sends you to sign-in and remembers where you were going (397ms)
+  ✓  10 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /inquiries/1 sends you to sign-in and remembers where you were going (406ms)
+  ✓  11 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /bookings/1 sends you to sign-in and remembers where you were going (477ms)
+  ✓  12 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /assistant sends you to sign-in and remembers where you were going (409ms)
+  ✓  13 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /vendor sends you to sign-in and remembers where you were going (422ms)
+  ✓  14 [iphone] › tests\e2e\auth.spec.ts:9:9 › signed out › /vendor/onboarding sends you to sign-in and remembers where you were going (460ms)
+  ✓  15 [iphone] › tests\e2e\auth.spec.ts:15:7 › signed out › public pages stay public (543ms)
+  ✓  16 [iphone] › tests\e2e\auth.spec.ts:21:7 › signed out › an invalid email is rejected and kept in the box (784ms)
+  ✓  17 [iphone] › tests\e2e\auth.spec.ts:30:5 › magic-link sign-in lands where you were going, then sign-out locks the pages again (2.3s)
+  ✓  18 [iphone] › tests\e2e\auth.spec.ts:50:5 › a used magic link cannot sign in again and says so (2.3s)
+  ✓  19 [iphone] › tests\e2e\auth.spec.ts:65:5 › a host cannot open the vendor dashboard and can become a vendor (3.1s)
+  ✓  20 [iphone] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=//evil.example never leaves the site (22ms)
+  ✓  21 [iphone] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=https://evil.example never leaves the site (16ms)
+  ✓  22 [iphone] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=/\evil.example never leaves the site (12ms)
+  ✓  23 [iphone] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=http://evil.example/plans never leaves the site (13ms)
+  ✓  24 [iphone] › tests\e2e\auth.spec.ts:81:9 › open redirects › callback with next=javascript:alert(1) never leaves the site (13ms)
+  ✓  25 [iphone] › tests\e2e\auth.spec.ts:89:7 › open redirects › a hostile next on the sign-in page is ignored after signing in (1.5s)
+
+  ✓  26 [iphone] › tests\e2e\auth.spec.ts:113:7 › another host's data › is never shown to someone else (6.7s)
+
+  ✘  27 [iphone] › tests\e2e\early-tap.spec.ts:12:5 › tapping Book the moment it appears is not lost (17.5s)
+
+  ✓  28 [iphone] › tests\e2e\host-flow.spec.ts:8:5 › host plans an event, chats with a vendor, books and gives feedback (9.4s)
+
+  ✓  29 [iphone] › tests\e2e\host-flow.spec.ts:160:5 › a failed estimate keeps the plan and offers a retry (2.8s)
+  ✓  30 [iphone] › tests\e2e\host-flow.spec.ts:174:5 › the planner can be pre-filled from the URL (for the landing-page widget) (1.8s)
+
+  ✓  31 [iphone] › tests\e2e\leads.spec.ts:7:5 › invalid input shows a message, keeps what was typed, and saves nothing (885ms)
+
+  ✓  32 [iphone] › tests\e2e\leads.spec.ts:18:5 › a valid sign-up saves one row with its UTM values and landing path (895ms)
+
+  ✓  33 [iphone] › tests\e2e\leads.spec.ts:29:5 › a Pakistani phone number is accepted (1.1s)
+
+  ✓  34 [iphone] › tests\e2e\leads.spec.ts:39:5 › double-clicking submit saves exactly one row (877ms)
+
+  ✓  35 [iphone] › tests\e2e\leads.spec.ts:48:5 › a bot that fills the hidden field is not saved (975ms)
+  ✓  36 [iphone] › tests\e2e\leads.spec.ts:58:5 › over-long input is rejected on the server side too (860ms)
+
+  ✓  37 [iphone] › tests\e2e\leads.spec.ts:66:5 › script-like input is stored and shown as plain text, never run (1.9s)
+  ✓  38 [iphone] › tests\e2e\marketing.spec.ts:4:5 › landing page says what Shevent does and has no NETSOL text (454ms)
+  ✓  39 [iphone] › tests\e2e\marketing.spec.ts:14:5 › header links work (1.1s)
+  ✓  40 [iphone] › tests\e2e\marketing.spec.ts:23:5 › unknown URLs show the not-found page with a real 404 (801ms)
+  ✓  41 [iphone] › tests\e2e\marketing.spec.ts:31:5 › the Urdu pages were removed (26ms)
+  ✓  42 [iphone] › tests\e2e\marketing.spec.ts:35:5 › metadata: title, description, canonical and social tags (507ms)
+  ✓  43 [iphone] › tests\e2e\marketing.spec.ts:45:5 › sign-in page is not indexed (477ms)
+  ✓  44 [iphone] › tests\e2e\marketing.spec.ts:50:5 › robots.txt blocks the signed-in areas but not public vendor profiles (19ms)
+  ✓  45 [iphone] › tests\e2e\marketing.spec.ts:59:5 › sitemap lists public pages only (14ms)
+  ✓  46 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/docs is not forwarded (16ms)
+  ✓  47 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/openapi.json is not forwarded (14ms)
+  ✓  48 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v2/x is not forwarded (12ms)
+  ✓  49 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/..%2F..%2Fdocs is not forwarded (11ms)
+  ✓  50 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/%2e%2e/docs is not forwarded (12ms)
+  ✓  51 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai/v1/.hidden is not forwarded (13ms)
+  ✓  52 [iphone] › tests\e2e\security.spec.ts:6:9 › AI proxy › /api/ai is not forwarded (13ms)
+  ✓  53 [iphone] › tests\e2e\security.spec.ts:13:9 › AI proxy › PUT is not allowed (12ms)
+  ✓  54 [iphone] › tests\e2e\security.spec.ts:13:9 › AI proxy › DELETE is not allowed (12ms)
+  ✓  55 [iphone] › tests\e2e\security.spec.ts:13:9 › AI proxy › PATCH is not allowed (16ms)
+  ✓  56 [iphone] › tests\e2e\security.spec.ts:19:7 › AI proxy › without a configured model server it answers 503 with a plain message (17ms)
+  ✓  57 [iphone] › tests\e2e\security.spec.ts:28:5 › no secret or server-only value reaches the browser (516ms)
+  ✓  58 [iphone] › tests\e2e\security.spec.ts:41:5 › response headers (22ms)
+  ✓  59 [iphone] › tests\e2e\security.spec.ts:52:7 › server-side validation (skipping the browser forms) › the database rejects bad leads sent straight to the API (49ms)
+
+  1 skipped
+  58 passed (1.6m)
+exit 0
