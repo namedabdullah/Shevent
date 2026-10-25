@@ -1,14 +1,12 @@
 import { defineRouting } from 'next-intl/routing';
 
+// English only. Page text lives in messages/en.json so another language can be added later by
+// adding it here and a matching messages file.
 export const routing = defineRouting({
-  locales: ['en', 'ur'],
+  locales: ['en'],
   defaultLocale: 'en',
-  // English lives at /, Urdu at /ur/...
   localePrefix: 'as-needed',
-  // Only the key marketing pages get Urdu, so never redirect by browser language.
   localeDetection: false,
 });
 
 export type Locale = (typeof routing.locales)[number];
-
-export const RTL_LOCALES: readonly Locale[] = ['ur'];

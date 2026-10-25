@@ -1,7 +1,7 @@
 import type { Database } from '@shevent/core/database';
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { isProtectedPath, splitLocale } from '@/lib/routes';
+import { isProtectedPath } from '@/lib/routes';
 import { getSupabaseEnv } from './env';
 
 /**
@@ -28,9 +28,8 @@ export async function updateSession(request: NextRequest, response: NextResponse
   const { data } = await supabase.auth.getClaims();
   if (data?.claims || !isProtectedPath(request.nextUrl.pathname)) return response;
 
-  const { prefix } = splitLocale(request.nextUrl.pathname);
   const signIn = request.nextUrl.clone();
-  signIn.pathname = `${prefix}/sign-in`;
+  signIn.pathname = '/sign-in';
   signIn.search = `?next=${encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search)}`;
   const redirect = NextResponse.redirect(signIn);
   for (const cookie of response.cookies.getAll()) redirect.cookies.set(cookie);

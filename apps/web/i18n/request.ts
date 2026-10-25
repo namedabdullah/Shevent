@@ -1,4 +1,4 @@
-import { hasLocale, type AbstractIntlMessages } from 'next-intl';
+import { hasLocale } from 'next-intl';
 import { getRequestConfig } from 'next-intl/server';
 import { locale as rootLocale } from 'next/root-params';
 import en from '../messages/en.json';
@@ -9,20 +9,5 @@ export default getRequestConfig(async ({ locale: explicitLocale }) => {
   // explicitly, e.g. getTranslations({ locale, namespace }).
   const requested = explicitLocale ?? (await rootLocale());
   const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
-
-  if (locale === 'en') return { locale, messages: en };
-
-  // Anything not translated yet falls back to English.
-  const translated = (await import(`../messages/${locale}.json`)).default;
-  return { locale, messages: mergeMessages(en, translated) };
+  return { locale, messages: en };
 });
-
-function mergeMessages(base: AbstractIntlMessages, override: AbstractIntlMessages): AbstractIntlMessages {
-  const merged: AbstractIntlMessages = { ...base };
-  for (const [key, value] of Object.entries(override)) {
-    const baseValue = base[key];
-    merged[key] =
-      typeof value === 'object' && typeof baseValue === 'object' ? mergeMessages(baseValue, value) : value;
-  }
-  return merged;
-}
