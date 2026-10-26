@@ -1,6 +1,6 @@
 // Shared helpers for the Playwright suites. They talk to the LOCAL Supabase only: Mailpit for
-// magic-link emails and `docker exec psql` to set up data that a vendor account would create
-// (the vendor dashboard doesn't exist yet). Never point these at a hosted project.
+// magic-link emails and `docker exec psql` to set up data a journey needs but doesn't test (the
+// host's plan, a vendor's listing). Never point these at a hosted project.
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -86,6 +86,33 @@ export function seedJourney(email: string): Journey {
     update public.inquiries set status = 'booked' where id = '${bookedInquiryId}';
   `);
   return { hostId, planId, quotedInquiryId, quoteId, bookedInquiryId, bookingId };
+}
+
+/** The host's plan (budget 25 lakh) and an open inquiry to `vendorId`, with one message from the host. */
+export function seedInquiry(hostEmail: string, vendorId: string): { planId: string; inquiryId: string } {
+  const hostId = userId(hostEmail);
+  const [planId, inquiryId] = [randomUUID(), randomUUID()];
+  psql(`
+    insert into public.plans (id, owner_id, event_type, guest_count, area, venue_type, event_date, total_budget_pkr, preferences, estimate)
+      values ('${planId}', '${hostId}', 'wedding_mehndi', 300, 'Gulberg', 'marquee', '2026-12-19', 2500000, array['decor_heavy'], $j$${estimateJson}$j$::jsonb);
+    insert into public.inquiries (id, plan_id, vendor_id, host_id) values ('${inquiryId}', '${planId}', '${vendorId}', '${hostId}');
+    insert into public.messages (inquiry_id, sender_id, body) values ('${inquiryId}', '${hostId}', 'Salam, are you free on 19 December?');
+  `);
+  return { planId, inquiryId };
+}
+
+/** Turns a signed-in account into a vendor with a catering listing, as onboarding would. Returns the vendor id. */
+export function seedListing(email: string): string {
+  const ownerId = userId(email);
+  const slug = `e2e-caterers-${randomUUID().slice(0, 8)}`;
+  return psql(`
+    update public.profiles set role = 'vendor' where id = '${ownerId}';
+    insert into public.vendors (owner_id, slug, name, category, base_area, areas_served)
+      values ('${ownerId}', '${slug}', 'E2E Caterers', 'catering', 'Gulberg', array['Gulberg']::public.lahore_area[])
+      returning id;
+  `)
+    .split('\n')
+    .find((line) => /^[0-9a-f-]{36}$/.test(line))!;
 }
 
 /** Words the plan forbids in quote guidance (WEB_APP_PLAN §5.4). */

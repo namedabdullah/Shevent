@@ -1,20 +1,38 @@
 'use server';
 
+import { slugify } from '@shevent/core/format';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { invalidFields, listingColumns, parseVendorProfile, type VendorProfileState } from '@/lib/vendor';
 
-/** Turns the signed-in account into a vendor account. The database function checks the caller. */
-export async function becomeVendor(): Promise<void> {
+/**
+ * Onboarding: switches the account to a vendor account, then creates its listing. The database
+ * checks both steps (become_vendor() only promotes the caller; RLS allows one listing per owner).
+ */
+export async function createListing(_previous: VendorProfileState, formData: FormData): Promise<VendorProfileState> {
   const supabase = await createClient();
-  if (!supabase) redirect('/vendor/onboarding?error=unavailable');
+  const { data: auth } = (await supabase?.auth.getClaims()) ?? { data: null };
+  if (!supabase || !auth?.claims) redirect('/sign-in?next=%2Fvendor%2Fonboarding');
 
-  const { data } = await supabase.auth.getClaims();
-  if (!data?.claims) redirect('/sign-in?next=/vendor/onboarding');
+  const parsed = parseVendorProfile(formData);
+  if (!parsed.success) return { status: 'error', error: 'invalid', fields: invalidFields(parsed.error) };
+  const profile = parsed.data;
 
-  const { error } = await supabase.rpc('become_vendor');
-  if (error) {
-    console.error('become_vendor failed', error.code, error.message);
-    redirect('/vendor/onboarding?error=failed');
+  const { error: roleError } = await supabase.rpc('become_vendor');
+  if (roleError) {
+    console.error('become_vendor failed', roleError.code, roleError.message);
+    return { status: 'error', error: 'failed', fields: [] };
   }
-  redirect('/vendor');
+
+  // A short random suffix keeps slugs unique without a lookup ("demo-caterers-4f9k2a").
+  const slug = `${slugify(profile.name) || 'vendor'}-${crypto.randomUUID().slice(0, 6)}`;
+  const { error } = await supabase
+    .from('vendors')
+    .insert({ owner_id: auth.claims.sub, slug, category: profile.category, ...listingColumns(profile) });
+  // 23505: this account already has a listing (a second tab, or a double submit).
+  if (error && error.code !== '23505') {
+    console.error('Listing insert failed', error.code, error.message);
+    return { status: 'error', error: 'failed', fields: [] };
+  }
+  redirect(error ? '/vendor' : '/vendor?onboarded=1');
 }

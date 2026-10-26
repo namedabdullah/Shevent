@@ -2,7 +2,7 @@
 import { expect, test } from '@playwright/test';
 import { requestMagicLink, seedJourney, signIn, uniqueEmail } from './helpers';
 
-const PROTECTED = ['/plan', '/plan/new', '/plans', '/plans/1', '/inquiries/1', '/bookings/1', '/assistant', '/vendor', '/vendor/onboarding'];
+const PROTECTED = ['/plan', '/plan/new', '/plans', '/plans/1', '/inquiries/1', '/bookings/1', '/assistant', '/vendor', '/vendor/onboarding', '/vendor/inquiries', '/vendor/profile'];
 
 test.describe('signed out', () => {
   for (const path of PROTECTED) {
@@ -66,12 +66,21 @@ test('a host cannot open the vendor dashboard and can become a vendor', async ({
   test.setTimeout(120_000);
   const email = uniqueEmail('host-vendor');
   await signIn(page, email, '/plans');
-  await page.goto('/vendor');
-  await expect(page).toHaveURL(/\/vendor\/onboarding$/);
+  for (const path of ['/vendor', '/vendor/inquiries', '/vendor/profile']) {
+    await page.goto(path);
+    await expect(page, path).toHaveURL(/\/vendor\/onboarding$/);
+  }
   await expect(page.getByRole('heading', { name: 'List your business on Shevent' })).toBeVisible();
-  await page.getByRole('button', { name: 'Continue as a vendor' }).click();
+  await page.getByLabel('Business name').fill('Host Turned Vendor');
+  await page.getByLabel('What do you provide?').selectOption('decor');
+  await page.getByLabel('Where are you based?').selectOption('DHA');
+  await page.getByRole('button', { name: 'Create my listing' }).click();
+  await expect(page).toHaveURL(/\/vendor\?onboarded=1$/, { timeout: 30_000 });
+  await expect(page.getByRole('heading', { name: 'Host Turned Vendor' })).toBeVisible();
+  await expect(page.getByText('Vendor dashboard', { exact: true }).first()).toBeVisible();
+  // Onboarding again goes straight to the dashboard: one listing per account.
+  await page.goto('/vendor/onboarding');
   await expect(page).toHaveURL(/\/vendor$/);
-  await expect(page.getByRole('heading', { name: 'Vendor dashboard' })).toBeVisible();
 });
 
 test.describe('open redirects', () => {

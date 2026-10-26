@@ -55,7 +55,8 @@ select is((select role::text from public.profiles where id = '00000000-0000-0000
 select set_config('request.jwt.claims', null, true);
 set local role anon;
 
-select is((select count(*)::int from public.vendors), 14, 'anyone can browse vendors (13 demo + 1 new)');
+-- Counted by name, because E2E runs on a local database add listings of their own.
+select is((select count(*)::int from public.vendors where is_demo or slug = 'test-caterers'), 14, 'anyone can browse vendors (13 demo + 1 new)');
 select throws_ok($$ select * from public.plans $$, '42501', null, 'anon cannot read plans');
 select throws_ok($$ select public.become_vendor() $$, '42501', null, 'anon cannot become a vendor');
 
@@ -126,7 +127,8 @@ select is((select status::text from public.inquiries), 'quoted', 'sending a quot
 -- Booking (simulated payment)
 -- ---------------------------------------------------------------------------
 reset role;
-select set_config('test.quote_id', (select id::text from public.quotes limit 1), true);
+-- Scoped to this test's inquiry: a local database also holds quotes from the E2E runs.
+select set_config('test.quote_id', (select id::text from public.quotes where inquiry_id = current_setting('test.inquiry_id')::uuid), true);
 select set_config('request.jwt.claims', '{"sub": "00000000-0000-0000-0000-0000000000b1", "role": "authenticated"}', true);
 set local role authenticated;
 

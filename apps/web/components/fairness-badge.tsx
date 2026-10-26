@@ -1,7 +1,7 @@
 import { formatPkrRange, UNIT_LABELS } from '@shevent/core/format';
 import { AI_ESTIMATE_LABEL, FAIRNESS_LABELS, type FairnessLevel } from '@shevent/core/labels';
 import type { QuoteCheckResponse } from '@shevent/core/schemas';
-import { getTranslations } from 'next-intl/server';
+import { useTranslations } from 'next-intl';
 
 // Status colours (good / warning / critical) always come with an icon and a label, never colour alone.
 const STYLE: Record<FairnessLevel, { icon: string; className: string }> = {
@@ -10,14 +10,17 @@ const STYLE: Record<FairnessLevel, { icon: string; className: string }> = {
   red: { icon: '!!', className: 'border-red-600 bg-red-50 text-red-950' },
 };
 
-/** #5 verdict for a quote: guidance wording and an "ask about" checklist, never an accusation. */
-export async function FairnessBadge({ check }: { check: QuoteCheckResponse }) {
-  const t = await getTranslations('Quote');
+/**
+ * #5 verdict for a quote: guidance wording and an "ask about" checklist, never an accusation.
+ * Not async, so the vendor's live preview (a Client Component) shows exactly what the host sees.
+ */
+export function FairnessBadge({ check }: { check: QuoteCheckResponse }) {
+  const t = useTranslations('Quote');
   const label = FAIRNESS_LABELS[check.level];
   const style = STYLE[check.level];
   return (
     <div className={`flex flex-col gap-2 rounded-lg border-s-4 px-4 py-3 ${style.className}`}>
-      <p className="flex items-center gap-2 font-semibold">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-semibold">
         <span aria-hidden className="inline-flex size-6 items-center justify-center rounded-full border border-current text-xs">
           {style.icon}
         </span>
