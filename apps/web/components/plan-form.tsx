@@ -19,7 +19,7 @@ export interface PlanFormDefaults {
 const initialState: PlanFormState = { status: 'idle' };
 
 const inputClass =
-  'min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 aria-invalid:border-red-600';
+  'min-h-11 w-full rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600';
 
 export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; today: string }) {
   const t = useTranslations('Planner');
@@ -42,7 +42,7 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
         {label}
       </label>
       {control}
-      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-zinc-600">{hint}</p>}
+      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-sand-600">{hint}</p>}
       {invalid(name) && (
         <p className="text-sm text-red-700" role="alert">
           {t(`errors.${name}` as 'errors.event_type')}
@@ -146,7 +146,7 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
       <div className="flex flex-col gap-2">
         <SubmitButton
           pending={pending}
-          className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60"
+          className="min-h-11 self-start rounded-lg bg-brand-700 px-6 font-medium text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
         >
           {pending ? t('submitting') : t('submit')}
         </SubmitButton>

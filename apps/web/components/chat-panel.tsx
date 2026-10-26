@@ -90,14 +90,14 @@ export function ChatPanel({
   return (
     <section aria-labelledby="chat-heading" className="flex flex-col gap-3">
       <h2 id="chat-heading" className="text-xl font-semibold">{t('title', { name: otherName })}</h2>
-      <ol ref={listRef} aria-live="polite" className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto rounded-lg border border-zinc-200 p-3">
-        {messages.length === 0 && <li className="text-sm text-zinc-600">{t('empty')}</li>}
+      <ol ref={listRef} aria-live="polite" className="flex max-h-[28rem] flex-col gap-2 overflow-y-auto rounded-xl border border-sand-200 bg-white p-3">
+        {messages.length === 0 && <li className="text-sm text-sand-600">{t('empty')}</li>}
         {messages.map((message) => {
           const mine = message.sender_id === currentUserId;
           return (
             <li key={message.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
-              <span className="text-xs text-zinc-500">{mine ? t('you') : otherName}</span>
-              <p className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${mine ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
+              <span className="text-xs text-sand-500">{mine ? t('you') : otherName}</span>
+              <p className={`max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2 text-sm ${mine ? 'bg-brand-700 text-white' : 'bg-sand-100 text-sand-900'}`}>
                 {message.body}
               </p>
             </li>
@@ -113,9 +113,9 @@ export function ChatPanel({
           maxLength={2000}
           rows={2}
           placeholder={t('placeholder')}
-          className="min-h-11 flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900"
+          className="min-h-11 flex-1 rounded-lg border border-sand-400 bg-white px-3 py-2 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
         />
-        <button type="submit" disabled={sending || !draft.trim()} className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
+        <button type="submit" disabled={sending || !draft.trim()} className="min-h-11 rounded-lg bg-brand-700 px-5 font-medium text-white hover:bg-brand-800 disabled:opacity-60">
           {sending ? t('sending') : t('send')}
         </button>
       </form>

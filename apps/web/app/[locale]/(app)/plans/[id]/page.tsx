@@ -41,7 +41,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
         <h1 className="text-3xl font-semibold tracking-tight">
           {t('title', { event: EVENT_TYPE_LABELS[plan.event_type], area: plan.area })}
         </h1>
-        <p className="text-zinc-700">
+        <p className="text-sand-700">
           {[
             formatEventDate(plan.event_date),
             t('guests', { count: plan.guest_count }),
@@ -65,7 +65,7 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
             {estimate.explanations.length > 0 && (
               <div>
                 <h3 className="font-medium">{t('why')}</h3>
-                <ul className="mt-1 list-disc ps-5 text-zinc-700">
+                <ul className="mt-1 list-disc ps-5 text-sand-700">
                   {estimate.explanations.map((line) => <li key={line}>{line}</li>)}
                 </ul>
               </div>
@@ -82,10 +82,10 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
             )}
           </>
         ) : (
-          <div className="flex flex-col items-start gap-3 rounded-lg border border-zinc-200 px-4 py-4">
+          <div className="flex flex-col items-start gap-3 rounded-xl border border-sand-200 bg-white px-4 py-4">
             <p>{query.estimate === 'failed' ? t('estimateStillFailing') : t('noEstimate')}</p>
             <form action={retryEstimate.bind(null, plan.id)}>
-              <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
+              <SubmitButton className="min-h-11 rounded-lg bg-brand-700 px-5 font-medium text-white hover:bg-brand-800 disabled:opacity-60">
                 {t('retry')}
               </SubmitButton>
             </form>
@@ -107,18 +107,18 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
           <ul className="flex flex-col gap-2">
             {inquiries.map((inquiry) => (
               <li key={inquiry.id}>
-                <Link href={`/inquiries/${inquiry.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-zinc-200 px-4 py-3 hover:bg-zinc-50">
+                <Link href={`/inquiries/${inquiry.id}`} className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-sand-200 bg-white px-4 py-3 transition-colors hover:border-brand-300 hover:bg-brand-50">
                   <span>
                     <span className="font-medium">{inquiry.vendors?.name}</span>
-                    {inquiry.vendors && <span className="text-zinc-600"> · {CATEGORY_LABELS[inquiry.vendors.category]}</span>}
+                    {inquiry.vendors && <span className="text-sand-600"> · {CATEGORY_LABELS[inquiry.vendors.category]}</span>}
                   </span>
-                  <span className="text-sm text-zinc-700">{tStatus(inquiry.status)}</span>
+                  <span className="text-sm text-sand-700">{tStatus(inquiry.status)}</span>
                 </Link>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-zinc-700">{t('noInquiries')}</p>
+          <p className="text-sand-700">{t('noInquiries')}</p>
         )}
       </section>
     </main>

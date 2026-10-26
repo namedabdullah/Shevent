@@ -36,11 +36,19 @@ test('magic-link sign-in lands where you were going, then sign-out locks the pag
   await page.goto(link);
   await expect(page).toHaveURL(/\/plans$/);
   await expect(page.getByRole('heading', { name: 'My plans' })).toBeVisible();
-  // The header shows the signed-in email only from 640 px up (it is hidden on phones to save room).
-  if ((page.viewportSize()?.width ?? 0) >= 640) await expect(page.getByText(email)).toBeVisible();
-  else await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
   await expect(page.getByText("You haven't made a plan yet")).toBeVisible();
 
+  // The account menu shows who is signed in, on every screen size.
+  const account = page.getByRole('button', { name: 'Account' });
+  await account.click();
+  await expect(account).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'List your business' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByText(email)).toBeHidden();
+  await expect(account).toBeFocused();
+
+  await account.click();
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page).toHaveURL(/\/$/);
   await page.goto('/plans');

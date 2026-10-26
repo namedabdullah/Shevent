@@ -35,22 +35,22 @@ export default async function BookingPage({ params, searchParams }: PageProps<'/
       <header className="flex flex-col gap-2">
         <p className="text-sm font-medium text-green-800">✓ {t(`status.${booking.status}`)}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{t('title', { vendor: booking.vendors.name })}</h1>
-        <p className="text-zinc-700">{CATEGORY_LABELS[booking.vendors.category]}</p>
+        <p className="text-sand-700">{CATEGORY_LABELS[booking.vendors.category]}</p>
       </header>
 
       <dl className="grid max-w-md grid-cols-[auto_1fr] gap-x-6 gap-y-2">
-        <dt className="text-zinc-600">{t('amount')}</dt>
+        <dt className="text-sand-600">{t('amount')}</dt>
         <dd className="font-medium tabular-nums">{formatPkr(booking.amount_pkr)}</dd>
-        <dt className="text-zinc-600">{t('payment')}</dt>
+        <dt className="text-sand-600">{t('payment')}</dt>
         <dd>{t('simulated')}</dd>
       </dl>
 
       <div className="flex flex-wrap gap-3">
-        <Link href={`/inquiries/${booking.inquiry_id}`} className="min-h-11 rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-medium hover:bg-zinc-50">
+        <Link href={`/inquiries/${booking.inquiry_id}`} className="min-h-11 rounded-lg border border-sand-400 px-4 py-2.5 text-sm font-medium hover:bg-sand-100">
           {t('openChat')}
         </Link>
         {isHost && (
-          <Link href={`/plans/${booking.plan_id}`} className="min-h-11 rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-medium hover:bg-zinc-50">
+          <Link href={`/plans/${booking.plan_id}`} className="min-h-11 rounded-lg border border-sand-400 px-4 py-2.5 text-sm font-medium hover:bg-sand-100">
             {t('backToPlan')}
           </Link>
         )}
@@ -59,13 +59,13 @@ export default async function BookingPage({ params, searchParams }: PageProps<'/
       {isHost &&
         (booking.status === 'confirmed' ? (
           <form action={completeBooking.bind(null, booking.id)} className="flex flex-col items-start gap-1">
-            <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
+            <SubmitButton className="min-h-11 rounded-lg bg-brand-700 px-5 font-medium text-white hover:bg-brand-800 disabled:opacity-60">
               {t('complete')}
             </SubmitButton>
-            <p className="text-xs text-zinc-600">{t('completeHint')}</p>
+            <p className="text-xs text-sand-600">{t('completeHint')}</p>
           </form>
         ) : booking.status === 'completed' ? (
-          <Link href={`/plans/${booking.plan_id}/feedback`} className="min-h-11 self-start rounded-lg bg-zinc-900 px-5 py-2.5 font-medium text-white hover:bg-zinc-700">
+          <Link href={`/plans/${booking.plan_id}/feedback`} className="min-h-11 self-start rounded-lg bg-brand-700 px-5 py-2.5 font-medium text-white hover:bg-brand-800">
             {t('giveFeedback')}
           </Link>
         ) : null)}

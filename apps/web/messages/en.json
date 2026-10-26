@@ -7,7 +7,51 @@
   "Home": {
     "eyebrow": "Coming soon to Lahore",
     "title": "Plan your event with real price ranges, not guesswork",
-    "subtitle": "Shevent splits your budget across venue, catering, decor, DJ & sound and lighting, shows typical prices for your area and date, and matches you with vendors that fit. Join the waitlist and we'll tell you when it opens."
+    "subtitle": "Shevent splits your budget across venue, catering, decor, DJ & sound and lighting, shows typical prices for your area and date, and matches you with vendors that fit. Join the waitlist and we'll tell you when it opens.",
+    "highlights": [
+      "Your budget split across five categories",
+      "Typical price ranges for your area and date",
+      "Vendors matched to your plan"
+    ],
+    "highlightsTitle": "What you get",
+    "stepsTitle": "How it works",
+    "steps": [
+      {
+        "title": "Tell us about your event",
+        "body": "The type of event, how many guests, the date, the area and your budget."
+      },
+      {
+        "title": "See where the money goes",
+        "body": "Shevent splits your budget and shows typical prices, so you know what's realistic before you call anyone."
+      },
+      {
+        "title": "Get quotes you can trust",
+        "body": "Message matched vendors in one place. Every quote shows whether it sits within the typical range."
+      }
+    ],
+    "categoriesTitle": "Everything for the big day",
+    "categoriesIntro": "Plan the five things that make up most of an event budget in Lahore.",
+    "trustTitle": "Built to be fair",
+    "trust": [
+      {
+        "title": "Your budget stays private",
+        "body": "Vendors see your event and guest count, never your budget."
+      },
+      {
+        "title": "Guidance, not guesses",
+        "body": "Price ranges are estimates and are always labelled that way."
+      },
+      {
+        "title": "Talk inside Shevent",
+        "body": "Chat and quotes stay in one place, with no phone numbers passed around."
+      }
+    ],
+    "vendorsTitle": "Are you a vendor in Lahore?",
+    "vendorsBody": "Caterers, decorators, venues, DJs and lighting teams can list their business for free and answer hosts who already have a plan and a budget.",
+    "vendorsCta": "List your business",
+    "tryLink": "Or try the budget planner now, no sign-up",
+    "tryTitle": "Try it: see your budget split",
+    "tryIntro": "No sign-up needed. Tell us about your event and we'll split your budget across the five categories and show typical prices for each."
   },
   "Waitlist": {
     "label": "Email or WhatsApp number",
@@ -21,6 +65,15 @@
       "unavailable": "Sign-ups aren't open yet. Please try again later.",
       "failed": "Something went wrong. Please try again."
     }
+  },
+  "TryWidget": {
+    "submit": "Show my budget split",
+    "failed": "We couldn't work out a split right now. Please try again in a moment.",
+    "resultTitle": "Your budget split",
+    "resultFor": "{event} · {guests} guests · {area} · {budget}",
+    "seeVendors": "See vendors for this plan",
+    "seeVendorsHint": "Sign in with your email to save the plan. Your answers come with you.",
+    "emptyHint": "Your split across venue, catering, decor, DJ & sound and lighting will appear here."
   },
   "Nav": {
     "signIn": "Sign in"
@@ -48,7 +101,13 @@
     "newPlan": "New plan",
     "vendorDashboard": "Vendor dashboard",
     "signOut": "Sign out",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "navLabel": "Planning",
+    "account": "Account",
+    "signedInAs": "Signed in as",
+    "switchToPlanning": "Switch to planning",
+    "listYourBusiness": "List your business",
+    "assistant": "Assistant"
   },
   "Plans": {
     "title": "My plans",
@@ -84,6 +143,42 @@
       "total_budget_pkr": "Enter a budget such as 25 lakh, 1 crore or 850000.",
       "failed": "We couldn't save your plan. Please try again."
     }
+  },
+  "Assistant": {
+    "title": "Planning assistant",
+    "intro": "Describe your event in your own words, in English, Urdu or Roman Urdu. The assistant asks for anything missing, then works out your budget split. Every number comes from Shevent's estimates, not from the chat.",
+    "conversation": "Conversation with the planning assistant",
+    "greeting": "Salam! Tell me about your event: what it is, how many guests, where in Lahore, the date and your budget.",
+    "you": "You",
+    "assistant": "Assistant",
+    "thinking": "Thinking…",
+    "examplesTitle": "Try one of these",
+    "examples": [
+      "Mehndi for 300 guests in Gulberg on 19 December, around 25 lakh",
+      "walima karni hai, 500 log, DHA mein, budget 40 lakh",
+      "گلبرگ میں 300 مہمانوں کی مہندی، بجٹ 25 لاکھ"
+    ],
+    "inputLabel": "Your message",
+    "placeholder": "Describe your event…",
+    "inputHint": "Press Enter to send, or Shift + Enter for a new line.",
+    "send": "Send",
+    "failed": "The assistant isn't available right now. Try again in a moment, or",
+    "useForm": "use the planner form",
+    "preferForm": "Prefer to fill in a form?",
+    "understood": "Understood so far",
+    "needed": "still needed",
+    "guests": "{count} guests",
+    "fields": {
+      "event_type": "Event",
+      "guest_count": "Guests",
+      "area": "Area",
+      "event_date": "Date",
+      "total_budget_pkr": "Budget"
+    },
+    "savePlan": "Save as a plan",
+    "savePlanHint": "Opens the planner with these details filled in, so you can check them before saving.",
+    "fallback": "Let's finish this with the planner form. What I understood is already filled in.",
+    "openForm": "Open the planner form"
   },
   "PlanDashboard": {
     "metaTitle": "Your plan",
@@ -233,7 +328,9 @@
     "nav": {
       "dashboard": "Dashboard",
       "inquiries": "Inquiries",
-      "listing": "My listing"
+      "listing": "My listing",
+      "label": "Vendor",
+      "badge": "Vendor"
     }
   },
   "VendorProfile": {
@@ -359,7 +456,11 @@
     }
   },
   "Footer": {
-    "note": "Shevent · Event planning for Lahore"
+    "note": "Shevent · Event planning for Lahore",
+    "planEvent": "Plan an event",
+    "forVendors": "For vendors",
+    "made": "Made in Lahore",
+    "label": "Footer"
   },
   "NotFound": {
     "title": "Page not found",

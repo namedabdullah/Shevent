@@ -2,7 +2,8 @@
 // live. The numbers and vendors are placeholders, not market data: every fixture response has
 // model_version "fixture" so the UI can show SAMPLE_DATA_LABEL.
 
-import { CATEGORIES, CATEGORY_LABELS, type Category } from '../enums';
+import { CATEGORIES, CATEGORY_LABELS, EVENT_TYPE_LABELS, type Category } from '../enums';
+import { formatEventDate, formatPkrCompact, todayInLahore } from '../format';
 import type { FairnessLevel } from '../labels';
 import type {
   AssistantChatRequest,
@@ -23,11 +24,15 @@ import type {
   ReviewInsightsResponse,
   VendorSummary,
 } from '../schemas';
+import { estimateRequestSchema } from '../schemas';
+import { detectLanguage, extractPlanParams, missingPlanFields, type ExtractedPlan, type RequiredPlanField } from './assistant';
 import estimateRequestJson from './estimate.request.json';
 import estimateResponseJson from './estimate.response.json';
 import vendorsJson from './vendors.json';
 
 export const FIXTURE_MODEL_VERSION = 'fixture';
+
+export { detectLanguage, extractPlanParams, missingPlanFields, REQUIRED_PLAN_FIELDS, type ExtractedPlan, type RequiredPlanField } from './assistant';
 
 export const estimateRequestFixture = estimateRequestJson as EstimateRequest;
 export const estimateResponseFixture = estimateResponseJson as EstimateResponse;
@@ -229,15 +234,68 @@ export const portfolioCheckFixture: PortfolioCheckResponse = {
 
 export const feedbackFixture: FeedbackResponse = { accepted: true };
 
-/** #8: always understands the README example and answers with the scaled estimate. */
-export function fixtureAssistantChat(_request: AssistantChatRequest): AssistantChatResponse {
-  return {
-    reply: 'Sample reply: here is a budget split for a mehndi for 300 guests in Gulberg on 19 December with a budget of 25 lakh.',
-    language: 'en',
-    extracted: estimateRequestFixture,
-    missing: [],
-    estimate: fixtureEstimate(estimateRequestFixture),
-    fallback_to_form: false,
-    model_version: FIXTURE_MODEL_VERSION,
-  };
+const FIELD_QUESTIONS: Record<RequiredPlanField, string> = {
+  event_type: 'what the event is (for example a mehndi, baraat, walima or birthday)',
+  guest_count: 'how many guests',
+  area: 'the area in Lahore',
+  event_date: 'the date',
+  total_budget_pkr: 'your total budget',
+};
+
+const listWithAnd = (items: string[]) =>
+  items.length <= 1 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`;
+
+/** "a mehndi / mayun / dholki for 300 guests in Gulberg on Sat, 19 Dec 2026 with a budget of Rs 25 lakh" */
+function describePlan(plan: ExtractedPlan): string {
+  const parts = [plan.event_type ? `a ${EVENT_TYPE_LABELS[plan.event_type].toLowerCase()}` : 'an event'];
+  if (plan.guest_count) parts.push(`for ${plan.guest_count} guests`);
+  if (plan.area) parts.push(`in ${plan.area}`);
+  if (plan.event_date) parts.push(`on ${formatEventDate(plan.event_date)}`);
+  if (plan.total_budget_pkr) parts.push(`with a budget of ${formatPkrCompact(plan.total_budget_pkr)}`);
+  return parts.join(' ');
+}
+
+/**
+ * #8: reads the host's messages with simple rules (later messages override earlier ones), asks for
+ * what is missing, and estimates once the plan is complete. After three messages that add nothing,
+ * it hands over to the planner form, as the real assistant does when extraction fails.
+ */
+export function fixtureAssistantChat(request: AssistantChatRequest, today: string = todayInLahore()): AssistantChatResponse {
+  const userMessages = request.messages.filter((message) => message.role === 'user').map((message) => message.content);
+  const perMessage = userMessages.map((message) => extractPlanParams(message, today));
+  const extracted: ExtractedPlan = Object.assign({}, ...perMessage);
+  const missing = missingPlanFields(extracted);
+  const last = userMessages[userMessages.length - 1] ?? '';
+  const language = detectLanguage(last);
+  const base = { language, extracted, missing, model_version: FIXTURE_MODEL_VERSION };
+
+  if (missing.length === 0) {
+    const plan = estimateRequestSchema.parse(extracted);
+    const estimate = fixtureEstimate(plan);
+    const [top] = CATEGORIES.map((category) => ({ category, ...estimate.allocation[category] })).sort((a, b) => b.share - a.share);
+    return {
+      ...base,
+      reply:
+        `Sample reply: here is a budget split for ${describePlan(plan)}. ` +
+        `The biggest share goes to ${CATEGORY_LABELS[top!.category].toLowerCase()}, about ${formatPkrCompact(top!.pkr)}. ` +
+        'Save it as a plan to see vendors that fit.',
+      estimate,
+      fallback_to_form: false,
+    };
+  }
+
+  const stuck = perMessage.length >= 3 && perMessage.slice(-3).every((plan) => Object.keys(plan).length === 0);
+  if (stuck) {
+    return {
+      ...base,
+      reply: "Sample reply: I couldn't work out the rest from our chat. The planner form will ask for it, with what I understood already filled in.",
+      estimate: null,
+      fallback_to_form: true,
+    };
+  }
+
+  const understood = Object.keys(extracted).length > 0 ? `Got it: ${describePlan(extracted)}. ` : '';
+  const ask = `To work out your budget split I still need ${listWithAnd(missing.map((field) => FIELD_QUESTIONS[field]))}.`;
+  const example = understood ? '' : ' For example: "Mehndi for 300 guests in Gulberg on 19 December, around 25 lakh."';
+  return { ...base, reply: `Sample reply: ${understood}${ask}${example}`, estimate: null, fallback_to_form: false };
 }

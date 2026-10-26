@@ -20,6 +20,34 @@ test('public pages', async ({ page }) => {
   }
 });
 
+test('the try widget, empty and with an answer', async ({ page }) => {
+  await page.goto('/#try');
+  await page.waitForLoadState('networkidle');
+  await expectEveryControlLabelled(page, '/ (try widget)');
+  const widget = page.locator('#try');
+  await widget.getByRole('button', { name: 'Show my budget split' }).click();
+  await expectNoSeriousViolations(page, 'try widget errors');
+  await widget.getByLabel('Type of event').selectOption('wedding_walima');
+  await widget.getByLabel('Number of guests').fill('400');
+  await widget.getByLabel('Area in Lahore').selectOption('DHA');
+  await widget.getByLabel('Date').fill(new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10));
+  await widget.getByLabel('Total budget').fill('40 lakh');
+  await widget.getByRole('button', { name: 'Show my budget split' }).click();
+  await expect(widget.getByRole('region', { name: 'Your budget split' })).toBeVisible();
+  await expectNoSeriousViolations(page, 'try widget answer');
+});
+
+test('the assistant with a full answer', async ({ page }) => {
+  test.setTimeout(120_000);
+  await signIn(page, uniqueEmail('a11y-assistant'), '/assistant');
+  await page.waitForLoadState('networkidle');
+  await expectEveryControlLabelled(page, '/assistant');
+  await page.getByLabel('Your message').fill('walima for 400 guests in DHA, 2 March 2027, budget 40 lakh');
+  await page.getByLabel('Your message').press('Enter');
+  await expect(page.getByRole('link', { name: 'Save as a plan' })).toBeVisible();
+  await expectNoSeriousViolations(page, 'assistant answer');
+});
+
 test('signed-in pages', async ({ page }) => {
   test.setTimeout(240_000);
   const email = uniqueEmail('a11y');
@@ -35,6 +63,7 @@ test('signed-in pages', async ({ page }) => {
     `/inquiries/${journey.quotedInquiryId}`,
     `/bookings/${journey.bookingId}`,
     '/vendor/onboarding',
+    '/assistant',
   ];
   await page.goto('/vendor/onboarding');
   await expectEveryControlLabelled(page, '/vendor/onboarding');
@@ -66,7 +95,7 @@ test('vendor pages', async ({ page }) => {
 });
 
 async function expectEveryControlLabelled(page: Page, name: string) {
-  for (const control of await page.locator('main:visible input:not([type="hidden"]), main:visible select, main:visible textarea').all()) {
+  for (const control of await page.locator('main:visible input:not([type="hidden"]):not([aria-hidden="true"]), main:visible select, main:visible textarea').all()) {
     const labelled = await control.evaluate((el) => (el as HTMLInputElement).labels?.length ?? 0);
     const aria = (await control.getAttribute('aria-label')) ?? '';
     expect(labelled > 0 || aria !== '', `${name}: ${(await control.getAttribute('name')) ?? 'control'}`).toBe(true);
@@ -104,7 +133,7 @@ test('the planner works with the keyboard only', async ({ page, browserName }) =
 });
 
 // Regression: a dark OS setting once turned the page background near-black under dark-grey text
-// (contrast 1.9:1). The site is light-only, so dark-mode visitors must get the same readable page.
+// (contrast 1.9:1). The site is light-only, so dark-mode visitors must get the same cream page.
 test.describe('with the OS set to dark mode', () => {
   test.use({ colorScheme: 'dark' });
 
@@ -112,8 +141,11 @@ test.describe('with the OS set to dark mode', () => {
     for (const path of ['/', '/sign-in']) {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
+      // Playwright's iPhone WebKit reports stale computed styles for <body> on the landing page
+      // until something is painted, although a screenshot shows the cream page. So paint first.
+      await page.screenshot();
       const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-      expect(background, `${path} background`).toBe('rgb(255, 255, 255)');
+      expect(background, `${path} background`).toBe('rgb(251, 247, 241)');
       await expectNoSeriousViolations(page, `${path} (dark OS)`);
     }
   });

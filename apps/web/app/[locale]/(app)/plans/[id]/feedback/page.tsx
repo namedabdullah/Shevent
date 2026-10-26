@@ -35,7 +35,7 @@ export default async function FeedbackPage({ params }: PageProps<'/[locale]/plan
           ← {t('backToPlan')}
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="max-w-2xl text-zinc-700">{t('intro', { event: EVENT_TYPE_LABELS[plan.event_type] })}</p>
+        <p className="max-w-2xl text-sand-700">{t('intro', { event: EVENT_TYPE_LABELS[plan.event_type] })}</p>
       </header>
       <FeedbackForm
         action={saveFeedback.bind(null, plan.id)}

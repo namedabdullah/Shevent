@@ -39,7 +39,7 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
           ← {t('backToPlan')}
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="max-w-2xl text-zinc-700">{t('intro', { budget: formatPkrCompact(plan.total_budget_pkr) })}</p>
+        <p className="max-w-2xl text-sand-700">{t('intro', { budget: formatPkrCompact(plan.total_budget_pkr) })}</p>
       </header>
 
       <SampleDataNotice response={result} />
@@ -49,12 +49,12 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
           {result.packages.map((pkg) => (
-            <article key={pkg.kind} className="flex flex-col gap-4 rounded-lg border border-zinc-200 px-4 py-4">
+            <article key={pkg.kind} className="flex flex-col gap-4 rounded-xl border border-sand-200 bg-white px-4 py-4">
               <header>
                 <h2 className="text-xl font-semibold">{PACKAGE_KIND_LABELS[pkg.kind]}</h2>
                 <p className="tabular-nums">
                   <span className="font-medium">{formatPkr(pkg.total_pkr)}</span>{' '}
-                  <span className="text-sm text-zinc-600">
+                  <span className="text-sm text-sand-600">
                     {t('ofBudget', { percent: Math.round((pkg.total_pkr / result.budget_pkr) * 100) })}
                   </span>
                 </p>
@@ -63,15 +63,15 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
                 {pkg.items.map((item) => {
                   const inquiryId = inquiryFor.get(item.vendor.vendor_id);
                   return (
-                    <li key={item.vendor.vendor_id} className="flex flex-col gap-1 border-t border-zinc-100 pt-3 text-sm">
-                      <span className="flex items-center gap-2 text-zinc-600">
+                    <li key={item.vendor.vendor_id} className="flex flex-col gap-1 border-t border-sand-100 pt-3 text-sm">
+                      <span className="flex items-center gap-2 text-sand-600">
                         <span aria-hidden className="size-2.5 rounded-sm" style={{ background: `var(--series-${item.vendor.category})` }} />
                         {CATEGORY_LABELS[item.vendor.category]}
                       </span>
                       <span className="font-medium">{item.vendor.name}</span>
                       <span className="tabular-nums">
                         {formatPkr(item.price_pkr)}
-                        {item.price_is_estimate && <span className="text-zinc-600"> ({AI_ESTIMATE_LABEL})</span>}
+                        {item.price_is_estimate && <span className="text-sand-600"> ({AI_ESTIMATE_LABEL})</span>}
                       </span>
                       {inquiryId ? (
                         <Link href={`/inquiries/${inquiryId}`} className="inline-flex min-h-11 items-center self-start underline underline-offset-4">{t('openChat')}</Link>

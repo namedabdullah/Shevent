@@ -16,7 +16,7 @@ export default async function VendorProfilePage() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="max-w-xl text-zinc-700">{t('intro')}</p>
+        <p className="max-w-xl text-sand-700">{t('intro')}</p>
       </header>
       <Suspense fallback={null}>
         <ListingForm />
