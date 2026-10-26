@@ -1,7 +1,7 @@
 // S11: axe-core on every page built so far. Serious and critical violations fail the test.
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { seedJourney, signIn, uniqueEmail, type Journey } from './helpers';
+import { seedInquiry, seedJourney, seedListing, signIn, uniqueEmail, type Journey } from './helpers';
 
 async function expectNoSeriousViolations(page: Page, name: string) {
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
@@ -36,6 +36,8 @@ test('signed-in pages', async ({ page }) => {
     `/bookings/${journey.bookingId}`,
     '/vendor/onboarding',
   ];
+  await page.goto('/vendor/onboarding');
+  await expectEveryControlLabelled(page, '/vendor/onboarding');
   for (const path of paths) {
     await page.goto(path);
     await page.waitForLoadState('networkidle');
@@ -44,6 +46,33 @@ test('signed-in pages', async ({ page }) => {
   }
 });
 
+test('vendor pages', async ({ page }) => {
+  test.setTimeout(180_000);
+  const email = uniqueEmail('a11y-vendor');
+  await signIn(page, email, '/plans');
+  // The account sends itself the inquiry: enough for the vendor pages to render with data.
+  const { inquiryId } = seedInquiry(email, seedListing(email));
+  for (const path of ['/vendor', '/vendor/inquiries', '/vendor/profile', `/vendor/inquiries/${inquiryId}`]) {
+    await page.goto(path);
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('h1:visible')).toBeVisible();
+    await expectNoSeriousViolations(page, path.replace(inquiryId, ':inquiry'));
+    await expectEveryControlLabelled(page, path);
+  }
+  // With the live preview showing a fairness label.
+  await page.locator('main:visible').getByLabel('Your price').fill('4000');
+  await expect(page.locator('main:visible').getByText('Above the typical range')).toBeVisible({ timeout: 15_000 });
+  await expectNoSeriousViolations(page, 'quote preview');
+});
+
+async function expectEveryControlLabelled(page: Page, name: string) {
+  for (const control of await page.locator('main:visible input:not([type="hidden"]), main:visible select, main:visible textarea').all()) {
+    const labelled = await control.evaluate((el) => (el as HTMLInputElement).labels?.length ?? 0);
+    const aria = (await control.getAttribute('aria-label')) ?? '';
+    expect(labelled > 0 || aria !== '', `${name}: ${(await control.getAttribute('name')) ?? 'control'}`).toBe(true);
+  }
+}
+
 test('every form control has a label and the chart has a table alternative', async ({ page }) => {
   test.setTimeout(120_000);
   const email = uniqueEmail('labels');
@@ -51,11 +80,7 @@ test('every form control has a label and the chart has a table alternative', asy
   const journey = seedJourney(email);
 
   await page.goto('/plan/new');
-  for (const control of await page.locator('main input:not([type="hidden"]), main select, main textarea').all()) {
-    const labelled = await control.evaluate((el) => (el as HTMLInputElement).labels?.length ?? 0);
-    const aria = (await control.getAttribute('aria-label')) ?? '';
-    expect(labelled > 0 || aria !== '', (await control.getAttribute('name')) ?? 'control').toBe(true);
-  }
+  await expectEveryControlLabelled(page, '/plan/new');
 
   await page.goto(`/plans/${journey.planId}`);
   await expect(page.locator('table caption')).toHaveCount(1);

@@ -13,5 +13,9 @@ async function SignedIn({ children }: { children: ReactNode }) {
 // Vendor area (WEB_APP_PLAN §4.3). Onboarding needs only a signed-in user; the (dashboard)
 // group additionally requires the vendor role.
 export default function VendorAreaLayout({ children }: LayoutProps<'/[locale]/vendor'>) {
-  return <AppShell gate={SignedIn}>{children}</AppShell>;
+  return (
+    <AppShell gate={SignedIn} area="vendor">
+      {children}
+    </AppShell>
+  );
 }

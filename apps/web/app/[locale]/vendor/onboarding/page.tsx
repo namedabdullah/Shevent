@@ -1,34 +1,36 @@
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import { SubmitButton } from '@/components/submit-button';
+import { VendorProfileForm } from '@/components/vendor-profile-form';
 import { getCurrentUser } from '@/lib/auth';
-import { becomeVendor } from './actions';
+import { getOwnListing } from '@/lib/vendor';
+import { createListing } from './actions';
 
-// Placeholder: the data lead adds the business-details form; it should call becomeVendor first,
-// then insert the vendors row.
-export default async function VendorOnboardingPage({ searchParams }: PageProps<'/[locale]/vendor/onboarding'>) {
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Vendor');
+  return { title: t('onboardingTitle') };
+}
+
+// Any signed-in account can list a business here; accounts that already have a listing go to
+// the dashboard.
+export default async function VendorOnboardingPage() {
   const t = await getTranslations('Vendor');
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-8 sm:px-6">
-      <h1 className="text-3xl font-semibold tracking-tight">{t('onboardingTitle')}</h1>
-      <p className="max-w-xl text-zinc-700">{t('onboardingIntro')}</p>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
+      <header className="flex flex-col gap-2">
+        <h1 className="text-3xl font-semibold tracking-tight">{t('onboardingTitle')}</h1>
+        <p className="max-w-xl text-zinc-700">{t('onboardingIntro')}</p>
+      </header>
       <Suspense fallback={null}>
-        <Onboarding searchParams={searchParams} />
+        <Onboarding />
       </Suspense>
     </main>
   );
 }
 
-async function Onboarding({ searchParams }: Pick<PageProps<'/[locale]/vendor/onboarding'>, 'searchParams'>) {
-  const [t, user, params] = await Promise.all([getTranslations('Vendor'), getCurrentUser(), searchParams]);
-  if (user?.role === 'vendor' || user?.role === 'admin') redirect('/vendor');
-  return (
-    <form action={becomeVendor} className="flex flex-col items-start gap-2">
-      <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
-        {t('becomeVendor')}
-      </SubmitButton>
-      {params.error && <p className="text-sm text-red-700">{t('error')}</p>}
-    </form>
-  );
+async function Onboarding() {
+  const user = await getCurrentUser();
+  if (user && (await getOwnListing(user.id))) redirect('/vendor');
+  return <VendorProfileForm action={createListing} mode="create" />;
 }
