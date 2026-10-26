@@ -1,0 +1,178 @@
+# Settings for the synthetic event generator (python -m shevent_ml.synthetic.generate). Every number here is an
+# assumption the generator makes, so this file is the assumptions list the data card refers to.
+#
+# STATUS: placeholders. Until the planner interviews and the host survey are in, these are our own rough figures
+# for Lahore in late 2026, not collected data. Replace each group with the collected figures, set its source below,
+# and regenerate. With --fit-prices, base_prices are fitted from data/processed/prices.parquet wherever there are
+# enough real prices (the manifest records which cells were fitted).
+#
+# Synthetic events are for training only. Every model is evaluated on held-out real data.
+
+sources:
+  event_mix: placeholder # placeholder | survey: event types, guests, venues, attendance, overspend
+  base_prices: placeholder # placeholder | interviews (fitted cells are listed in the manifest)
+  price_effects: placeholder # placeholder | interviews: season, weekend, area, venue, event type, preferences
+  demand: placeholder # placeholder | interviews: how weddings spread over the year
+
+# Event dates are drawn from this range.
+dates: {start: "2025-01-01", end: "2027-12-31"}
+
+# Share of events at each price tier. The tier is hidden from the models: they see it only through the budget.
+tiers: {budget: 0.35, mid: 0.45, premium: 0.20}
+
+# Price of each category for reference_guests guests in an area with multiplier 1.0, on an off-peak weekday.
+# Catering is per head (PKR per guest); the others are one price for the event.
+reference_guests: 300
+base_prices:
+  catering: {budget: 1500, mid: 2400, premium: 4000}
+  venue: {budget: 150000, mid: 300000, premium: 650000}
+  decor: {budget: 80000, mid: 200000, premium: 500000}
+  dj_sound: {budget: 30000, mid: 60000, premium: 130000}
+  lighting: {budget: 25000, mid: 60000, premium: 150000}
+
+# How one-price categories grow with the guest list: price x (guests / reference_guests) ^ elasticity.
+guest_elasticity: {venue: 0.6, decor: 0.4, dj_sound: 0.15, lighting: 0.3}
+
+# Random spread around the expected price (sigma of a log-normal; 0.25 is roughly +-25%).
+noise_sigma: {catering: 0.15, venue: 0.25, decor: 0.3, dj_sound: 0.25, lighting: 0.3}
+
+# Price multipliers. Season labels come from shevent_ml.features.calendar.
+season_price: {peak_wedding_season: 1.15, post_eid: 1.10, off_peak: 1.0, ramadan: 0.90, muharram: 0.90}
+weekend_price: 1.08
+area_price:
+  DHA: 1.20
+  Gulberg: 1.15
+  Cantt: 1.05
+  Model Town: 1.05
+  Bahria Town: 1.0
+  Johar Town: 1.0
+  Garden Town: 1.0
+  Shadman: 1.0
+  Valencia: 0.95
+  Lake City: 0.95
+  Faisal Town: 0.95
+  Wapda Town: 0.90
+  Allama Iqbal Town: 0.90
+  Township: 0.85
+  Raiwind Road: 0.90
+  Other: 0.90
+# The venue's own price by type, relative to a marquee.
+venue_price: {marquee: 1.0, banquet: 1.1, hotel: 1.6, farmhouse: 1.3, rooftop: 0.8, lawn: 0.9, other: 0.8}
+# Outdoor venues (farmhouse, rooftop, lawn) need more lighting.
+outdoor_lighting: 1.25
+
+# Where events happen. Core areas are the six from the proposal.
+area_weights:
+  Gulberg: 0.15
+  DHA: 0.15
+  Johar Town: 0.13
+  Cantt: 0.08
+  Model Town: 0.08
+  Raiwind Road: 0.07
+  Bahria Town: 0.06
+  Wapda Town: 0.04
+  Garden Town: 0.04
+  Faisal Town: 0.03
+  Allama Iqbal Town: 0.04
+  Township: 0.03
+  Lake City: 0.03
+  Valencia: 0.03
+  Shadman: 0.02
+  Other: 0.02
+
+# Optional host preferences: how often each is picked, which categories it makes dearer, and for which events.
+preferences:
+  decor_heavy: {probability: 0.20, price: {decor: 1.5, lighting: 1.2}}
+  premium_food: {probability: 0.15, price: {catering: 1.3}}
+  live_dhol: {probability: 0.30, price: {dj_sound: 1.4}, event_types: [wedding_mehndi, wedding_baraat]}
+
+# How far hosts went over their planned budget (survey Q20 bands): overspend fraction -> share of hosts.
+overspend: {0.0: 0.45, 0.05: 0.25, 0.17: 0.20, 0.30: 0.10}
+
+# How likely an event is on a date, relative to an off-peak weekday. Weddings follow the wedding calendar (few in
+# Ramadan and Muharram, a rush after Eid); other events use 1.0 for every season.
+wedding_demand: {peak_wedding_season: 2.0, post_eid: 2.5, off_peak: 1.0, ramadan: 0.05, muharram: 0.10}
+
+# Per event type: how common it is, guest list (log-normal around the median), share of invited guests who come,
+# venue mix, weekend demand, and price multipliers for categories that cost more for this kind of event.
+event_types:
+  wedding_mehndi:
+    weight: 0.17
+    wedding: true
+    guests: {median: 300, sigma: 0.40, min: 50, max: 1000}
+    attendance: {mean: 0.85, sd: 0.07}
+    venues: {marquee: 0.50, banquet: 0.20, farmhouse: 0.15, lawn: 0.10, hotel: 0.05}
+    weekend_demand: 1.8
+    category_price: {decor: 1.3, dj_sound: 1.3, lighting: 1.2}
+  wedding_baraat:
+    weight: 0.15
+    wedding: true
+    guests: {median: 400, sigma: 0.40, min: 80, max: 1200}
+    attendance: {mean: 0.85, sd: 0.07}
+    venues: {marquee: 0.55, banquet: 0.30, hotel: 0.10, farmhouse: 0.05}
+    weekend_demand: 1.8
+    category_price: {decor: 1.2}
+  wedding_walima:
+    weight: 0.15
+    wedding: true
+    guests: {median: 400, sigma: 0.40, min: 80, max: 1200}
+    attendance: {mean: 0.85, sd: 0.07}
+    venues: {marquee: 0.50, banquet: 0.35, hotel: 0.15}
+    weekend_demand: 1.8
+    category_price: {dj_sound: 0.6}
+  engagement:
+    weight: 0.10
+    wedding: true
+    guests: {median: 150, sigma: 0.45, min: 30, max: 500}
+    attendance: {mean: 0.85, sd: 0.07}
+    venues: {banquet: 0.45, marquee: 0.25, hotel: 0.15, farmhouse: 0.10, other: 0.05}
+    weekend_demand: 1.8
+    category_price: {dj_sound: 0.7}
+  birthday:
+    weight: 0.14
+    wedding: false
+    guests: {median: 60, sigma: 0.50, min: 15, max: 250}
+    attendance: {mean: 0.80, sd: 0.10}
+    venues: {banquet: 0.30, rooftop: 0.30, farmhouse: 0.10, lawn: 0.10, other: 0.20}
+    weekend_demand: 2.0
+    category_price: {decor: 0.8}
+  corporate_dinner:
+    weight: 0.09
+    wedding: false
+    guests: {median: 120, sigma: 0.45, min: 30, max: 500}
+    attendance: {mean: 0.80, sd: 0.08}
+    venues: {banquet: 0.50, hotel: 0.40, other: 0.10}
+    weekend_demand: 0.6
+    category_price: {dj_sound: 0.6, decor: 0.7}
+  corporate_other:
+    weight: 0.06
+    wedding: false
+    guests: {median: 100, sigma: 0.50, min: 20, max: 500}
+    attendance: {mean: 0.75, sd: 0.10}
+    venues: {hotel: 0.45, banquet: 0.40, other: 0.15}
+    weekend_demand: 0.5
+    category_price: {dj_sound: 0.5, decor: 0.6, lighting: 0.8}
+  university_gala:
+    weight: 0.05
+    wedding: false
+    guests: {median: 250, sigma: 0.40, min: 80, max: 800}
+    attendance: {mean: 0.80, sd: 0.08}
+    venues: {banquet: 0.35, lawn: 0.25, marquee: 0.25, hotel: 0.15}
+    weekend_demand: 1.2
+    category_price: {dj_sound: 1.4, lighting: 1.3, catering: 0.8}
+  concert:
+    weight: 0.03
+    wedding: false
+    guests: {median: 400, sigma: 0.50, min: 100, max: 1500}
+    attendance: {mean: 0.80, sd: 0.10}
+    venues: {lawn: 0.40, farmhouse: 0.25, hotel: 0.20, other: 0.15}
+    weekend_demand: 1.5
+    category_price: {dj_sound: 2.0, lighting: 1.8, catering: 0.6, decor: 0.7}
+  private_party:
+    weight: 0.06
+    wedding: false
+    guests: {median: 80, sigma: 0.50, min: 15, max: 300}
+    attendance: {mean: 0.80, sd: 0.10}
+    venues: {farmhouse: 0.35, rooftop: 0.25, banquet: 0.20, lawn: 0.10, other: 0.10}
+    weekend_demand: 2.0
+    category_price: {}
