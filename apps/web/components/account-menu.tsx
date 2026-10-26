@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { signOut } from '@/app/[locale]/(marketing)/sign-in/actions';
+import { SubmitButton } from '@/components/submit-button';
 import { Link } from '@/i18n/navigation';
 import { getCurrentUser } from '@/lib/auth';
 
@@ -16,9 +17,9 @@ export async function AccountMenu() {
       )}
       <span className="hidden text-zinc-600 sm:inline">{user.email}</span>
       <form action={signOut}>
-        <button type="submit" className="rounded-lg border border-zinc-300 px-3 py-1.5 hover:bg-zinc-50">
+        <SubmitButton className="rounded-lg border border-zinc-300 px-3 py-1.5 hover:bg-zinc-50 disabled:opacity-60">
           {t('signOut')}
-        </button>
+        </SubmitButton>
       </form>
     </div>
   );

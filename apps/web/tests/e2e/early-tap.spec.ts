@@ -1,16 +1,12 @@
 // S6/S14: a tap on a form button the moment it appears must not be silently lost.
 //
-// KNOWN DEFECT on the iPhone profile (3 of 3 runs on 2026-10-25): tapping "Book" before the page
-// has finished loading sends no request and books nothing, so the person has to tap again. The
-// other browser profiles complete the booking. Recommended fix: render action buttons disabled until
-// the page has hydrated (a small client <SubmitButton>), so an early tap is visibly not ready.
-// When that is done this test starts passing on iPhone and Playwright will flag the stale
-// test.fail() below, which should then be removed.
+// Before 2026-10-26 a tap on "Book" before the page had hydrated sent nothing on the iPhone profile.
+// Action buttons are now <SubmitButton>s, disabled until hydration, so an early tap waits (or, for a
+// person, the button visibly is not ready yet) instead of vanishing.
 import { expect, test } from '@playwright/test';
 import { psql, seedJourney, signIn, uniqueEmail } from './helpers';
 
-test('tapping Book the moment it appears is not lost', async ({ page }, testInfo) => {
-  test.fail(testInfo.project.name === 'iphone', 'KNOWN DEFECT (Major): early taps are ignored before hydration on the iPhone profile');
+test('tapping Book the moment it appears is not lost', async ({ page }) => {
   test.setTimeout(120_000);
   const email = uniqueEmail('early');
   await signIn(page, email, '/plans');

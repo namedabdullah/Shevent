@@ -3,6 +3,7 @@ import { formatPkr } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { SubmitButton } from '@/components/submit-button';
 import { TrackEvent } from '@/components/track-event';
 import { Link } from '@/i18n/navigation';
 import { requireUser } from '@/lib/auth';
@@ -58,9 +59,9 @@ export default async function BookingPage({ params, searchParams }: PageProps<'/
       {isHost &&
         (booking.status === 'confirmed' ? (
           <form action={completeBooking.bind(null, booking.id)} className="flex flex-col items-start gap-1">
-            <button type="submit" className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700">
+            <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
               {t('complete')}
-            </button>
+            </SubmitButton>
             <p className="text-xs text-zinc-600">{t('completeHint')}</p>
           </form>
         ) : booking.status === 'completed' ? (

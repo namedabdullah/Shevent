@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { BudgetSplit } from '@/components/budget-split';
 import { SampleDataNotice } from '@/components/sample-data-notice';
+import { SubmitButton } from '@/components/submit-button';
 import { TrackEvent } from '@/components/track-event';
 import { Link } from '@/i18n/navigation';
 import { getPlan, planEstimate } from '@/lib/plans';
@@ -84,9 +85,9 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
           <div className="flex flex-col items-start gap-3 rounded-lg border border-zinc-200 px-4 py-4">
             <p>{query.estimate === 'failed' ? t('estimateStillFailing') : t('noEstimate')}</p>
             <form action={retryEstimate.bind(null, plan.id)}>
-              <button type="submit" className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700">
+              <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
                 {t('retry')}
-              </button>
+              </SubmitButton>
             </form>
           </div>
         )}

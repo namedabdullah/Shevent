@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { ChatPanel } from '@/components/chat-panel';
 import { FairnessBadge } from '@/components/fairness-badge';
 import { SampleDataNotice } from '@/components/sample-data-notice';
+import { SubmitButton } from '@/components/submit-button';
 import { TrackEvent } from '@/components/track-event';
 import { Link } from '@/i18n/navigation';
 import { getAi } from '@/lib/ai';
@@ -135,9 +136,9 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
                 isHost &&
                 inquiry.status === 'quoted' && (
                   <form action={bookQuote.bind(null, inquiry.id, quote.id)} className="flex flex-col gap-1">
-                    <button type="submit" className="min-h-11 self-start rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700">
+                    <SubmitButton className="min-h-11 self-start rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
                       {t('book', { total: formatPkr(quote.total_pkr) })}
-                    </button>
+                    </SubmitButton>
                     <p className="text-xs text-zinc-600">{t('simulated')}</p>
                   </form>
                 )
