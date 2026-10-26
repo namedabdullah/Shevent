@@ -1,0 +1,18 @@
+# Settings for the baselines every model must beat (shevent_ml.eval.baselines). Change values here, not in code.
+
+# #2 baseline: the median price of each category x price basis x area cell in the training prices.
+median_lookup:
+  # A cell with fewer prices than this uses the category's prices from every area instead.
+  min_prices: 3
+  # Quantiles for the baseline's low / high range, matching the model's 80% range.
+  interval: [0.1, 0.9]
+
+# #1 baseline: one fixed split per event type, as a planner would quote it.
+planner_split:
+  # Set to "interviews" once the shares below are the averages from the planner interviews. Until then the
+  # baseline report says its #1 numbers come from placeholder shares.
+  source: placeholder
+  # Placeholder shares (the API contract's example in README section 9), not market data.
+  default: {venue: 0.30, catering: 0.38, decor: 0.17, dj_sound: 0.08, lighting: 0.07}
+  # Per event type, e.g. birthday: {venue: 0.25, catering: 0.45, decor: 0.18, dj_sound: 0.07, lighting: 0.05}.
+  by_event_type: {}
