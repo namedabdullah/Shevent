@@ -6,6 +6,7 @@ private_contacts*.csv
 data/raw/*
 !data/raw/.gitkeep
 data/images/
+data/processed/
 
 # Markdown docs, plans, slides and PDFs stay local
 *.md
@@ -17,6 +18,12 @@ data/images/
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+# Local MLflow file stores (the Docker server keeps its data in a volume)
+mlruns/
+mlartifacts/
 
 # Node / web
 node_modules/
