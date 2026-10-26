@@ -23,9 +23,9 @@ def set_seed(seed=SEED):
 def training_run(experiment, dataset_version, params=None, seed=SEED):
     """Seed everything and open an MLflow run tagged with the dataset version.
 
-        with training_run("price_estimator", "v1", {"alpha": 0.1}):
-            ...
-            mlflow.log_metric("mape", mape)
+    with training_run("price_estimator", "v1", {"alpha": 0.1}):
+        ...
+        mlflow.log_metric("mape", mape)
     """
     set_seed(seed)
     mlflow.set_tracking_uri(mlflow_tracking_uri())

@@ -25,15 +25,73 @@ from shevent_ml.data.load import RAW_TABLES, load_raw, load_reference
 
 OUTPUT_TABLES = ["vendors", "vendor_areas", "prices", "quotes", "reviews", "media"]
 
-VENDOR_COLUMNS = ["vendor_id", "name", "category", "sub_type", "base_area", "areas_served", "capacity_min",
-                  "capacity_max", "price_tier", "event_types", "rating", "review_count", "years_active"]
-PRICE_COLUMNS = ["obs_id", "vendor_id", "category", "sub_type", "area", "price_tier", "package_name", "unit",
-                 "price_basis", "unit_note", "low_pkr", "high_pkr", "cpi_factor", "low_pkr_adj", "high_pkr_adj",
-                 "mid_pkr_adj", "guest_min", "guest_max", "hours", "event_type", "season_note", "is_combo",
-                 "inclusions", "exclusions", "price_date", "source_type", "confidence"]
-QUOTE_COLUMNS = ["quote_id", "vendor_id", "category", "scenario_id", "event_type", "guests", "hours", "area",
-                 "venue_type", "day", "event_month", "unit", "price_basis", "unit_note", "price_pkr", "cpi_factor",
-                 "price_pkr_adj", "inclusions", "exclusions", "negotiable", "quote_date"]
+VENDOR_COLUMNS = [
+    "vendor_id",
+    "name",
+    "category",
+    "sub_type",
+    "base_area",
+    "areas_served",
+    "capacity_min",
+    "capacity_max",
+    "price_tier",
+    "event_types",
+    "rating",
+    "review_count",
+    "years_active",
+]
+PRICE_COLUMNS = [
+    "obs_id",
+    "vendor_id",
+    "category",
+    "sub_type",
+    "area",
+    "price_tier",
+    "package_name",
+    "unit",
+    "price_basis",
+    "unit_note",
+    "low_pkr",
+    "high_pkr",
+    "cpi_factor",
+    "low_pkr_adj",
+    "high_pkr_adj",
+    "mid_pkr_adj",
+    "guest_min",
+    "guest_max",
+    "hours",
+    "event_type",
+    "season_note",
+    "is_combo",
+    "inclusions",
+    "exclusions",
+    "price_date",
+    "source_type",
+    "confidence",
+]
+QUOTE_COLUMNS = [
+    "quote_id",
+    "vendor_id",
+    "category",
+    "scenario_id",
+    "event_type",
+    "guests",
+    "hours",
+    "area",
+    "venue_type",
+    "day",
+    "event_month",
+    "unit",
+    "price_basis",
+    "unit_note",
+    "price_pkr",
+    "cpi_factor",
+    "price_pkr_adj",
+    "inclusions",
+    "exclusions",
+    "negotiable",
+    "quote_date",
+]
 REVIEW_COLUMNS = ["review_id", "vendor_id", "rating", "text", "language", "source", "review_date"]
 MEDIA_COLUMNS = ["media_id", "vendor_id", "file_name", "source_url", "category_hint", "collected_date"]
 
@@ -49,8 +107,11 @@ class DropLog:
         return df[mask]
 
     def as_dict(self):
-        return {table: {reason: n for reason, n in reasons.items() if n}
-                for table, reasons in self.counts.items() if any(reasons.values())}
+        return {
+            table: {reason: n for reason, n in reasons.items() if n}
+            for table, reasons in self.counts.items()
+            if any(reasons.values())
+        }
 
 
 def to_number(series):
@@ -62,8 +123,10 @@ def to_date(series):
 
 
 def unit_allowed(df, ref):
-    allowed = [unit in ref["category_units"].get(category, ()) for unit, category in zip(df["unit"], df["category"],
-                                                                                        strict=True)]
+    allowed = [
+        unit in ref["category_units"].get(category, ())
+        for unit, category in zip(df["unit"], df["category"], strict=True)
+    ]
     return pd.Series(allowed, index=df.index, dtype=bool)
 
 
@@ -78,17 +141,25 @@ def apply_cpi(df, dates, cpi):
 
 
 def build_vendors(df, ref, log):
-    df = log.keep("vendors", df, (df["vendor_id"] != "") & df["category"].isin(ref["category_units"]),
-                  "missing vendor_id or unknown category")
+    df = log.keep(
+        "vendors",
+        df,
+        (df["vendor_id"] != "") & df["category"].isin(ref["category_units"]),
+        "missing vendor_id or unknown category",
+    )
     df = log.keep("vendors", df, ~df["vendor_id"].duplicated(), "duplicate vendor_id")
     out = df.copy()
     aliases = ref["area_aliases"]
     out["base_area"] = out["base_area"].map(lambda a: map_area(a, aliases))
     # Built as an object Series, so an export with no vendors yet still has a text column.
-    out["areas_served"] = pd.Series([
-        "|".join(sorted(set(map_area_list(served, aliases)) | ({base} if base else set())))
-        for served, base in zip(out["areas_served"], out["base_area"], strict=True)
-    ], index=out.index, dtype=object)
+    out["areas_served"] = pd.Series(
+        [
+            "|".join(sorted(set(map_area_list(served, aliases)) | ({base} if base else set())))
+            for served, base in zip(out["areas_served"], out["base_area"], strict=True)
+        ],
+        index=out.index,
+        dtype=object,
+    )
     out["event_types"] = out["event_types"].map(lambda v: "|".join(sorted(filter(None, v.split("|")))))
     for col in ["capacity_min", "capacity_max", "rating", "review_count", "years_active"]:
         out[col] = to_number(out[col])
@@ -159,8 +230,9 @@ def build_quotes(df, vendors, ref, settings, log):
 
 def build_reviews(df, vendors, log):
     table = "reviews"
-    out = df.assign(rating=to_number(df["rating"]), review_date=to_date(df["review_date"]),
-                    text=scrub_phone_numbers(df["text"]))
+    out = df.assign(
+        rating=to_number(df["rating"]), review_date=to_date(df["review_date"]), text=scrub_phone_numbers(df["text"])
+    )
     out = log.keep(table, out, out["vendor_id"].isin(vendors["vendor_id"]), "unknown vendor")
     out = log.keep(table, out, out["text"] != "", "empty text")
     repeated = out.assign(_text=out["text"].str.lower()).duplicated(subset=["vendor_id", "_text"])
