@@ -79,7 +79,7 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
           ← {t('backToPlan')}
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">{vendor.name}</h1>
-        <p className="text-zinc-700">
+        <p className="text-sand-700">
           {CATEGORY_LABELS[vendor.category]} · {tStatus(inquiry.status)}
           {brief && <> · {EVENT_TYPE_LABELS[brief.event_type]}, {formatEventDate(brief.event_date)}, {t('guests', { count: brief.guest_count })}, {brief.area}</>}
         </p>
@@ -93,24 +93,24 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
         <section aria-labelledby="quote-heading" className="flex flex-col gap-3">
           <h2 id="quote-heading" className="text-xl font-semibold">{t('quote')}</h2>
           {!quote ? (
-            <p className="text-zinc-700">{t('noQuoteHost')}</p>
+            <p className="text-sand-700">{t('noQuoteHost')}</p>
           ) : (
             <>
               <QuoteDetails quote={quote} />
               <SampleDataNotice response={check} />
-              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-zinc-600">{t('checkUnavailable')}</p>}
+              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-sand-600">{t('checkUnavailable')}</p>}
 
               {booking ? (
-                <Link href={`/bookings/${booking.id}`} className="min-h-11 self-start rounded-lg border border-zinc-300 px-4 py-2.5 text-sm font-medium hover:bg-zinc-50">
+                <Link href={`/bookings/${booking.id}`} className="min-h-11 self-start rounded-lg border border-sand-400 px-4 py-2.5 text-sm font-medium hover:bg-sand-100">
                   {t('viewBooking')}
                 </Link>
               ) : (
                 inquiry.status === 'quoted' && (
                   <form action={bookQuote.bind(null, inquiry.id, quote.id)} className="flex flex-col gap-1">
-                    <SubmitButton className="min-h-11 self-start rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
+                    <SubmitButton className="min-h-11 self-start rounded-lg bg-brand-700 px-5 font-medium text-white hover:bg-brand-800 disabled:opacity-60">
                       {t('book', { total: formatPkr(quote.total_pkr) })}
                     </SubmitButton>
-                    <p className="text-xs text-zinc-600">{t('simulated')}</p>
+                    <p className="text-xs text-sand-600">{t('simulated')}</p>
                   </form>
                 )
               )}

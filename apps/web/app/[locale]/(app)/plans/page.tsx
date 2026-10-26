@@ -18,7 +18,7 @@ export default async function PlansPage() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <Link href="/plan/new" className="min-h-11 rounded-lg bg-zinc-900 px-5 py-2.5 font-medium text-white hover:bg-zinc-700">
+        <Link href="/plan/new" className="min-h-11 rounded-lg bg-brand-700 px-5 py-2.5 font-medium text-white hover:bg-brand-800">
           {t('newPlan')}
         </Link>
       </div>
@@ -40,17 +40,17 @@ async function PlanList() {
     .order('created_at', { ascending: false })) ?? { data: null, error: true };
 
   if (error) return <p className="text-red-700">{t('loadError')}</p>;
-  if (!plans?.length) return <p className="text-zinc-700">{t('empty')}</p>;
+  if (!plans?.length) return <p className="text-sand-700">{t('empty')}</p>;
 
   return (
     <ul className="flex flex-col gap-3">
       {plans.map((plan) => (
         <li key={plan.id}>
-          <Link href={`/plans/${plan.id}`} className="block rounded-lg border border-zinc-200 px-4 py-3 hover:bg-zinc-50">
+          <Link href={`/plans/${plan.id}`} className="block rounded-xl border border-sand-200 bg-white px-4 py-3 transition-colors hover:border-brand-300 hover:bg-brand-50">
             <p className="font-medium">
               {EVENT_TYPE_LABELS[plan.event_type]} · {plan.area}
             </p>
-            <p className="text-sm text-zinc-600">
+            <p className="text-sm text-sand-600">
               {formatEventDate(plan.event_date)} · {t('guests', { count: plan.guest_count })} ·{' '}
               {formatPkrCompact(plan.total_budget_pkr)}
             </p>

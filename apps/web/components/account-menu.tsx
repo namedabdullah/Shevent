@@ -1,26 +1,36 @@
 import { getTranslations } from 'next-intl/server';
 import { signOut } from '@/app/[locale]/(marketing)/sign-in/actions';
+import { AccountDropdown } from '@/components/account-dropdown';
+import { Icon } from '@/components/icons';
 import { SubmitButton } from '@/components/submit-button';
-import { Link } from '@/i18n/navigation';
 import { getCurrentUser } from '@/lib/auth';
 
-/** Signed-in email, vendor dashboard link and sign-out. Reads the session: render inside <Suspense>. */
-export async function AccountMenu() {
+/**
+ * The signed-in account: email, a switch between planning and the vendor dashboard, and sign-out.
+ * Reads the session: render inside <Suspense>.
+ */
+export async function AccountMenu({ area }: { area: 'host' | 'vendor' }) {
   const [t, user] = await Promise.all([getTranslations('App'), getCurrentUser()]);
   if (!user) return null;
+  const isVendor = user.role === 'vendor' || user.role === 'admin';
+  const switchLink =
+    area === 'vendor'
+      ? { href: '/plans', label: t('switchToPlanning') }
+      : isVendor ? { href: '/vendor', label: t('vendorDashboard') } : { href: '/vendor/onboarding', label: t('listYourBusiness') };
   return (
-    <div className="flex items-center gap-4 text-sm">
-      {(user.role === 'vendor' || user.role === 'admin') && (
-        <Link href="/vendor" className="underline-offset-4 hover:underline">
-          {t('vendorDashboard')}
-        </Link>
-      )}
-      <span className="hidden text-zinc-600 sm:inline">{user.email}</span>
+    <AccountDropdown
+      label={t('account')}
+      email={user.email ?? ''}
+      signedInAs={t('signedInAs')}
+      initial={(user.email?.[0] ?? '?').toUpperCase()}
+      switchLink={switchLink}
+    >
       <form action={signOut}>
-        <SubmitButton className="rounded-lg border border-zinc-300 px-3 py-1.5 hover:bg-zinc-50 disabled:opacity-60">
+        <SubmitButton className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-start text-sm font-medium text-sand-800 hover:bg-sand-50 disabled:opacity-60">
+          <Icon name="signOut" className="size-4 text-sand-600" />
           {t('signOut')}
         </SubmitButton>
       </form>
-    </div>
+    </AccountDropdown>
   );
 }

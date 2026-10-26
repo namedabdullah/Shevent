@@ -31,7 +31,10 @@ async function latestLink(email: string): Promise<string> {
 
 /** Requests a magic link for `email` and returns it without opening it. */
 export async function requestMagicLink(page: Page, email: string, next = '/plans'): Promise<string> {
-  await page.goto(`/sign-in?next=${encodeURIComponent(next)}`);
+  const path = `/sign-in?next=${encodeURIComponent(next)}`;
+  // Already there (e.g. redirected from a private page): Firefox aborts a reload of the same URL.
+  const current = page.url() === 'about:blank' ? '' : new URL(page.url());
+  if (!current || `${current.pathname}${current.search}` !== path) await page.goto(path);
   await page.getByLabel('Email address').fill(email);
   await page.getByRole('button', { name: 'Email me a sign-in link' }).click();
   // The first email after the server has been idle can take several seconds to send.

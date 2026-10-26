@@ -9,7 +9,7 @@ import { SubmitButton } from '@/components/submit-button';
 const initialState: FeedbackFormState = { status: 'idle' };
 
 const inputClass =
-  'min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 aria-invalid:border-red-600';
+  'min-h-11 w-full rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600';
 
 export function FeedbackForm({
   action,
@@ -36,7 +36,7 @@ export function FeedbackForm({
     <form onSubmit={submit} className="flex w-full max-w-2xl flex-col gap-8" noValidate>
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-lg font-semibold">{t('spendSection')}</legend>
-        <p className="text-sm text-zinc-600">{t('spendHint')}</p>
+        <p className="text-sm text-sand-600">{t('spendHint')}</p>
         <div className="grid gap-4 sm:grid-cols-2">
           {CATEGORIES.map((category) => (
             <div key={category} className="flex flex-col gap-1.5">
@@ -70,7 +70,7 @@ export function FeedbackForm({
         <legend className="mb-2 text-lg font-semibold">{t('rating')}</legend>
         <div className="flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5].map((value) => (
-            <label key={value} className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-zinc-300 px-3 has-[:checked]:border-zinc-900 has-[:checked]:bg-zinc-900 has-[:checked]:text-white">
+            <label key={value} className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 rounded-lg border border-sand-400 px-3 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-700 has-[:checked]:text-white">
               <input type="radio" name="rating" value={value} defaultChecked={defaults.rating === value} className="sr-only" />
               {value} <span aria-hidden>★</span>
               <span className="sr-only">{t('stars', { count: value })}</span>
@@ -81,7 +81,7 @@ export function FeedbackForm({
       </fieldset>
 
       <div className="flex flex-col gap-2">
-        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
+        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-brand-700 px-6 font-medium text-white hover:bg-brand-800 disabled:opacity-60">
           {pending ? t('saving') : t('save')}
         </SubmitButton>
         {invalid('save') && <p role="alert" className="text-sm text-red-700">{t('errors.save')}</p>}

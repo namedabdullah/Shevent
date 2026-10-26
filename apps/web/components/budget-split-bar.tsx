@@ -40,7 +40,7 @@ export function BudgetSplitBar({ items, title }: { items: SplitItem[]; title: st
               onPointerLeave={() => setActive(null)}
               onFocus={(event) => show(i, event.currentTarget)}
               onBlur={() => setActive(null)}
-              className={`min-w-0 outline-none transition-[filter] focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 ${
+              className={`min-w-0 outline-none transition-[filter] focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
                 i === items.length - 1 ? 'rounded-e-[4px]' : ''
               } ${active?.index === i ? 'brightness-110' : ''}`}
               style={{ flexGrow: item.share, flexBasis: 0, background: `var(--series-${item.category})` }}
@@ -51,13 +51,13 @@ export function BudgetSplitBar({ items, title }: { items: SplitItem[]; title: st
         {activeItem && active && (
           <div
             role="tooltip"
-            className="pointer-events-none absolute bottom-full z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-zinc-200 bg-[var(--background)] px-3 py-2 text-sm shadow-sm"
+            className="pointer-events-none absolute bottom-full z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-sand-200 bg-white px-3 py-2 text-sm shadow-sm"
             style={{ left: active.left }}
           >
-            <p className="font-semibold text-[var(--foreground)]">
+            <p className="font-semibold text-sand-900">
               {percent(activeItem.share)} · {activeItem.amount}
             </p>
-            <p className="flex items-center gap-2 text-zinc-600">
+            <p className="flex items-center gap-2 text-sand-600">
               <span aria-hidden className="h-0.5 w-3 rounded-full" style={{ background: `var(--series-${activeItem.category})` }} />
               {activeItem.label}
             </p>
@@ -65,11 +65,11 @@ export function BudgetSplitBar({ items, title }: { items: SplitItem[]; title: st
         )}
       </div>
 
-      <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-zinc-700" aria-hidden>
+      <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-sand-700" aria-hidden>
         {items.map((item) => (
           <li key={item.category} className="flex items-center gap-2">
             <span className="size-2.5 rounded-sm" style={{ background: `var(--series-${item.category})` }} />
-            {item.label} <span className="text-zinc-600">{percent(item.share)}</span>
+            {item.label} <span className="text-sand-600">{percent(item.share)}</span>
           </li>
         ))}
       </ul>

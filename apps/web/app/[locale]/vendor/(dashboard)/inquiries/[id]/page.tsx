@@ -87,7 +87,7 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           ← {t('backToInbox')}
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">{t('title', { event: EVENT_TYPE_LABELS[brief.event_type], area: brief.area })}</h1>
-        <p className="text-zinc-700">
+        <p className="text-sand-700">
           {tStatus(inquiry.status)} ·{' '}
           {t('details', {
             date: formatEventDate(brief.event_date),
@@ -95,7 +95,7 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
             venue: brief.venue_type ? VENUE_TYPE_LABELS[brief.venue_type] : t('anyVenue'),
           })}
         </p>
-        {preferences.length > 0 && <p className="text-sm text-zinc-700">{t('preferences', { list: preferences.join(', ') })}</p>}
+        {preferences.length > 0 && <p className="text-sm text-sand-700">{t('preferences', { list: preferences.join(', ') })}</p>}
       </header>
 
       {query.quoted && (
@@ -116,13 +116,13 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
               <QuoteDetails quote={quote} />
               <p className="text-sm font-medium">{t('hostSees')}</p>
               <SampleDataNotice response={check} />
-              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-zinc-600">{tInquiry('checkUnavailable')}</p>}
+              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-sand-600">{tInquiry('checkUnavailable')}</p>}
             </div>
           )}
 
           {inquiry.status === 'booked' && <p className="rounded-lg border border-green-600 bg-green-50 px-4 py-3 text-green-950">{t('booked')}</p>}
-          {inquiry.status === 'declined' && <p className="text-zinc-700">{t('declined')}</p>}
-          {inquiry.status === 'closed' && <p className="text-zinc-700">{t('closed')}</p>}
+          {inquiry.status === 'declined' && <p className="text-sand-700">{t('declined')}</p>}
+          {inquiry.status === 'closed' && <p className="text-sand-700">{t('closed')}</p>}
 
           {canQuote && (
             <div className="flex flex-col gap-3">
@@ -138,11 +138,11 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           )}
 
           {canQuote && (
-            <form action={declineInquiry.bind(null, inquiry.id)} className="flex flex-col gap-1 border-t border-zinc-200 pt-4">
-              <SubmitButton className="min-h-11 self-start rounded-lg border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-50 disabled:opacity-60">
+            <form action={declineInquiry.bind(null, inquiry.id)} className="flex flex-col gap-1 border-t border-sand-200 pt-4">
+              <SubmitButton className="min-h-11 self-start rounded-lg border border-sand-400 px-4 text-sm font-medium hover:bg-sand-100 disabled:opacity-60">
                 {t('decline')}
               </SubmitButton>
-              <p className="text-xs text-zinc-600">{t('declineHint')}</p>
+              <p className="text-xs text-sand-600">{t('declineHint')}</p>
             </form>
           )}
         </section>

@@ -9,7 +9,7 @@ import type { VendorProfileState } from '@/lib/vendor';
 const initialState: VendorProfileState = { status: 'idle' };
 
 const inputClass =
-  'min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 aria-invalid:border-red-600';
+  'min-h-11 w-full rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600';
 
 export interface VendorProfileDefaults {
   name?: string;
@@ -56,7 +56,7 @@ export function VendorProfileForm({
         {label}
       </label>
       {control}
-      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-zinc-600">{hint}</p>}
+      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-sand-600">{hint}</p>}
       {invalid(name) && (
         <p className="text-sm text-red-700" role="alert">
           {t(`errors.${name}` as 'errors.name')}
@@ -107,7 +107,7 @@ export function VendorProfileForm({
           <div className="flex flex-col gap-1.5">
             <p className="text-sm font-medium">{t('category')}</p>
             <p>{defaults.category && CATEGORY_LABELS[defaults.category]}</p>
-            <p className="text-sm text-zinc-600">{t('categoryFixed')}</p>
+            <p className="text-sm text-sand-600">{t('categoryFixed')}</p>
           </div>
         )}
         {category === 'venue' &&
@@ -189,12 +189,12 @@ export function VendorProfileForm({
             <input type="checkbox" name="public_consent" defaultChecked={defaults.public_consent ?? false} aria-describedby={`${id}-consent-hint`} className="size-4" />
             {t('consent')}
           </label>
-          <p id={`${id}-consent-hint`} className="text-sm text-zinc-600">{t('consentHint')}</p>
+          <p id={`${id}-consent-hint`} className="text-sm text-sand-600">{t('consentHint')}</p>
         </div>
       </fieldset>
 
       <div className="flex flex-col gap-2">
-        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60">
+        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-brand-700 px-6 font-medium text-white transition-colors hover:bg-brand-800 disabled:opacity-60">
           {mode === 'create' ? (pending ? t('creating') : t('create')) : pending ? t('saving') : t('save')}
         </SubmitButton>
         <p aria-live="polite" className={`text-sm ${state.status === 'saved' ? 'text-green-800' : 'text-red-700'}`}>

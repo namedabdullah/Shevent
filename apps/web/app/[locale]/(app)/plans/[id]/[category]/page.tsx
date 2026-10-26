@@ -48,9 +48,9 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
         </Link>
         <h1 className="text-3xl font-semibold tracking-tight">{t('title', { category: label })}</h1>
         {allocation && (
-          <p className="text-zinc-700">
+          <p className="text-sand-700">
             {t('budgetLine', { budget: formatPkrCompact(allocation.pkr), range: formatPkrRange(allocation.range[0], allocation.range[1]) })}{' '}
-            <span className="text-zinc-600">({AI_ESTIMATE_LABEL})</span>
+            <span className="text-sand-600">({AI_ESTIMATE_LABEL})</span>
           </p>
         )}
       </header>
@@ -58,7 +58,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
       <SampleDataNotice response={result} />
 
       {!allocation ? (
-        <p className="text-zinc-700">{t('needEstimate')}</p>
+        <p className="text-sand-700">{t('needEstimate')}</p>
       ) : !result ? (
         <p role="alert" className="text-red-700">{t('unavailable')}</p>
       ) : (
@@ -72,15 +72,15 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
                 ))}
               </div>
             ) : (
-              <p className="text-zinc-700">{t('noMatches')}</p>
+              <p className="text-sand-700">{t('noMatches')}</p>
             )}
           </section>
 
           {/* Paid placements live in their own labelled block and never change the ranking above. */}
           {result.sponsored.length > 0 && (
-            <section aria-labelledby="sponsored-heading" className="flex flex-col gap-3 rounded-lg bg-zinc-50 px-4 py-4">
+            <section aria-labelledby="sponsored-heading" className="flex flex-col gap-3 rounded-lg bg-sand-50 px-4 py-4">
               <h2 id="sponsored-heading" className="text-xl font-semibold">{SPONSORED_LABEL}</h2>
-              <p className="text-sm text-zinc-600">{SPONSORED_NOTE}</p>
+              <p className="text-sm text-sand-600">{SPONSORED_NOTE}</p>
               <div className="grid gap-4 md:grid-cols-2">
                 {result.sponsored.map((match) => (
                   <MatchCard key={match.vendor_id} match={match} planId={plan.id} inquiryId={inquiryFor.get(match.vendor_id)} sponsored />

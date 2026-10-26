@@ -14,7 +14,7 @@ const initialState: QuoteFormState = { status: 'idle' };
 const PREVIEW_DELAY_MS = 500;
 
 const inputClass =
-  'min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 aria-invalid:border-red-600';
+  'min-h-11 w-full rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600';
 
 // The browser goes through the /api/ai proxy; with fixtures on it answers from packages/core.
 const api = createApiClient({ baseUrl: '/api/ai', fixtures: process.env.NEXT_PUBLIC_API_FIXTURES === 'true', fixtureDelayMs: 0 });
@@ -114,7 +114,7 @@ export function QuoteForm({
         {label}
       </label>
       {control}
-      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-zinc-600">{hint}</p>}
+      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-sand-600">{hint}</p>}
       {invalid(errorKey) && (
         <p className="text-sm text-red-700" role="alert">
           {t(`errors.${errorKey}` as 'errors.unit')}
@@ -226,15 +226,15 @@ export function QuoteForm({
         )}
       </div>
       {/* Above the button, so the vendor sees the label before sending, also on a phone. */}
-      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3 rounded-lg border border-dashed border-zinc-300 p-4">
+      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3 rounded-lg border border-dashed border-sand-400 p-4">
         <h4 id={`${id}-preview`} className="font-semibold">{t('previewTitle')}</h4>
         <div aria-live="polite" className="flex flex-col gap-3">
           {!requestKey ? (
-            <p className="text-sm text-zinc-600">{t('previewHint')}</p>
+            <p className="text-sm text-sand-600">{t('previewHint')}</p>
           ) : current === null ? (
-            <p className="text-sm text-zinc-600">{t('previewLoading')}</p>
+            <p className="text-sm text-sand-600">{t('previewLoading')}</p>
           ) : current === 'error' ? (
-            <p className="text-sm text-zinc-600">{t('previewUnavailable')}</p>
+            <p className="text-sm text-sand-600">{t('previewUnavailable')}</p>
           ) : (
             <>
               <SampleDataNotice response={current} />
@@ -244,7 +244,7 @@ export function QuoteForm({
         </div>
       </section>
       <div className="flex flex-col gap-2">
-        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60">
+        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-brand-700 px-6 font-medium text-white transition-colors hover:bg-brand-800 disabled:opacity-60">
           {pending ? t('sending') : t('send')}
         </SubmitButton>
         <p aria-live="polite" className="text-sm text-red-700">

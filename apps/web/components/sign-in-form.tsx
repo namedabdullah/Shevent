@@ -53,11 +53,11 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
           placeholder={t('emailPlaceholder')}
           aria-invalid={error === 'invalid_email'}
           aria-describedby={messageId}
-          className="min-h-11 rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 aria-invalid:border-red-600"
+          className="min-h-11 rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600"
         />
         <SubmitButton
           pending={pending}
-          className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60"
+          className="min-h-11 rounded-lg bg-brand-700 px-5 font-medium text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
         >
           {pending ? t('sending') : t('sendLink')}
         </SubmitButton>
@@ -69,8 +69,8 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
       {googleEnabled && (
         <form action={signInWithGoogle} className="flex flex-col gap-2">
           <input type="hidden" name="next" value={next} />
-          <p className="text-center text-sm text-zinc-600">{t('or')}</p>
-          <SubmitButton className="min-h-11 rounded-lg border border-zinc-300 bg-white px-5 font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-60">
+          <p className="text-center text-sm text-sand-600">{t('or')}</p>
+          <SubmitButton className="min-h-11 rounded-lg border border-sand-400 bg-white px-5 font-medium text-sand-900 hover:bg-sand-100 disabled:opacity-60">
             {t('google')}
           </SubmitButton>
         </form>

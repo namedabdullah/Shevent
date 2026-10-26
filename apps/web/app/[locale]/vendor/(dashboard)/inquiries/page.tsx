@@ -18,7 +18,7 @@ export default async function VendorInboxPage() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <header className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="max-w-xl text-zinc-700">{t('intro')}</p>
+        <p className="max-w-xl text-sand-700">{t('intro')}</p>
       </header>
       <Suspense fallback={null}>
         <Inbox />
@@ -32,21 +32,21 @@ async function Inbox() {
   await requireListing();
   const [t, tStatus, supabase] = await Promise.all([getTranslations('VendorInbox'), getTranslations('VendorInquiryStatus'), createClient()]);
   const { data: rows } = await supabase!.rpc('vendor_inbox');
-  if (!rows?.length) return <p className="text-zinc-700">{t('empty')}</p>;
+  if (!rows?.length) return <p className="text-sand-700">{t('empty')}</p>;
 
   return (
     <ul className="flex flex-col gap-3">
       {rows.map((row) => (
         <li key={row.inquiry_id}>
-          <article className="flex flex-col gap-3 rounded-lg border border-zinc-200 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <article className="flex flex-col gap-3 rounded-xl border border-sand-200 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-1">
               <h2 className="font-semibold">{EVENT_TYPE_LABELS[row.event_type]}</h2>
-              <p className="text-sm text-zinc-700">
+              <p className="text-sm text-sand-700">
                 {formatEventDate(row.event_date)} · {t('guestCount', { count: row.guest_count })} · {row.area}
               </p>
               <p className="text-sm">
                 <span className="font-medium">{tStatus(row.status)}</span>
-                <span className="text-zinc-600">
+                <span className="text-sand-600">
                   {' · '}
                   {t('quote')}: {row.quote_total_pkr === null ? t('noQuote') : formatPkr(row.quote_total_pkr)}
                 </span>
@@ -55,7 +55,7 @@ async function Inbox() {
             <Link
               href={`/vendor/inquiries/${row.inquiry_id}`}
               aria-label={`${t('open')}: ${EVENT_TYPE_LABELS[row.event_type]}, ${formatEventDate(row.event_date)}`}
-              className="inline-flex min-h-11 items-center self-start rounded-lg border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-50 sm:self-auto"
+              className="inline-flex min-h-11 items-center self-start rounded-lg border border-sand-400 px-4 text-sm font-medium hover:bg-sand-100 sm:self-auto"
             >
               {t('open')}
             </Link>

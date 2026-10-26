@@ -41,12 +41,12 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
     <>
       {query.onboarded && <TrackEvent event="vendor_onboarded" />}
       <header className="flex flex-col gap-2">
-        <p className="text-sm text-zinc-600">{tVendor('dashboardTitle')}</p>
+        <p className="text-sm text-sand-600">{tVendor('dashboardTitle')}</p>
         <h1 className="text-3xl font-semibold tracking-tight">{vendor.name}</h1>
-        <p className="flex flex-wrap items-center gap-2 text-zinc-700">
+        <p className="flex flex-wrap items-center gap-2 text-sand-700">
           {CATEGORY_LABELS[vendor.category]} · {vendor.base_area}
-          <span className="rounded-full border border-zinc-300 px-2 py-0.5 text-xs">{vendor.verified ? `✓ ${t('verified')}` : t('notVerified')}</span>
-          <span className="rounded-full border border-zinc-300 px-2 py-0.5 text-xs">{vendor.public_consent ? t('publicOn') : t('publicOff')}</span>
+          <span className="rounded-full border border-sand-400 px-2 py-0.5 text-xs">{vendor.verified ? `✓ ${t('verified')}` : t('notVerified')}</span>
+          <span className="rounded-full border border-sand-400 px-2 py-0.5 text-xs">{vendor.public_consent ? t('publicOn') : t('publicOff')}</span>
         </p>
         <Link href="/vendor/profile" className="text-sm underline underline-offset-4">
           {t('editListing')}
@@ -61,8 +61,8 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
 
       <dl className="grid grid-cols-3 gap-3">
         {(['open', 'quoted', 'booked'] as const).map((status) => (
-          <div key={status} className="flex flex-col gap-1 rounded-lg border border-zinc-200 px-4 py-3">
-            <dt className="text-sm text-zinc-600">{t(status === 'open' ? 'waiting' : status)}</dt>
+          <div key={status} className="flex flex-col gap-1 rounded-xl border border-sand-200 bg-white px-4 py-3">
+            <dt className="text-sm text-sand-600">{t(status === 'open' ? 'waiting' : status)}</dt>
             <dd className="text-2xl font-semibold tabular-nums">{count(status)}</dd>
           </div>
         ))}
@@ -71,14 +71,14 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
       <section aria-labelledby="waiting-heading" className="flex flex-col gap-3">
         <h2 id="waiting-heading" className="text-xl font-semibold">{t('needsQuote')}</h2>
         {waiting.length === 0 ? (
-          <p className="text-zinc-700">{t('noneWaiting')}</p>
+          <p className="text-sand-700">{t('noneWaiting')}</p>
         ) : (
-          <ul className="flex flex-col divide-y divide-zinc-200 rounded-lg border border-zinc-200">
+          <ul className="flex flex-col divide-y divide-sand-200 rounded-xl border border-sand-200 bg-white">
             {waiting.map((row) => (
               <li key={row.inquiry_id}>
-                <Link href={`/vendor/inquiries/${row.inquiry_id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 hover:bg-zinc-50">
+                <Link href={`/vendor/inquiries/${row.inquiry_id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 hover:bg-sand-100">
                   <span className="font-medium">{EVENT_TYPE_LABELS[row.event_type]}</span>
-                  <span className="text-sm text-zinc-600">
+                  <span className="text-sm text-sand-600">
                     {formatEventDate(row.event_date)} · {tInbox('guestCount', { count: row.guest_count })} · {row.area}
                   </span>
                 </Link>

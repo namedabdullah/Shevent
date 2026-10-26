@@ -14,12 +14,14 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SignInPage({ searchParams }: PageProps<'/[locale]/sign-in'>) {
   const t = await getTranslations('Auth');
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-      <p className="max-w-md text-zinc-700">{t('intro')}</p>
-      <Suspense fallback={null}>
-        <SignInPanel searchParams={searchParams} />
-      </Suspense>
+    <main className="flex flex-1 items-start justify-center px-4 py-12 sm:items-center sm:py-16">
+      <div className="flex w-full max-w-md flex-col gap-4 rounded-3xl border border-sand-200 bg-white p-6 shadow-sm sm:p-8">
+        <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="text-sand-700">{t('intro')}</p>
+        <Suspense fallback={null}>
+          <SignInPanel searchParams={searchParams} />
+        </Suspense>
+      </div>
     </main>
   );
 }
