@@ -307,6 +307,11 @@ isOneToOne: false
                            },
 "share_plan":
 { Args: { "target": string }; Returns: string
+                           },
+"vendor_inbox":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "area": Database["public"]['Enums']["lahore_area"],"created_at": string,"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"inquiry_id": string,"quote_total_pkr": number,"status": Database["public"]['Enums']["inquiry_status"],"updated_at": string
+            }[]
                            }
           }
           Enums: {

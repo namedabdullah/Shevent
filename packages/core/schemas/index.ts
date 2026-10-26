@@ -8,3 +8,4 @@ export * from './portfolio';
 export * from './quote-check';
 export * from './recommend';
 export * from './reviews';
+export * from './vendor';
