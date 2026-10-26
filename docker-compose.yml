@@ -1,0 +1,41 @@
+# Local ML services. Start only what you need: the laptop has 16 GB and Supabase also runs in Docker.
+#   docker compose up -d mlflow      # experiment tracking UI at http://127.0.0.1:5000
+#   docker compose up -d postgres    # Postgres 16 + pgvector on 127.0.0.1:5433 (5432 is left free)
+#   docker compose down              # stop everything; data stays in the named volumes
+# The FastAPI model server joins this file in Phase 3.
+
+name: shevent
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.0-pg16
+    environment:
+      POSTGRES_USER: shevent
+      POSTGRES_PASSWORD: shevent # local only; the port is bound to 127.0.0.1
+      POSTGRES_DB: shevent
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./ml/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shevent -d shevent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mlflow:
+    # Keep this version in step with the mlflow pin in ml/pyproject.toml.
+    image: ghcr.io/mlflow/mlflow:v2.17.2
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --serve-artifacts --artifacts-destination /mlflow/artifacts
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - mlflow-data:/mlflow
+
+volumes:
+  postgres-data:
+  mlflow-data:

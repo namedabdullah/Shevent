@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shevent-ml"
+version = "0.1.0"
+description = "Shevent data pipeline, features and models"
+requires-python = ">=3.12,<3.13"
+# Each feature branch adds the libraries it needs (lightgbm, mapie, torch, open-clip-torch, ...).
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+    # Must match the MLflow server image in docker-compose.yml.
+    "mlflow==2.17.2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "pip-audit>=2.7",
+    "bandit>=1.7",
+]
+
+[tool.setuptools.packages.find]
+include = ["shevent_ml*"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "metrics: model metric thresholds; needs trained artifacts (run with -m metrics)",
+]
