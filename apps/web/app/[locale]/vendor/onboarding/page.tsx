@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
+import { SubmitButton } from '@/components/submit-button';
 import { getCurrentUser } from '@/lib/auth';
 import { becomeVendor } from './actions';
 
@@ -24,9 +25,9 @@ async function Onboarding({ searchParams }: Pick<PageProps<'/[locale]/vendor/onb
   if (user?.role === 'vendor' || user?.role === 'admin') redirect('/vendor');
   return (
     <form action={becomeVendor} className="flex flex-col items-start gap-2">
-      <button type="submit" className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700">
+      <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
         {t('becomeVendor')}
-      </button>
+      </SubmitButton>
       {params.error && <p className="text-sm text-red-700">{t('error')}</p>}
     </form>
   );

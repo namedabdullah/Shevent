@@ -5,6 +5,7 @@ import { formatPkrCompact, parsePkr } from '@shevent/core/format';
 import { useTranslations } from 'next-intl';
 import { startTransition, useActionState, useId, useState, type FormEvent, type ReactNode } from 'react';
 import { createPlan, type PlanFormState } from '@/app/[locale]/(app)/plan/new/actions';
+import { SubmitButton } from '@/components/submit-button';
 
 export interface PlanFormDefaults {
   event_type?: string;
@@ -143,13 +144,12 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
       </fieldset>
 
       <div className="flex flex-col gap-2">
-        <button
-          type="submit"
-          disabled={pending}
+        <SubmitButton
+          pending={pending}
           className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60"
         >
           {pending ? t('submitting') : t('submit')}
-        </button>
+        </SubmitButton>
         <p aria-live="polite" className="text-sm text-red-700">
           {state.status === 'error' && state.error === 'failed' ? t('errors.failed') : null}
         </p>

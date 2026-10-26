@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { startTransition, useActionState, useId, type FormEvent } from 'react';
 import { signInWithEmail, signInWithGoogle, type SignInState } from '@/app/[locale]/(marketing)/sign-in/actions';
+import { SubmitButton } from '@/components/submit-button';
 
 const initialState: SignInState = { status: 'idle' };
 
@@ -54,13 +55,12 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
           aria-describedby={messageId}
           className="min-h-11 rounded-lg border border-zinc-300 bg-white px-3 text-base text-zinc-900 outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 aria-invalid:border-red-600"
         />
-        <button
-          type="submit"
-          disabled={pending}
+        <SubmitButton
+          pending={pending}
           className="min-h-11 rounded-lg bg-zinc-900 px-5 font-medium text-white transition-colors hover:bg-zinc-700 disabled:opacity-60"
         >
           {pending ? t('sending') : t('sendLink')}
-        </button>
+        </SubmitButton>
         <p id={messageId} aria-live="polite" className="min-h-5 text-sm text-red-700">
           {error ? t(`errors.${error}`) : null}
         </p>
@@ -70,12 +70,9 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
         <form action={signInWithGoogle} className="flex flex-col gap-2">
           <input type="hidden" name="next" value={next} />
           <p className="text-center text-sm text-zinc-600">{t('or')}</p>
-          <button
-            type="submit"
-            className="min-h-11 rounded-lg border border-zinc-300 bg-white px-5 font-medium text-zinc-900 hover:bg-zinc-50"
-          >
+          <SubmitButton className="min-h-11 rounded-lg border border-zinc-300 bg-white px-5 font-medium text-zinc-900 hover:bg-zinc-50 disabled:opacity-60">
             {t('google')}
-          </button>
+          </SubmitButton>
         </form>
       )}
     </div>

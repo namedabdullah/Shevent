@@ -4,6 +4,7 @@ import { CATEGORIES, CATEGORY_LABELS, type Category } from '@shevent/core/enums'
 import { useTranslations } from 'next-intl';
 import { startTransition, useActionState, useId, type FormEvent } from 'react';
 import type { FeedbackFormState } from '@/app/[locale]/(app)/plans/[id]/feedback/actions';
+import { SubmitButton } from '@/components/submit-button';
 
 const initialState: FeedbackFormState = { status: 'idle' };
 
@@ -80,9 +81,9 @@ export function FeedbackForm({
       </fieldset>
 
       <div className="flex flex-col gap-2">
-        <button type="submit" disabled={pending} className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
+        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-zinc-900 px-6 font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
           {pending ? t('saving') : t('save')}
-        </button>
+        </SubmitButton>
         {invalid('save') && <p role="alert" className="text-sm text-red-700">{t('errors.save')}</p>}
       </div>
     </form>

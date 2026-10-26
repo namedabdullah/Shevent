@@ -5,6 +5,7 @@ import { PACKAGE_KIND_LABELS, type PackagesResponse } from '@shevent/core/schema
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SampleDataNotice } from '@/components/sample-data-notice';
+import { SubmitButton } from '@/components/submit-button';
 import { Link } from '@/i18n/navigation';
 import { getAi } from '@/lib/ai';
 import { getPlan, planToRequest } from '@/lib/plans';
@@ -76,7 +77,7 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
                         <Link href={`/inquiries/${inquiryId}`} className="inline-flex min-h-11 items-center self-start underline underline-offset-4">{t('openChat')}</Link>
                       ) : (
                         <form action={sendInquiry.bind(null, plan.id, item.vendor.vendor_id)}>
-                          <button type="submit" className="inline-flex min-h-11 items-center underline underline-offset-4">{t('sendInquiry')}</button>
+                          <SubmitButton className="inline-flex min-h-11 items-center underline underline-offset-4 disabled:opacity-60">{t('sendInquiry')}</SubmitButton>
                         </form>
                       )}
                     </li>

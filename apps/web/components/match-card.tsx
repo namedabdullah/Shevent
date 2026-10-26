@@ -3,6 +3,7 @@ import { AI_ESTIMATE_LABEL, SPONSORED_LABEL } from '@shevent/core/labels';
 import type { Match } from '@shevent/core/schemas';
 import { getTranslations } from 'next-intl/server';
 import { sendInquiry } from '@/app/[locale]/(app)/plans/[id]/actions';
+import { SubmitButton } from '@/components/submit-button';
 import { Link } from '@/i18n/navigation';
 
 /** A #3 result: who, why it fits, the #2 price range, and the inquiry button. */
@@ -64,9 +65,9 @@ export async function MatchCard({
         </Link>
       ) : (
         <form action={sendInquiry.bind(null, planId, match.vendor_id)}>
-          <button type="submit" className="min-h-11 rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-700">
+          <SubmitButton className="min-h-11 rounded-lg bg-zinc-900 px-4 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-60">
             {t('sendInquiry')}
-          </button>
+          </SubmitButton>
         </form>
       )}
     </article>
