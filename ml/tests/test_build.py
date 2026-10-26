@@ -20,34 +20,109 @@ def write(raw_dir, name, rows):
 def raw_dir(tmp_path):
     raw = tmp_path / "raw"
     raw.mkdir()
-    write(raw, "vendors", [
-        {"vendor_id": "EXAMPLE-CAT-001", "name": "Example", "category": "catering", "base_area": "Gulberg"},
-        {"vendor_id": "CAT-001", "name": "Lahore Caterers", "category": "catering", "base_area": "DHA Phase 5",
-         "areas_served": "Gulberg III|Defence"},
-        {"vendor_id": "DJS-001", "name": "Beat Box", "category": "dj_sound", "base_area": "Johar Town"},
-    ])
-    write(raw, "price_observations", [
-        {"obs_id": "P-0001", "vendor_id": "CAT-001", "category": "catering", "package_name": "Silver Menu",
-         "unit": "per_head", "price_min_pkr": "1800", "price_date": "2026-10-01", "confidence": "medium"},
-        {"obs_id": "P-0002", "vendor_id": "CAT-001", "category": "catering", "package_name": "silver  menu",
-         "unit": "per_head", "price_min_pkr": "1800", "price_date": "2026-09-01", "confidence": "high"},
-        {"obs_id": "P-0003", "vendor_id": "DJS-001", "category": "dj_sound", "unit": "per_hour",
-         "price_min_pkr": "10000", "price_date": "2026-10-01", "confidence": "high"},
-        {"obs_id": "P-0004", "vendor_id": "DJS-001", "category": "dj_sound", "unit": "per_head",
-         "price_min_pkr": "500", "price_date": "2026-10-01", "confidence": "high"},
-        {"obs_id": "P-0005", "vendor_id": "VEN-999", "category": "venue", "unit": "per_slot",
-         "price_min_pkr": "300000", "price_date": "2026-10-01", "confidence": "high"},
-    ])
-    write(raw, "scenario_quotes", [
-        {"quote_id": "Q-001", "vendor_id": "DJS-001", "category": "dj_sound", "scenario_id": "S2",
-         "quoted_pkr": "8000", "unit": "per_hour", "quote_date": "2026-10-20"},
-    ])
-    write(raw, "reviews", [
-        {"review_id": "R-0001", "vendor_id": "CAT-001", "rating": "5", "text": "Great food, call 0300-1234567",
-         "language": "en"},
-        {"review_id": "R-0002", "vendor_id": "CAT-001", "rating": "5", "text": "great food, call 0300-1234567",
-         "language": "en"},
-    ])
+    write(
+        raw,
+        "vendors",
+        [
+            {"vendor_id": "EXAMPLE-CAT-001", "name": "Example", "category": "catering", "base_area": "Gulberg"},
+            {
+                "vendor_id": "CAT-001",
+                "name": "Lahore Caterers",
+                "category": "catering",
+                "base_area": "DHA Phase 5",
+                "areas_served": "Gulberg III|Defence",
+            },
+            {"vendor_id": "DJS-001", "name": "Beat Box", "category": "dj_sound", "base_area": "Johar Town"},
+        ],
+    )
+    write(
+        raw,
+        "price_observations",
+        [
+            {
+                "obs_id": "P-0001",
+                "vendor_id": "CAT-001",
+                "category": "catering",
+                "package_name": "Silver Menu",
+                "unit": "per_head",
+                "price_min_pkr": "1800",
+                "price_date": "2026-10-01",
+                "confidence": "medium",
+            },
+            {
+                "obs_id": "P-0002",
+                "vendor_id": "CAT-001",
+                "category": "catering",
+                "package_name": "silver  menu",
+                "unit": "per_head",
+                "price_min_pkr": "1800",
+                "price_date": "2026-09-01",
+                "confidence": "high",
+            },
+            {
+                "obs_id": "P-0003",
+                "vendor_id": "DJS-001",
+                "category": "dj_sound",
+                "unit": "per_hour",
+                "price_min_pkr": "10000",
+                "price_date": "2026-10-01",
+                "confidence": "high",
+            },
+            {
+                "obs_id": "P-0004",
+                "vendor_id": "DJS-001",
+                "category": "dj_sound",
+                "unit": "per_head",
+                "price_min_pkr": "500",
+                "price_date": "2026-10-01",
+                "confidence": "high",
+            },
+            {
+                "obs_id": "P-0005",
+                "vendor_id": "VEN-999",
+                "category": "venue",
+                "unit": "per_slot",
+                "price_min_pkr": "300000",
+                "price_date": "2026-10-01",
+                "confidence": "high",
+            },
+        ],
+    )
+    write(
+        raw,
+        "scenario_quotes",
+        [
+            {
+                "quote_id": "Q-001",
+                "vendor_id": "DJS-001",
+                "category": "dj_sound",
+                "scenario_id": "S2",
+                "quoted_pkr": "8000",
+                "unit": "per_hour",
+                "quote_date": "2026-10-20",
+            },
+        ],
+    )
+    write(
+        raw,
+        "reviews",
+        [
+            {
+                "review_id": "R-0001",
+                "vendor_id": "CAT-001",
+                "rating": "5",
+                "text": "Great food, call 0300-1234567",
+                "language": "en",
+            },
+            {
+                "review_id": "R-0002",
+                "vendor_id": "CAT-001",
+                "rating": "5",
+                "text": "great food, call 0300-1234567",
+                "language": "en",
+            },
+        ],
+    )
     return raw
 
 

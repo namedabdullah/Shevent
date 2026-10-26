@@ -28,13 +28,15 @@ def test_reference_aliases_cover_common_spellings():
 
 
 def test_normalize_units():
-    df = pd.DataFrame({
-        "unit": ["per_head", "per_slot", "per_hour", "per_hour", "per_hour"],
-        "category": ["catering", "venue", "dj_sound", "lighting", "venue"],
-        "low_pkr": [1800.0, 300000.0, 10000.0, 5000.0, 1000.0],
-        "high_pkr": [2000.0, 300000.0, 12000.0, 5000.0, 1000.0],
-        "hours": [np.nan, np.nan, 3.0, np.nan, np.nan],
-    })
+    df = pd.DataFrame(
+        {
+            "unit": ["per_head", "per_slot", "per_hour", "per_hour", "per_hour"],
+            "category": ["catering", "venue", "dj_sound", "lighting", "venue"],
+            "low_pkr": [1800.0, 300000.0, 10000.0, 5000.0, 1000.0],
+            "high_pkr": [2000.0, 300000.0, 12000.0, 5000.0, 1000.0],
+            "hours": [np.nan, np.nan, 3.0, np.nan, np.nan],
+        }
+    )
     out = normalize_units(df, {"dj_sound": 4, "lighting": 5})
 
     assert list(out["price_basis"]) == ["per_head", "flat", "flat", "flat", "flat"]
@@ -45,16 +47,18 @@ def test_normalize_units():
 
 
 def test_duplicate_prices_keeps_most_confident_then_newest():
-    df = pd.DataFrame({
-        "vendor_id": ["CAT-001"] * 3 + ["CAT-002"],
-        "category": ["catering"] * 4,
-        "unit": ["per_head"] * 4,
-        "package_name": ["Silver Menu", "silver  menu", "SILVER MENU", "Silver Menu"],
-        "low_pkr": [1800.0] * 4,
-        "high_pkr": [1800.0] * 4,
-        "confidence": ["medium", "high", "high", "medium"],
-        "price_date": pd.to_datetime(["2026-10-01", "2026-08-01", "2026-09-01", "2026-10-01"]),
-    })
+    df = pd.DataFrame(
+        {
+            "vendor_id": ["CAT-001"] * 3 + ["CAT-002"],
+            "category": ["catering"] * 4,
+            "unit": ["per_head"] * 4,
+            "package_name": ["Silver Menu", "silver  menu", "SILVER MENU", "Silver Menu"],
+            "low_pkr": [1800.0] * 4,
+            "high_pkr": [1800.0] * 4,
+            "confidence": ["medium", "high", "high", "medium"],
+            "price_date": pd.to_datetime(["2026-10-01", "2026-08-01", "2026-09-01", "2026-10-01"]),
+        }
+    )
     assert list(duplicate_prices(df)) == [True, True, False, False]
 
 
