@@ -1,0 +1,15 @@
+# Settings for the cleaning pipeline (python -m shevent_ml.data.build). Change values here, not in code.
+
+# per_hour prices become one price for the booking. These hours are used when the row has none.
+default_hours:
+  dj_sound: 4
+  lighting: 4
+
+cpi:
+  # Every price is moved into this month's rupees. Set it to the month dataset v1 is frozen.
+  reference_month: "2026-10"
+  # Monthly CPI index from the Pakistan Bureau of Statistics (pbs.gov.pk), as "YYYY-MM": index value.
+  # Fill this in before freezing dataset v1. Months missing from it use the fallback rate below.
+  monthly_index: {}
+  # Approximate annual inflation, used only when a month isn't in monthly_index. Replace with the PBS figure.
+  fallback_annual_rate: 0.05

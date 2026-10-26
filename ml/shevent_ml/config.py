@@ -11,6 +11,7 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 SPLITS_DIR = DATA_DIR / "splits"
 REFERENCE_DIR = DATA_DIR / "reference"
+TEMPLATE_DIR = DATA_DIR / "templates"
 CONFIG_DIR = REPO_ROOT / "ml" / "configs"
 
 # One seed for every split, sample and model, so any run can be reproduced.
