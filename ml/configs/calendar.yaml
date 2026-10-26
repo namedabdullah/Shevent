@@ -1,0 +1,26 @@
+# Settings for the calendar features (shevent_ml.features.calendar). Change values here, not in code.
+# Gregorian months are 1-12. Islamic months come from the Umm al-Qura calendar (1 = Muharram, 9 = Ramadan,
+# 10 = Shawwal, 12 = Dhul Hijjah).
+
+# Lahore's wedding season, roughly October/November to February (README 4.3).
+peak_season_months: [10, 11, 12, 1, 2]
+
+# Smog season, roughly November to January. Outdoor venues get a smog-risk flag in these months.
+smog_season_months: [11, 12, 1]
+
+# Python weekday numbers (Monday = 0). Saturday and Sunday are Pakistan's weekend.
+weekend_days: [5, 6]
+
+# Weddings bunch up after Ramadan: the days from Eid ul-Fitr that count as the post-Eid rush.
+post_eid_days: 30
+
+# Public holidays on fixed Gregorian dates, as MM-DD: Kashmir Day, Pakistan Day, Labour Day, Youm-e-Takbeer,
+# Independence Day, Iqbal Day, Quaid-e-Azam Day.
+fixed_holidays: ["02-05", "03-23", "05-01", "05-28", "08-14", "11-09", "12-25"]
+
+# Public holidays on Islamic dates: [month, first day, last day].
+islamic_holidays:
+  eid_ul_fitr: [10, 1, 3]
+  eid_ul_adha: [12, 10, 12]
+  ashura: [1, 9, 10]
+  eid_milad_un_nabi: [3, 12, 12]

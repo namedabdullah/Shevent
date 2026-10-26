@@ -14,6 +14,8 @@ dependencies = [
     "pyarrow>=15",
     "pydantic>=2.7",
     "pyyaml>=6.0",
+    # Umm al-Qura Hijri calendar (MIT), for the Ramadan / Muharram / Eid features.
+    "hijridate>=2.5",
     # Must match the MLflow server image in docker-compose.yml.
     "mlflow==2.17.2",
 ]
