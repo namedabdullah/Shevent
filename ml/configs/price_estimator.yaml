@@ -1,0 +1,32 @@
+# #2 Price Range Estimator (python -m shevent_ml.models.price_estimator). Change values here, not in code.
+
+# One LightGBM quantile model per level. The low and high models make the raw 80% range before calibration.
+quantiles: [0.1, 0.5, 0.9]
+# The range is then calibrated (conformalized quantile regression) so it holds about this share of real prices.
+coverage: 0.8
+
+# Hosts don't know a vendor's price tier, but the quote checker does. Hiding the tier on this share of training
+# rows teaches the model both cases: with a tier it predicts that tier's prices, without one the whole market.
+tier_dropout: 0.5
+
+# Real prices are few but they are the truth: each counts as this many synthetic rows.
+real_weight: 5.0
+
+lightgbm:
+  num_boost_round: 400
+  learning_rate: 0.05
+  num_leaves: 31
+  min_data_in_leaf: 20
+  feature_fraction: 0.9
+  bagging_fraction: 0.8
+  bagging_freq: 1
+  verbose: -1
+
+# Real training vendors held back to calibrate the range. With fewer real calibration prices than min_real_rows, the
+# range is calibrated on held-out synthetic events instead (the report says which).
+calibration:
+  real_fraction: 0.25
+  min_real_rows: 30
+
+# Synthetic events held out for a sanity check. Synthetic scores are never the reported result: real test is.
+synthetic_holdout: 0.1
