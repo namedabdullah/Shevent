@@ -9,6 +9,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
+# Portfolio images, one folder per vendor: data/images/<vendor_id>/<vendor_id>_NN.jpg (git-ignored).
+IMAGES_DIR = DATA_DIR / "images"
 SPLITS_DIR = DATA_DIR / "splits"
 REFERENCE_DIR = DATA_DIR / "reference"
 TEMPLATE_DIR = DATA_DIR / "templates"

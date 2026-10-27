@@ -16,6 +16,13 @@ dependencies = [
     "pyyaml>=6.0",
     # Umm al-Qura Hijri calendar (MIT), for the Ramadan / Muharram / Eid features.
     "hijridate>=2.5",
+    # Portfolio images (#7): perceptual hashes (BSD-2), image handling (HPND), CLIP embeddings (MIT, BSD-3).
+    "imagehash>=4.3",
+    "pillow>=10.1",
+    "open-clip-torch>=2.24",
+    "torch>=2.3",
+    # #2 price ranges: gradient-boosted quantile models (MIT).
+    "lightgbm>=4.3",
     # Must match the MLflow server image in docker-compose.yml.
     "mlflow==2.17.2",
 ]
@@ -40,6 +47,9 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Slow tests stay out of the default run; select them with -m, e.g. pytest -m clip.
+addopts = "-m 'not metrics and not clip'"
 markers = [
     "metrics: model metric thresholds; needs trained artifacts (run with -m metrics)",
+    "clip: loads the OpenCLIP weights (downloads about 600 MB on first run; run with -m clip)",
 ]

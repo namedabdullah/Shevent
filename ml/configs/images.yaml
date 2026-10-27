@@ -1,0 +1,25 @@
+# Settings for the portfolio image pipeline (shevent_ml.images). Change values here, not in code.
+
+# Image embeddings. OpenCLIP ViT-B/32 trained on LAION-2B: small enough for a laptop CPU.
+clip:
+  model: ViT-B-32
+  pretrained: laion2b_s34b_b79k
+  batch_size: 32
+
+# The planted-duplicate test set (python -m shevent_ml.images.planted): altered copies of collected photos, the way
+# a vendor might repost another vendor's photo.
+planted:
+  # How many collected photos get copies. Each gets one copy per transform.
+  originals: 100
+  transforms: [crop, resize, jpeg, colour, grayscale, watermark, border, mirror, repost]
+  crop_box: [0.10, 0.05, 0.90, 0.85] # left, top, right, bottom, as fractions of the photo
+  resize_scale: 0.5
+  jpeg_quality: 35
+  colour: {brightness: 1.15, contrast: 1.2, saturation: 1.5}
+  border: 0.08 # white frame, as a fraction of the longer side
+  watermark_text: "@lahore_events_official"
+
+# Starting thresholds for the duplicate finders. Phase 2 tunes them on the planted set.
+duplicates:
+  phash_max_distance: 10 # of 64 bits
+  clip_min_similarity: 0.92
