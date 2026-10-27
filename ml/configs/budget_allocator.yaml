@@ -1,0 +1,23 @@
+# #1 Budget Allocator (python -m shevent_ml.models.budget_allocator). Change values here, not in code.
+
+# A small feed-forward network with a softmax output, so the five shares always add up to 100%.
+hidden: [64, 64]
+dropout: 0.1
+epochs: 40
+batch_size: 256
+learning_rate: 0.001
+weight_decay: 0.0001
+
+# A real survey split counts as this many synthetic events.
+real_weight: 5.0
+# Synthetic events held out for a sanity check. The reported result is the survey's test half.
+synthetic_holdout: 0.1
+
+# Minimums applied after the model: no category gets less than the cheapest realistic price for this event, which
+# is #2's low price for a vendor of this tier. If the minimums don't fit, the host is told the budget is too low.
+guardrails:
+  categories: [venue, catering, decor, dj_sound, lighting]
+  tier: budget
+
+# Explain a category's share when it differs from the typical event's by at least this many percentage points.
+explain_min_points: 2.0
