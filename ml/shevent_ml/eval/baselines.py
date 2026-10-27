@@ -16,6 +16,7 @@ import pandas as pd
 
 from shevent_ml.config import PROCESSED_DIR, load_config, mlflow_tracking_uri
 from shevent_ml.data.split import is_test, load_split
+from shevent_ml.eval.matching_set import CANDIDATES_FILE, LABELS_FILE, load_labels, score_ranker
 from shevent_ml.eval.metrics import interval_coverage, mape, pinball_loss
 
 CATEGORIES = ["venue", "catering", "decor", "dj_sound", "lighting"]
@@ -87,9 +88,12 @@ def score_price_baseline(model, rows, target):
     predicted = model.predict(rows)
     known = predicted["mid"].notna() & rows[target].notna()
     actual, predicted = rows.loc[known, target], predicted[known]
+    counts = {"rows": int(len(rows)), "scored": int(known.sum())}
+    if not counts["scored"]:  # e.g. a test category the training prices never saw
+        nan = float("nan")
+        return {**counts, "mape": nan, "pinball_low": nan, "pinball_mid": nan, "pinball_high": nan, "coverage": nan}
     return {
-        "rows": int(len(rows)),
-        "scored": int(known.sum()),
+        **counts,
         "mape": mape(actual, predicted["mid"]),
         "pinball_low": pinball_loss(actual, predicted["low"], model.interval[0]),
         "pinball_mid": pinball_loss(actual, predicted["mid"], 0.5),
@@ -98,8 +102,9 @@ def score_price_baseline(model, rows, target):
     }
 
 
-def run(processed_dir=PROCESSED_DIR, split=None, settings=None):
-    """Fits the #2 baseline on the training prices and scores it on the test prices and the scenario quotes."""
+def run(processed_dir=PROCESSED_DIR, split=None, settings=None, labels_file=LABELS_FILE):
+    """Scores the #2 baseline (fitted on the training prices) on the test prices and the scenario quotes, and the #3
+    baseline on the hand-rated matching set once it exists."""
     settings = settings or load_config("baselines")
     split = split or load_split()
     prices = pd.read_parquet(processed_dir / "prices.parquet")
@@ -117,7 +122,17 @@ def run(processed_dir=PROCESSED_DIR, split=None, settings=None):
 
     planner = FixedPlannerSplit.from_config(settings)
     report["budget_allocator"] = {"source": planner.source, "status": "needs the host survey splits to score"}
-    report["vendor_matching"] = {"status": "needs the relevance-labelled matching set to score"}
+    if labels_file.exists():
+        vendors = pd.read_parquet(processed_dir / "vendors.parquet")
+        queries = load_config("matching_set")["queries"]
+        report["vendor_matching"] = score_ranker(
+            lambda query, candidates: rank_by_rating(candidates),
+            load_labels(labels_file, labels_file.with_name(CANDIDATES_FILE.name)),
+            vendors,
+            queries,
+        )
+    else:
+        report["vendor_matching"] = {"status": "needs the relevance-labelled matching set to score"}
     return report
 
 
@@ -149,7 +164,14 @@ def main():
     if report["budget_allocator"]["source"] == "placeholder":
         print("  #1 planner split: shares in configs/baselines.yaml are placeholders, not interview averages")
     print(f"  #1 planner split: {report['budget_allocator']['status']}")
-    print(f"  #3 sort by rating: {report['vendor_matching']['status']}")
+    matching = report["vendor_matching"]
+    if "status" in matching:
+        print(f"  #3 sort by rating: {matching['status']}")
+    else:
+        print(
+            f"  #3 sort by rating: NDCG@10 {matching['ndcg@10']:.3f} · Precision@5 {matching['precision@5']:.2f} "
+            f"over {matching['queries']} queries"
+        )
     return 0
 
 

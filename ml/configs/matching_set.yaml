@@ -1,0 +1,29 @@
+# The #3 matching test set (python -m shevent_ml.eval.matching_set): test events, each matched against one vendor
+# category, with candidate vendors the data lead rates 0-3 by hand. Change these only before labelling starts.
+
+candidates_per_query: 20
+# Share of a query's candidates drawn from vendors that serve the event's area; the rest come from anywhere, so the
+# set has clear misses as well as close calls.
+serving_share: 0.6
+
+# The rating scale, printed on the labelling sheet.
+relevance_scale:
+  3: "Would shortlist first: serves the area, fits the guests and the budget, does this kind of event"
+  2: "Good option with one small mismatch (a bit over budget, a neighbouring area, a slightly different style)"
+  1: "Possible but a stretch (wrong price tier, far away, unsure they do this kind of event)"
+  0: "Not suitable (can't handle the guests, doesn't do this event, far outside the budget)"
+
+# The first six are the three standard scenarios (data/reference/scenarios.csv), each for two categories.
+queries:
+  - {query_id: Q01, category: decor, event_type: wedding_mehndi, guests: 300, area: Gulberg, venue_type: marquee, event_date: "2026-12-19", total_budget_pkr: 2500000}
+  - {query_id: Q02, category: catering, event_type: wedding_mehndi, guests: 300, area: Gulberg, venue_type: marquee, event_date: "2026-12-19", total_budget_pkr: 2500000}
+  - {query_id: Q03, category: venue, event_type: corporate_dinner, guests: 120, area: DHA, venue_type: banquet, event_date: "2026-11-12", total_budget_pkr: 1200000}
+  - {query_id: Q04, category: catering, event_type: corporate_dinner, guests: 120, area: DHA, venue_type: banquet, event_date: "2026-11-12", total_budget_pkr: 1200000}
+  - {query_id: Q05, category: decor, event_type: birthday, guests: 60, area: Johar Town, venue_type: rooftop, event_date: "2027-01-16", total_budget_pkr: 400000}
+  - {query_id: Q06, category: dj_sound, event_type: birthday, guests: 60, area: Johar Town, venue_type: rooftop, event_date: "2027-01-16", total_budget_pkr: 400000}
+  - {query_id: Q07, category: venue, event_type: wedding_walima, guests: 500, area: DHA, venue_type: banquet, event_date: "2027-01-23", total_budget_pkr: 4500000}
+  - {query_id: Q08, category: lighting, event_type: wedding_baraat, guests: 400, area: Raiwind Road, venue_type: marquee, event_date: "2026-12-05", total_budget_pkr: 3000000}
+  - {query_id: Q09, category: catering, event_type: engagement, guests: 150, area: Model Town, venue_type: banquet, event_date: "2026-11-28", total_budget_pkr: 1200000}
+  - {query_id: Q10, category: dj_sound, event_type: university_gala, guests: 250, area: Cantt, venue_type: lawn, event_date: "2027-03-06", total_budget_pkr: 1500000}
+  - {query_id: Q11, category: lighting, event_type: wedding_mehndi, guests: 200, area: Bahria Town, venue_type: farmhouse, event_date: "2026-12-26", total_budget_pkr: 1600000}
+  - {query_id: Q12, category: venue, event_type: corporate_other, guests: 100, area: Gulberg, venue_type: hotel, event_date: "2026-11-18", total_budget_pkr: 800000}
