@@ -21,9 +21,10 @@ import pandas as pd
 from shevent_ml.config import PROCESSED_DIR, RAW_DIR, REFERENCE_DIR, load_config
 from shevent_ml.data.clean import duplicate_prices, map_area, map_area_list, normalize_units, scrub_phone_numbers
 from shevent_ml.data.cpi import cpi_factors
-from shevent_ml.data.load import RAW_TABLES, load_raw, load_reference
+from shevent_ml.data.load import RAW_TABLES, load_raw, load_reference, read_export_csv
+from shevent_ml.data.survey import build_survey
 
-OUTPUT_TABLES = ["vendors", "vendor_areas", "prices", "quotes", "reviews", "media"]
+OUTPUT_TABLES = ["vendors", "vendor_areas", "prices", "quotes", "reviews", "media", "survey"]
 
 VENDOR_COLUMNS = [
     "vendor_id",
@@ -279,6 +280,10 @@ def build(raw_dir=RAW_DIR, out_dir=PROCESSED_DIR, settings=None):
         tables["reviews"] = build_reviews(raw["reviews"], vendors, log)
     if "portfolio_media" in raw:
         tables["media"] = build_media(raw["portfolio_media"], vendors, log)
+    # The host survey has no template: Google Forms names the columns after the questions.
+    survey_path = raw_dir / "host_survey.csv"
+    if survey_path.exists():
+        tables["survey"] = build_survey(read_export_csv(survey_path), ref["area_aliases"])
 
     out_dir.mkdir(parents=True, exist_ok=True)
     for name in OUTPUT_TABLES:
@@ -287,6 +292,8 @@ def build(raw_dir=RAW_DIR, out_dir=PROCESSED_DIR, settings=None):
         df.reset_index(drop=True).to_parquet(out_dir / f"{name}.parquet", index=False)
 
     raw_files = {f"{name}.csv": sha256(raw_dir / f"{name}.csv") for name in RAW_TABLES if name in raw}
+    if survey_path.exists():
+        raw_files["host_survey.csv"] = sha256(survey_path)
     manifest = {
         "dataset_hash": dataset_hash(raw_files, settings),
         "built_at": datetime.now(UTC).isoformat(timespec="seconds"),
