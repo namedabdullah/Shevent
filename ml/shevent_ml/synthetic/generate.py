@@ -55,22 +55,34 @@ def _choice(rng, weights, size):
 
 
 def fit_base_prices(prices, settings, min_prices=5):
-    """base_prices with each category x tier replaced by the real median where there are min_prices prices.
+    """base_prices with real medians wherever there are min_prices standalone prices.
 
     Prices are first divided by their area's multiplier, so they describe the reference area like the config does.
-    Only the basis the generator uses is fitted (per head for catering, one price for the rest). Returns the new
-    table and the list of fitted cells.
+    Only the basis the generator uses is fitted (per head for catering, one price for the rest), and bundled
+    packages are left out. A category x tier cell uses its tier's prices. A category with no fitted tier but enough
+    prices without a tier gets their median as its mid price, and its budget and premium prices keep their ratio to
+    mid from the config. Returns the new table and the list of what was fitted.
     """
     base = {cat: dict(tiers) for cat, tiers in settings["base_prices"].items()}
-    area_price = prices["area"].map(settings["area_price"]).fillna(1.0)
-    rows = prices.assign(reference_price=prices["mid_pkr_adj"] / area_price)
+    standalone = prices[~prices["is_combo"].fillna(False).astype(bool)] if "is_combo" in prices else prices
+    area_price = standalone["area"].map(settings["area_price"]).fillna(1.0)
+    rows = standalone.assign(reference_price=standalone["mid_pkr_adj"] / area_price)
+    rows = rows[rows["price_basis"] == rows["category"].map(lambda c: "per_head" if c in PER_HEAD else "flat")]
     fitted = []
-    for (category, tier), group in rows.groupby(["category", "price_tier"]):
-        basis = "per_head" if category in PER_HEAD else "flat"
-        group = group[group["price_basis"] == basis]
-        if category in base and tier in TIERS and len(group) >= min_prices:
-            base[category][tier] = float(group["reference_price"].median())
-            fitted.append(f"{category}.{tier} ({len(group)} prices)")
+    tier = rows["price_tier"].fillna("")
+    for (category, cell_tier), group in rows[tier.isin(TIERS)].groupby(["category", "price_tier"]):
+        if category in base and len(group) >= min_prices:
+            base[category][cell_tier] = float(group["reference_price"].median())
+            fitted.append(f"{category}.{cell_tier} ({len(group)} prices)")
+    for category, group in rows[~tier.isin(TIERS)].groupby("category"):
+        if category not in base or any(f.startswith(f"{category}.") for f in fitted) or len(group) < min_prices:
+            continue
+        configured = settings["base_prices"][category]
+        mid = float(group["reference_price"].median())
+        base[category] = {t: mid * configured[t] / configured["mid"] for t in TIERS}
+        fitted.append(
+            f"{category}.mid ({len(group)} prices without a tier; budget and premium keep the config's ratio)"
+        )
     return base, fitted
 
 

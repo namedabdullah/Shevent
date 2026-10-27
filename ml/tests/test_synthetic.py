@@ -91,3 +91,22 @@ def test_write_records_the_assumptions(tmp_path):
     assert saved["synthetic_hash"] == manifest["synthetic_hash"]
     assert saved["sources"]["base_prices"] == "placeholder"
     assert write(50, tmp_path, seed=2, settings=SETTINGS)[1]["synthetic_hash"] != manifest["synthetic_hash"]
+
+
+def test_prices_without_a_tier_set_the_mid_price_and_bundles_are_ignored():
+    prices = pd.DataFrame(
+        {
+            "category": ["decor"] * 6,
+            "price_tier": [""] * 6,
+            "price_basis": ["flat"] * 6,
+            "area": ["Johar Town"] * 6,  # multiplier 1.0
+            "mid_pkr_adj": [20000, 30000, 30000, 40000, 50000, 900000],
+            "is_combo": [False] * 5 + [True],
+        }
+    )
+    base, fitted = fit_base_prices(prices, SETTINGS, min_prices=5)
+    configured = SETTINGS["base_prices"]["decor"]
+    assert base["decor"]["mid"] == 30000  # the bundle (900,000) is left out
+    assert base["decor"]["premium"] == pytest.approx(30000 * configured["premium"] / configured["mid"])
+    assert fitted == ["decor.mid (5 prices without a tier; budget and premium keep the config's ratio)"]
+    assert base["catering"] == SETTINGS["base_prices"]["catering"]  # no catering prices: unchanged

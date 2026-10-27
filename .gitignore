@@ -7,6 +7,8 @@ data/raw/*
 !data/raw/.gitkeep
 data/images/
 data/processed/
+# Research workbooks hold public phone numbers and addresses: they never go in git. Convert them into data/raw.
+data/*.xlsx
 
 # Markdown docs, plans, slides and PDFs stay local
 *.md
