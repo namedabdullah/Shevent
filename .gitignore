@@ -24,6 +24,7 @@ __pycache__/
 # Local MLflow file stores (the Docker server keeps its data in a volume)
 mlruns/
 mlartifacts/
+ml/artifacts/
 
 # Node / web
 node_modules/
