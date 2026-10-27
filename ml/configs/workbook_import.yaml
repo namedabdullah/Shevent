@@ -1,0 +1,20 @@
+# Settings for importing the vendor research workbook (python -m shevent_ml.data.import_workbook).
+
+# Who collected the rows (the export's collected_by column).
+collected_by: WB
+
+# Workbook localities that lie inside one of the reference areas (data/reference/areas.csv). Only certain matches
+# are listed; any other locality becomes "Other" and is kept in the vendor's notes.
+locality_areas:
+  Iqbal Town: Allama Iqbal Town
+  DHA Phase 1: DHA
+  DHA Phase 4: DHA
+  DHA Phase 5 / Bedian Road: DHA
+  DHA Rehbar / Valencia: DHA
+  Gaddafi Stadium: Gulberg
+  Cavalry Ground: Cantt
+  Walton Road: Cantt
+
+# Price rows that aren't a price for one of the five categories, so they are left out (matched on the package name).
+skip_packages:
+  - A/C add-on
