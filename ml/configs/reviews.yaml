@@ -1,0 +1,24 @@
+# Review insights (#6): the aspects every review is labelled on, and how first-pass labels are drafted.
+# Changing the aspects or labels after hand-labelling starts means relabelling, so settle them first.
+
+# README C1. Each aspect gets one label per review.
+aspects:
+  punctuality: Arriving, setting up and finishing on time
+  food_quality: Taste, freshness and quantity of the food
+  sound_quality: DJ, sound system and music
+  staff_behaviour: How the staff treated the host and guests
+  value_for_money: Whether the price was fair for what was delivered
+  hidden_charges: Extra charges that weren't agreed up front (positive = the reviewer says there were none)
+labels: [positive, negative, mixed, not_mentioned]
+
+# The local LLM that drafts labels (README: open-weight model via Ollama, no paid API).
+ollama:
+  url: http://127.0.0.1:11434
+  model: qwen2.5:3b-instruct
+  timeout_seconds: 180
+
+# The hand-labelled test set: never drafted by the LLM, so the labeller isn't anchored by its guesses.
+test_set:
+  size: 150
+  # Share that must be Roman Urdu, Urdu or mixed (README section 10: the test set is mixed-language).
+  min_non_english: 0.30

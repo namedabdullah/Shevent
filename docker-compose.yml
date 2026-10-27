@@ -1,6 +1,7 @@
 # Local ML services. Start only what you need: the laptop has 16 GB and Supabase also runs in Docker.
 #   docker compose up -d mlflow      # experiment tracking UI at http://127.0.0.1:5000
 #   docker compose up -d postgres    # Postgres 16 + pgvector on 127.0.0.1:5433 (5432 is left free)
+#   docker compose up -d label-studio  # review labelling UI at http://127.0.0.1:8080 (see ml/shevent_ml/reviews)
 #   docker compose down              # stop everything; data stays in the named volumes
 # The FastAPI model server joins this file in Phase 3.
 
@@ -36,6 +37,15 @@ services:
     volumes:
       - mlflow-data:/mlflow
 
+  label-studio:
+    # Open-source labelling tool for the #6 review aspects. Projects and labels stay in the named volume.
+    image: heartexlabs/label-studio:1.13.1
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - label-studio-data:/label-studio/data
+
 volumes:
   postgres-data:
   mlflow-data:
+  label-studio-data:
