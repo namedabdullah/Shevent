@@ -24,8 +24,8 @@ export function WaitlistForm() {
 
   if (state.status === 'success') {
     return (
-      <p role="status" className="flex max-w-lg animate-enter items-center gap-3 rounded-2xl border border-green-600/30 bg-green-50 px-4 py-3.5 text-green-950">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-green-700 text-white">
+      <p role="status" className="flex max-w-lg animate-enter items-center gap-3 rounded-2xl border border-success-line bg-success-soft px-4 py-3.5 text-success-ink">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success text-on-solid">
           <Icon name="check" className="size-4" />
         </span>
         {t('success')}
@@ -51,7 +51,7 @@ export function WaitlistForm() {
       {/* Honeypot, hidden from people and screen readers */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="absolute -start-[9999px] h-0 w-0 opacity-0" />
 
-      <label htmlFor={inputId} className="text-sm font-semibold text-sand-800">
+      <label htmlFor={inputId} className="text-sm font-semibold text-ink">
         {t('label')}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -72,7 +72,7 @@ export function WaitlistForm() {
           {pending ? t('submitting') : t('submit')}
         </SubmitButton>
       </div>
-      <p id={messageId} aria-live="polite" className={error ? 'text-sm font-medium text-red-700' : 'text-sm text-sand-600'}>
+      <p id={messageId} aria-live="polite" className={error ? 'text-sm font-medium text-danger' : 'text-sm text-muted'}>
         {error ? t(`errors.${error}`) : t('privacy')}
       </p>
     </form>

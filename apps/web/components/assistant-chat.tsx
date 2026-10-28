@@ -105,20 +105,20 @@ export function AssistantChat() {
         ref={listRef}
         aria-label={t('conversation')}
         aria-live="polite"
-        className="flex max-h-[min(36rem,65dvh)] min-h-72 flex-col gap-4 overflow-y-auto rounded-3xl border border-sand-200 bg-white p-4 shadow-card sm:p-6"
+        className="flex max-h-[min(36rem,65dvh)] min-h-72 flex-col gap-4 overflow-y-auto rounded-2xl border border-line bg-surface p-4 shadow-card sm:p-6"
       >
         <li className="flex flex-col items-start gap-1">
           <AssistantName label={t('assistant')} />
-          <p className="max-w-[90%] rounded-2xl rounded-ss-md bg-sand-100 px-4 py-2.5 text-sand-900">{t('greeting')}</p>
+          <p className="max-w-[90%] rounded-2xl rounded-ss-md bg-subtle px-4 py-2.5 text-ink">{t('greeting')}</p>
         </li>
         {turns.map((turn, index) => {
           const mine = turn.role === 'user';
           return (
             <li key={index} className={`flex animate-enter flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
-              {mine ? <span className="px-1 text-xs font-medium text-sand-600">{t('you')}</span> : <AssistantName label={t('assistant')} />}
+              {mine ? <span className="px-1 text-xs font-medium text-muted">{t('you')}</span> : <AssistantName label={t('assistant')} />}
               <p
                 {...textProps(turn.content)}
-                className={`max-w-[90%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 ${mine ? 'rounded-se-md bg-brand-700 text-white' : 'rounded-ss-md bg-sand-100 text-sand-900'}`}
+                className={`max-w-[90%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 ${mine ? 'rounded-se-md bg-accent text-on-accent' : 'rounded-ss-md bg-subtle text-ink'}`}
               >
                 {turn.content}
               </p>
@@ -129,10 +129,10 @@ export function AssistantChat() {
         {pending && (
           <li className="flex flex-col items-start gap-1">
             <AssistantName label={t('assistant')} />
-            <p className="flex items-center gap-2 rounded-2xl rounded-ss-md bg-sand-100 px-4 py-2.5 text-sand-600">
+            <p className="flex items-center gap-2 rounded-2xl rounded-ss-md bg-subtle px-4 py-2.5 text-muted">
               <span aria-hidden className="flex gap-1">
                 {[0, 1, 2].map((dot) => (
-                  <span key={dot} className="size-1.5 animate-twinkle rounded-full bg-brand-400 [animation-duration:1.2s]" style={{ animationDelay: `${dot * 0.2}s` }} />
+                  <span key={dot} className="size-1.5 animate-pulse-dot rounded-full bg-accent" style={{ animationDelay: `${dot * 0.2}s` }} />
                 ))}
               </span>
               {t('thinking')}
@@ -143,7 +143,7 @@ export function AssistantChat() {
 
       {turns.length === 0 && (
         <div className="flex flex-col gap-2">
-          <p id={`${id}-examples`} className="text-sm font-semibold text-sand-800">
+          <p id={`${id}-examples`} className="text-sm font-semibold text-ink">
             {t('examplesTitle')}
           </p>
           <ul aria-labelledby={`${id}-examples`} className="flex flex-wrap gap-2">
@@ -154,7 +154,7 @@ export function AssistantChat() {
                   onClick={() => void send(example)}
                   disabled={pending}
                   {...textProps(example)}
-                  className="min-h-11 rounded-2xl border border-sand-300 bg-white px-4 py-2 text-start text-sm text-sand-800 shadow-sm transition-[border-color,background-color,translate] hover:-translate-y-0.5 hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60"
+                  className="min-h-11 rounded-2xl border border-line-strong bg-surface px-4 py-2 text-start text-sm text-ink shadow-sm transition-[border-color,background-color,translate] hover:-translate-y-0.5 hover:border-accent-line hover:bg-accent-soft disabled:opacity-60"
                 >
                   {example}
                 </button>
@@ -165,7 +165,7 @@ export function AssistantChat() {
       )}
 
       <form onSubmit={submit} className="flex flex-col gap-2">
-        <label htmlFor={`${id}-input`} className="text-sm font-semibold text-sand-800">
+        <label htmlFor={`${id}-input`} className="text-sm font-semibold text-ink">
           {t('inputLabel')}
         </label>
         <div className="flex items-end gap-2">
@@ -184,7 +184,7 @@ export function AssistantChat() {
             {t('send')}
           </SubmitButton>
         </div>
-        <p id={`${id}-hint`} className="text-sm text-sand-600">
+        <p id={`${id}-hint`} className="text-sm text-muted">
           {t('inputHint')}
         </p>
         {failed && (
@@ -197,7 +197,7 @@ export function AssistantChat() {
         )}
       </form>
 
-      <p className="text-sm text-sand-600">
+      <p className="text-sm text-muted">
         {t('preferForm')}{' '}
         <Link href={plannerHref(latest?.extracted ?? {})} className={linkStyles}>
           {t('useForm')}
@@ -210,8 +210,8 @@ export function AssistantChat() {
 /** The assistant's name above its messages, with the brand sparkle. */
 function AssistantName({ label }: { label: string }) {
   return (
-    <span className="flex items-center gap-1.5 px-1 text-xs font-medium text-sand-600">
-      <span aria-hidden className="flex size-5 items-center justify-center rounded-full bg-brand-700 text-gold-100">
+    <span className="flex items-center gap-1.5 px-1 text-xs font-medium text-muted">
+      <span aria-hidden className="flex size-5 items-center justify-center rounded-full bg-accent text-on-accent">
         <Icon name="sparkles" className="size-3" />
       </span>
       {label}
@@ -246,7 +246,7 @@ function ResponseDetails({ response }: { response: AssistantChatResponse }) {
           return (
             <div
               key={field}
-              className={`flex items-center gap-1 rounded-full border px-2.5 py-1 ${known ? 'border-green-600/25 bg-green-50 text-green-900' : 'border-dashed border-sand-400 text-sand-600'}`}
+              className={`flex items-center gap-1 rounded-full border px-2.5 py-1 ${known ? 'border-success-line bg-success-soft text-success-ink' : 'border-dashed border-control text-muted'}`}
             >
               <dt className="font-medium">{t(`fields.${field}`)}:</dt>
               <dd>{known || t('needed')}</dd>
@@ -256,21 +256,21 @@ function ResponseDetails({ response }: { response: AssistantChatResponse }) {
       </dl>
 
       {response.estimate && (
-        <div className="flex flex-col gap-4 rounded-2xl border border-sand-200 bg-cream p-4 sm:p-5">
+        <div className="flex flex-col gap-4 rounded-2xl border border-line bg-canvas p-4 sm:p-5">
           <BudgetSplit estimate={response.estimate} />
           <div className="flex flex-col items-start gap-1">
             <Link href={plannerHref(plan)} className={buttonStyles()}>
               {t('savePlan')}
               <Icon name="arrowRight" className="size-4" />
             </Link>
-            <p className="text-sm text-sand-600">{t('savePlanHint')}</p>
+            <p className="text-sm text-muted">{t('savePlanHint')}</p>
           </div>
         </div>
       )}
 
       {response.fallback_to_form && (
-        <div className="flex flex-col items-start gap-2 rounded-2xl border border-gold-200 bg-gold-50 p-4">
-          <p className="text-sm text-sand-800">{t('fallback')}</p>
+        <div className="flex flex-col items-start gap-2 rounded-2xl border border-line bg-accent-soft p-4">
+          <p className="text-sm text-ink">{t('fallback')}</p>
           <Link href={plannerHref(plan)} className={buttonStyles()}>
             {t('openForm')}
             <Icon name="arrowRight" className="size-4" />

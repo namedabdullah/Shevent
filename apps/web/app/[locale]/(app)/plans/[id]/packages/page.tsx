@@ -53,27 +53,27 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
             const percent = Math.round((pkg.total_pkr / result.budget_pkr) * 100);
             return (
               <article key={pkg.kind} className={`${cardStyles} flex flex-col overflow-hidden`}>
-                <header className="flex flex-col gap-1 bg-sand-50 px-5 pt-5 pb-4">
+                <header className="flex flex-col gap-1 bg-subtle px-5 pt-5 pb-4">
                   <h2 className="text-xl font-semibold">{PACKAGE_KIND_LABELS[pkg.kind]}</h2>
-                  <p className="font-display text-3xl font-semibold text-sand-900 tabular-nums">{formatPkr(pkg.total_pkr)}</p>
-                  <p className="text-sm text-sand-600">{t('ofBudget', { percent })}</p>
-                  <span aria-hidden className="mt-2 h-1.5 overflow-hidden rounded-full bg-sand-200">
-                    <span className="block h-full rounded-full bg-brand-600" style={{ width: `${Math.min(percent, 100)}%` }} />
+                  <p className="font-display text-3xl font-semibold text-ink tabular-nums">{formatPkr(pkg.total_pkr)}</p>
+                  <p className="text-sm text-muted">{t('ofBudget', { percent })}</p>
+                  <span aria-hidden className="mt-2 h-1.5 overflow-hidden rounded-full bg-sunken">
+                    <span className="block h-full rounded-full bg-accent" style={{ width: `${Math.min(percent, 100)}%` }} />
                   </span>
                 </header>
-                <ul className="flex flex-col divide-y divide-sand-100 px-5">
+                <ul className="flex flex-col divide-y divide-line px-5">
                   {pkg.items.map((item) => {
                     const inquiryId = inquiryFor.get(item.vendor.vendor_id);
                     return (
                       <li key={item.vendor.vendor_id} className="flex flex-col gap-0.5 py-3.5 text-sm">
-                        <span className="flex items-center gap-2 text-xs font-semibold tracking-wide text-sand-600 uppercase">
+                        <span className="flex items-center gap-2 text-xs font-semibold tracking-wide text-muted uppercase">
                           <span aria-hidden className="size-2.5 rounded-sm" style={{ background: `var(--series-${item.vendor.category})` }} />
                           {CATEGORY_LABELS[item.vendor.category]}
                         </span>
-                        <span className="font-semibold text-sand-900">{item.vendor.name}</span>
-                        <span className="text-sand-700 tabular-nums">
+                        <span className="font-semibold text-ink">{item.vendor.name}</span>
+                        <span className="text-ink-soft tabular-nums">
                           {formatPkr(item.price_pkr)}
-                          {item.price_is_estimate && <span className="text-sand-600"> ({AI_ESTIMATE_LABEL})</span>}
+                          {item.price_is_estimate && <span className="text-muted"> ({AI_ESTIMATE_LABEL})</span>}
                         </span>
                         {inquiryId ? (
                           <Link href={`/inquiries/${inquiryId}`} className={`inline-flex min-h-11 items-center gap-1.5 self-start ${linkStyles}`}>

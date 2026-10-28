@@ -63,12 +63,12 @@ export function FeedbackForm({
           <input id={`${id}-guests`} name="guest_count_actual" type="number" inputMode="numeric" min={1} defaultValue={defaults.guests} aria-invalid={invalid('guest_count_actual')} className={inputStyles} />
         </Field>
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-2 text-sm font-semibold text-sand-800">{t('rating')}</legend>
+          <legend className="mb-2 text-sm font-semibold text-ink">{t('rating')}</legend>
           <div className="flex flex-wrap gap-2">
             {[1, 2, 3, 4, 5].map((value) => (
               <label
                 key={value}
-                className="flex min-h-12 min-w-14 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-sand-300 bg-white px-3 font-semibold text-sand-800 transition-colors hover:border-brand-300 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-700 has-[:checked]:text-white has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-600 has-[:focus-visible]:ring-offset-2"
+                className="flex min-h-12 min-w-14 cursor-pointer items-center justify-center gap-1.5 rounded-2xl border border-line-strong bg-surface px-3 font-semibold text-ink transition-colors hover:border-accent-line has-[:checked]:border-accent has-[:checked]:bg-accent has-[:checked]:text-on-accent has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent has-[:focus-visible]:ring-offset-2"
               >
                 <input type="radio" name="rating" value={value} defaultChecked={defaults.rating === value} className="sr-only" />
                 {value} <Icon name="star" className="size-4 fill-current" />

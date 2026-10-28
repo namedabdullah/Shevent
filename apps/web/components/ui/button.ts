@@ -1,21 +1,19 @@
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'gold' | 'inverse';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'inverse';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BASE =
-  'inline-flex items-center justify-center gap-2 rounded-full text-center font-semibold leading-tight transition-[background-color,border-color,color,box-shadow,translate] duration-200 ease-out active:translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60 aria-busy:cursor-wait';
+  'inline-flex items-center justify-center gap-2 rounded-full text-center font-semibold leading-tight tracking-[-0.01em] transition-[background-color,border-color,color,box-shadow,scale] duration-200 ease-out active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 aria-busy:cursor-wait';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   /** The one main action on a screen. */
-  primary: 'bg-brand-700 text-white shadow-sm shadow-brand-900/20 hover:bg-brand-800 hover:shadow-md',
+  primary: 'bg-accent text-on-accent hover:bg-accent-hover',
   /** Secondary actions next to a primary one. */
-  secondary: 'border border-sand-400 bg-white text-sand-900 hover:border-sand-500 hover:bg-sand-50',
-  /** A brand-coloured action that shouldn't compete with the primary one, e.g. "Sign in". */
-  outline: 'border border-brand-700 text-brand-700 hover:bg-brand-700 hover:text-white',
-  ghost: 'text-brand-700 hover:bg-brand-50',
-  /** Main action on night (brand-900/950) sections. */
-  gold: 'bg-gold-300 text-brand-950 shadow-sm shadow-brand-950/30 hover:bg-gold-200',
-  /** Secondary action on night sections. */
-  inverse: 'border border-brand-100/40 text-white hover:border-brand-100 hover:bg-white/10',
+  secondary: 'border border-line-strong bg-surface text-ink hover:border-control hover:bg-subtle',
+  /** A quiet bordered action, e.g. "Sign in" in the header. */
+  outline: 'border border-line-strong text-ink hover:border-ink',
+  ghost: 'text-accent-ink hover:bg-accent-soft',
+  /** Highest contrast: ink on canvas (near-black on light themes, near-white on dark ones). */
+  inverse: 'bg-ink text-canvas hover:opacity-85',
 };
 
 // Every size keeps a 44px touch target.
@@ -40,4 +38,4 @@ export function buttonStyles({
 
 /** An inline text link inside a sentence or under a form. */
 export const linkStyles =
-  'font-semibold text-brand-700 underline decoration-brand-200 decoration-2 underline-offset-4 transition-colors hover:decoration-brand-700';
+  'font-semibold text-accent-ink underline decoration-accent-line decoration-2 underline-offset-4 transition-colors hover:decoration-accent';

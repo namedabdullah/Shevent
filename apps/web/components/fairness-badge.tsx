@@ -6,9 +6,9 @@ import { Icon, type IconName } from '@/components/icons';
 
 // Status colours (good / warning / critical) always come with an icon and a label, never colour alone.
 const STYLE: Record<FairnessLevel, { icon: IconName; box: string; mark: string }> = {
-  green: { icon: 'check', box: 'border-green-600/40 bg-green-50 text-green-950', mark: 'bg-green-700 text-white' },
-  yellow: { icon: 'info', box: 'border-amber-400/70 bg-amber-50 text-amber-950', mark: 'bg-amber-500 text-amber-950' },
-  red: { icon: 'alert', box: 'border-red-300 bg-red-50 text-red-950', mark: 'bg-red-700 text-white' },
+  green: { icon: 'check', box: 'border-success-line bg-success-soft text-success-ink', mark: 'bg-success text-on-solid' },
+  yellow: { icon: 'info', box: 'border-warning-line bg-warning-soft text-warning-ink', mark: 'bg-warning text-on-solid' },
+  red: { icon: 'alert', box: 'border-danger-line bg-danger-soft text-danger-ink', mark: 'bg-danger text-on-solid' },
 };
 
 /**
@@ -34,7 +34,7 @@ export function FairnessBadge({ check }: { check: QuoteCheckResponse }) {
         <span className="opacity-80">({AI_ESTIMATE_LABEL})</span>
       </p>
       {check.ask_about.length > 0 && (
-        <div className="rounded-xl bg-white/70 p-3 text-sm">
+        <div className="rounded-xl bg-surface/70 p-3 text-sm">
           <p className="font-semibold">{t('askAbout')}</p>
           <ul className="mt-1.5 flex flex-col gap-1">
             {check.ask_about.map((item) => (

@@ -65,19 +65,19 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
           </Link>
         }
       >
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sand-700">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ink-soft">
           <span className="flex items-center gap-1.5">
-            <Icon name={vendor.category} className="size-4 text-gold-500" />
+            <Icon name={vendor.category} className="size-4 text-muted" />
             {CATEGORY_LABELS[vendor.category]}
           </span>
           <span className="flex items-center gap-1.5">
-            <Icon name="mapPin" className="size-4 text-gold-500" />
+            <Icon name="mapPin" className="size-4 text-muted" />
             {vendor.base_area}
           </span>
           <Badge tone={vendor.verified ? 'success' : 'neutral'} icon="shield">
             {vendor.verified ? t('verified') : t('notVerified')}
           </Badge>
-          <Badge tone={vendor.public_consent ? 'gold' : 'muted'}>{vendor.public_consent ? t('publicOn') : t('publicOff')}</Badge>
+          <Badge tone={vendor.public_consent ? 'accent' : 'muted'}>{vendor.public_consent ? t('publicOn') : t('publicOff')}</Badge>
         </div>
       </PageHeader>
 
@@ -91,11 +91,11 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
         {STATS.map(({ status, icon }, index) => (
           <div
             key={status}
-            className={`flex flex-col gap-2 rounded-3xl p-4 sm:p-5 ${index === 0 ? 'bg-brand-900 text-brand-100' : 'border border-sand-200 bg-white shadow-card'}`}
+            className={`flex flex-col gap-2 rounded-2xl border p-4 sm:p-5 ${index === 0 ? 'scope-inverse border-transparent bg-canvas text-ink' : 'border-line bg-surface'}`}
           >
-            <Icon name={icon} className={`size-5 ${index === 0 ? 'text-gold-300' : 'text-gold-500'}`} />
-            <dt className={`text-sm leading-snug ${index === 0 ? 'text-brand-100' : 'text-sand-600'}`}>{t(status === 'open' ? 'waiting' : status)}</dt>
-            <dd className={`font-display text-3xl font-semibold tabular-nums sm:text-4xl ${index === 0 ? 'text-white' : 'text-sand-900'}`}>{count(status)}</dd>
+            <Icon name={icon} className={`size-5 ${index === 0 ? 'text-accent-ink' : 'text-muted'}`} />
+            <dt className="text-sm leading-snug text-muted">{t(status === 'open' ? 'waiting' : status)}</dt>
+            <dd className="font-display text-3xl font-semibold text-ink tabular-nums sm:text-4xl">{count(status)}</dd>
           </div>
         ))}
       </dl>
@@ -115,18 +115,18 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
             {t('noneWaiting')}
           </EmptyState>
         ) : (
-          <ul className="flex flex-col divide-y divide-sand-100 overflow-hidden rounded-3xl border border-sand-200 bg-white shadow-card">
+          <ul className="flex flex-col divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
             {waiting.map((row) => (
               <li key={row.inquiry_id}>
-                <Link href={`/vendor/inquiries/${row.inquiry_id}`} className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-brand-50/60 sm:px-5">
+                <Link href={`/vendor/inquiries/${row.inquiry_id}`} className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-accent-soft/60 sm:px-5">
                   <DateLeaf date={row.event_date} />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="font-semibold text-sand-900">{EVENT_TYPE_LABELS[row.event_type]}</span>
-                    <span className="text-sm text-sand-600">
+                    <span className="font-semibold text-ink">{EVENT_TYPE_LABELS[row.event_type]}</span>
+                    <span className="text-sm text-muted">
                       {formatEventDate(row.event_date)} · {tInbox('guestCount', { count: row.guest_count })} · {row.area}
                     </span>
                   </span>
-                  <Icon name="chevronRight" className="size-5 text-sand-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700" />
+                  <Icon name="chevronRight" className="size-5 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent-ink" />
                 </Link>
               </li>
             ))}

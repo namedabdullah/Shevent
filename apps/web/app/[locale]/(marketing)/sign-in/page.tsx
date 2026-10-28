@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
-import { ArchWindow } from '@/components/ornaments';
+import { BrandPanel } from '@/components/brand-panel';
 import { SignInForm } from '@/components/sign-in-form';
 import { Eyebrow } from '@/components/ui/page';
 import { getCurrentUser } from '@/lib/auth';
@@ -17,18 +17,18 @@ export default async function SignInPage({ searchParams }: PageProps<'/[locale]/
   const t = await getTranslations('Auth');
   return (
     <main id="main" className="flex flex-1 items-start justify-center px-4 py-10 sm:items-center sm:py-16">
-      <div className="grid w-full max-w-4xl animate-enter overflow-hidden rounded-[2rem] border border-sand-200 bg-white shadow-lift md:grid-cols-[1fr_20rem]">
+      <div className="grid w-full max-w-4xl animate-enter overflow-hidden rounded-[1.75rem] border border-line bg-surface shadow-card md:grid-cols-[1fr_20rem]">
         <div className="flex flex-col gap-4 p-6 sm:p-10">
           <Eyebrow>{t('eyebrow')}</Eyebrow>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('title')}</h1>
-          <p className="max-w-md leading-relaxed text-sand-700">{t('intro')}</p>
+          <p className="max-w-md leading-relaxed text-ink-soft">{t('intro')}</p>
           <Suspense fallback={null}>
             <SignInPanel searchParams={searchParams} />
           </Suspense>
         </div>
-        <div className="hidden items-end justify-center bg-brand-950 px-10 pt-14 md:flex">
-          <ArchWindow className="aspect-[4/5] w-full" />
-        </div>
+        <BrandPanel className="hidden md:flex">
+          <p className="text-xl leading-snug font-semibold tracking-[-0.02em] text-balance">{t('panel')}</p>
+        </BrandPanel>
       </div>
     </main>
   );

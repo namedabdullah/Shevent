@@ -54,7 +54,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
           allocation && (
             <p>
               {t('budgetLine', { budget: formatPkrCompact(allocation.pkr), range: formatPkrRange(allocation.range[0], allocation.range[1]) })}{' '}
-              <span className="text-sand-600">({AI_ESTIMATE_LABEL})</span>
+              <span className="text-muted">({AI_ESTIMATE_LABEL})</span>
             </p>
           )
         }
@@ -70,7 +70,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
                     href={`/plans/${plan.id}/${categorySlug(value)}`}
                     aria-current={current ? 'page' : undefined}
                     className={`inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold transition-colors ${
-                      current ? 'border-brand-700 bg-brand-700 text-white' : 'border-sand-300 bg-white text-sand-800 hover:border-brand-300 hover:text-brand-700'
+                      current ? 'border-accent bg-accent text-on-accent' : 'border-line-strong bg-surface text-ink hover:border-accent-line hover:text-accent-ink'
                     }`}
                   >
                     <Icon name={value} className="size-4" />
@@ -100,7 +100,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
               <h2 id="matches-heading" className="text-2xl font-semibold tracking-tight">
                 {t('bestMatches')}
               </h2>
-              {result.matches.length > 0 && <p className="text-sm text-sand-600">{t('ranked', { count: result.matches.length })}</p>}
+              {result.matches.length > 0 && <p className="text-sm text-muted">{t('ranked', { count: result.matches.length })}</p>}
             </div>
             {result.matches.length ? (
               <div className="grid gap-4 md:grid-cols-2">
@@ -115,14 +115,14 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
 
           {/* Paid placements live in their own labelled block and never change the ranking above. */}
           {result.sponsored.length > 0 && (
-            <section aria-labelledby="sponsored-heading" className="flex flex-col gap-4 rounded-3xl border border-dashed border-gold-300 bg-gold-50/70 p-5 sm:p-6">
+            <section aria-labelledby="sponsored-heading" className="flex flex-col gap-4 rounded-2xl border border-dashed border-line-strong bg-accent-soft/70 p-5 sm:p-6">
               <div className="flex flex-col gap-1.5">
                 <h2 id="sponsored-heading" className="flex items-center gap-2 text-xl font-semibold">
-                  <Badge tone="gold" icon="tag">
+                  <Badge tone="accent" icon="tag">
                     {SPONSORED_LABEL}
                   </Badge>
                 </h2>
-                <p className="text-sm text-sand-700">{SPONSORED_NOTE}</p>
+                <p className="text-sm text-ink-soft">{SPONSORED_NOTE}</p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {result.sponsored.map((match) => (

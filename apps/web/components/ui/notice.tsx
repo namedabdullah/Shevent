@@ -3,13 +3,13 @@ import { Icon, type IconName } from '@/components/icons';
 
 export type NoticeTone = 'info' | 'success' | 'warning' | 'error';
 
-// Status colours always come with an icon and words, never colour alone. Brand maroon is for
-// actions, so errors use red and successes green.
+// Status colours always come with an icon and words, never colour alone. The accent is for actions,
+// so status uses its own success, warning and danger tokens.
 const TONES: Record<NoticeTone, { icon: IconName; box: string; iconClass: string }> = {
-  info: { icon: 'info', box: 'border-sand-300 bg-white text-sand-800', iconClass: 'text-brand-700' },
-  success: { icon: 'check', box: 'border-green-600/30 bg-green-50 text-green-950', iconClass: 'text-green-700' },
-  warning: { icon: 'alert', box: 'border-amber-400/60 bg-amber-50 text-amber-950', iconClass: 'text-amber-700' },
-  error: { icon: 'alert', box: 'border-red-300 bg-red-50 text-red-950', iconClass: 'text-red-700' },
+  info: { icon: 'info', box: 'border-line bg-surface text-ink', iconClass: 'text-accent-ink' },
+  success: { icon: 'check', box: 'border-success-line bg-success-soft text-success-ink', iconClass: 'text-success' },
+  warning: { icon: 'alert', box: 'border-warning-line bg-warning-soft text-warning-ink', iconClass: 'text-warning' },
+  error: { icon: 'alert', box: 'border-danger-line bg-danger-soft text-danger-ink', iconClass: 'text-danger' },
 };
 
 /**
@@ -33,7 +33,7 @@ export function Notice({
 }) {
   const style = TONES[tone];
   return (
-    <div role={role} className={`flex animate-enter gap-3 rounded-2xl border px-4 py-3 text-sm leading-relaxed ${style.box} ${className}`}>
+    <div role={role} className={`flex animate-enter gap-3 rounded-xl border px-4 py-3 text-sm leading-relaxed ${style.box} ${className}`}>
       <Icon name={style.icon} className={`mt-0.5 size-4.5 ${style.iconClass}`} />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         {title && <p className="font-semibold">{title}</p>}

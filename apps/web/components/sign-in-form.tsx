@@ -25,8 +25,8 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
 
   if (state.status === 'sent') {
     return (
-      <p role="status" className="flex max-w-md animate-enter items-start gap-3 rounded-2xl border border-green-600/30 bg-green-50 px-4 py-3.5 text-green-950">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-green-700 text-white">
+      <p role="status" className="flex max-w-md animate-enter items-start gap-3 rounded-2xl border border-success-line bg-success-soft px-4 py-3.5 text-success-ink">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success text-on-solid">
           <Icon name="check" className="size-4" />
         </span>
         <span className="pt-1">{t('sent', { email: state.email })}</span>
@@ -47,7 +47,7 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
     <div className="flex w-full max-w-md flex-col gap-4">
       <form onSubmit={submit} className="flex flex-col gap-2.5" noValidate>
         <input type="hidden" name="next" value={next} />
-        <label htmlFor={inputId} className="text-sm font-semibold text-sand-800">
+        <label htmlFor={inputId} className="text-sm font-semibold text-ink">
           {t('emailLabel')}
         </label>
         <input
@@ -64,7 +64,7 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
         <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', block: true })}>
           {pending ? t('sending') : t('sendLink')}
         </SubmitButton>
-        <p id={messageId} aria-live="polite" className="min-h-5 text-sm font-medium text-red-700">
+        <p id={messageId} aria-live="polite" className="min-h-5 text-sm font-medium text-danger">
           {error ? t(`errors.${error}`) : null}
         </p>
       </form>
@@ -72,10 +72,10 @@ export function SignInForm({ next, redirectError, googleEnabled }: SignInFormPro
       {googleEnabled && (
         <form action={signInWithGoogle} className="flex flex-col gap-3">
           <input type="hidden" name="next" value={next} />
-          <p className="flex items-center gap-3 text-sm text-sand-600">
-            <span aria-hidden className="h-px flex-1 bg-sand-200" />
+          <p className="flex items-center gap-3 text-sm text-muted">
+            <span aria-hidden className="h-px flex-1 bg-sunken" />
             {t('or')}
-            <span aria-hidden className="h-px flex-1 bg-sand-200" />
+            <span aria-hidden className="h-px flex-1 bg-sunken" />
           </p>
           <SubmitButton className={buttonStyles({ variant: 'secondary', size: 'lg', block: true })}>{t('google')}</SubmitButton>
         </form>

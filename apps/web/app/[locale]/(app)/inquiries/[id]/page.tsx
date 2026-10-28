@@ -107,7 +107,7 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
 
         <section aria-labelledby="quote-heading" className={`${cardStyles} flex flex-col gap-4 p-5 sm:p-6 lg:sticky lg:top-24`}>
           <h2 id="quote-heading" className="flex items-center gap-2 text-xl font-semibold">
-            <Icon name="receipt" className="size-5 text-gold-500" />
+            <Icon name="receipt" className="size-5 text-muted" />
             {t('quote')}
           </h2>
           {!quote ? (
@@ -118,7 +118,7 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
             <>
               <QuoteDetails quote={quote} />
               <SampleDataNotice response={check} />
-              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-sand-600">{t('checkUnavailable')}</p>}
+              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-muted">{t('checkUnavailable')}</p>}
 
               {booking ? (
                 <Link href={`/bookings/${booking.id}`} className={buttonStyles({ variant: 'secondary' })}>
@@ -127,9 +127,9 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
                 </Link>
               ) : (
                 inquiry.status === 'quoted' && (
-                  <form action={bookQuote.bind(null, inquiry.id, quote.id)} className="flex flex-col gap-2 border-t border-sand-100 pt-4">
+                  <form action={bookQuote.bind(null, inquiry.id, quote.id)} className="flex flex-col gap-2 border-t border-line pt-4">
                     <SubmitButton className={buttonStyles({ size: 'lg', block: true })}>{t('book', { total: formatPkr(quote.total_pkr) })}</SubmitButton>
-                    <p className="flex items-center justify-center gap-1.5 text-xs text-sand-600">
+                    <p className="flex items-center justify-center gap-1.5 text-xs text-muted">
                       <Icon name="info" className="size-3.5" />
                       {t('simulated')}
                     </p>

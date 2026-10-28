@@ -12,6 +12,7 @@ import { Icon } from '@/components/icons';
 import { SampleDataNotice } from '@/components/sample-data-notice';
 import { SubmitButton } from '@/components/submit-button';
 import { buttonStyles } from '@/components/ui/button';
+import { DateField } from '@/components/ui/date-field';
 import { Field, inputStyles, selectStyles, textareaStyles } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -177,7 +178,7 @@ export function QuoteForm({
           )}
       </div>
       {total !== undefined && (
-        <p className="flex animate-enter items-center justify-between gap-3 rounded-2xl bg-sand-50 px-4 py-3 font-semibold text-sand-900 tabular-nums">
+        <p className="flex animate-enter items-center justify-between gap-3 rounded-2xl bg-subtle px-4 py-3 font-semibold text-ink tabular-nums">
           {t('total', { total: formatPkr(total) })}
         </p>
       )}
@@ -221,25 +222,25 @@ export function QuoteForm({
         {field(
           'valid_until',
           t('validUntil'),
-          <input id={`${id}-valid_until`} name="valid_until" type="date" min={today} aria-invalid={invalid('valid_until')} className={inputStyles} />,
+          <DateField id={`${id}-valid_until`} name="valid_until" min={today} invalid={invalid('valid_until')} />,
         )}
       </div>
       {/* Above the button, so the vendor sees the label before sending, also on a phone. */}
-      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3 rounded-2xl border border-dashed border-sand-400 bg-sand-50/70 p-4">
-        <h4 id={`${id}-preview`} className="flex items-center gap-2 font-display text-lg font-semibold text-sand-900">
-          <Icon name="scale" className="size-4.5 text-gold-500" />
+      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3 rounded-2xl border border-dashed border-control bg-subtle/70 p-4">
+        <h4 id={`${id}-preview`} className="flex items-center gap-2 font-display text-lg font-semibold text-ink">
+          <Icon name="scale" className="size-4.5 text-muted" />
           {t('previewTitle')}
         </h4>
         <div aria-live="polite" className="flex flex-col gap-3">
           {!requestKey ? (
-            <p className="text-sm text-sand-600">{t('previewHint')}</p>
+            <p className="text-sm text-muted">{t('previewHint')}</p>
           ) : current === null ? (
             <div className="flex flex-col gap-2">
-              <p className="text-sm text-sand-600">{t('previewLoading')}</p>
+              <p className="text-sm text-muted">{t('previewLoading')}</p>
               <Skeleton className="h-24 rounded-2xl" />
             </div>
           ) : current === 'error' ? (
-            <p className="text-sm text-sand-600">{t('previewUnavailable')}</p>
+            <p className="text-sm text-muted">{t('previewUnavailable')}</p>
           ) : (
             <>
               <SampleDataNotice response={current} />
@@ -252,7 +253,7 @@ export function QuoteForm({
         <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', block: true })}>
           {pending ? t('sending') : t('send')}
         </SubmitButton>
-        <p aria-live="polite" className="text-sm font-medium text-red-700">
+        <p aria-live="polite" className="text-sm font-medium text-danger">
           {state.status === 'error' && state.error === 'failed' ? t('errors.failed') : null}
         </p>
       </div>

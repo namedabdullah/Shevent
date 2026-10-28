@@ -10,9 +10,9 @@ export function DateLeaf({ date, className = '' }: { date: string; className?: s
   const parsed = parseIsoDate(date);
   if (!parsed) return null;
   return (
-    <span aria-hidden className={`flex w-14 shrink-0 flex-col overflow-hidden rounded-xl border border-sand-200 bg-white text-center shadow-sm ${className}`}>
-      <span className="bg-brand-700 py-0.5 text-[0.6875rem] font-semibold tracking-wider text-white uppercase">{MONTHS[parsed.getUTCMonth()]}</span>
-      <span className="py-1 font-display text-2xl leading-tight font-semibold text-sand-900">{parsed.getUTCDate()}</span>
+    <span aria-hidden className={`flex w-14 shrink-0 flex-col overflow-hidden rounded-xl border border-line bg-surface text-center shadow-sm ${className}`}>
+      <span className="bg-accent py-0.5 text-[0.6875rem] font-semibold tracking-wider text-on-accent uppercase">{MONTHS[parsed.getUTCMonth()]}</span>
+      <span className="py-1 font-display text-2xl leading-tight font-semibold text-ink">{parsed.getUTCDate()}</span>
     </span>
   );
 }

@@ -6,7 +6,7 @@ type InquiryStatus = Database['public']['Enums']['inquiry_status'];
 
 // One look per inquiry status, shared by the host and vendor sides (their wording differs).
 const INQUIRY: Record<InquiryStatus, { tone: BadgeTone; icon: IconName }> = {
-  open: { tone: 'gold', icon: 'message' },
+  open: { tone: 'accent', icon: 'message' },
   quoted: { tone: 'warning', icon: 'receipt' },
   booked: { tone: 'success', icon: 'check' },
   declined: { tone: 'muted', icon: 'info' },
