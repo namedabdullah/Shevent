@@ -51,7 +51,7 @@ PHONE_PATTERN = re.compile(r"(\+92|0092|\b0)\s?3\d{2}[\s-]?\d{7}\b")
 TABLE_SPECS = {
     "vendors": {
         "id": "vendor_id",
-        "id_pattern": r"^(VEN|CAT|DEC|DJS|LGT)-\d{3}$",
+        "id_pattern": r"^(VEN|CAT|DEC|DJS|LGT|PHO)-\d{3}$",
         "required": ["vendor_id", "name", "category", "base_area", "collected_by", "collected_date"],
         "enums": {"price_tier": "price_tier", "reached_by_us": "yes_no"},
         "list_enums": {"event_types": "event_type"},

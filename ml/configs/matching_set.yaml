@@ -13,7 +13,7 @@ relevance_scale:
   1: "Possible but a stretch (wrong price tier, far away, unsure they do this kind of event)"
   0: "Not suitable (can't handle the guests, doesn't do this event, far outside the budget)"
 
-# The first six are the three standard scenarios (data/reference/scenarios.csv), each for two categories.
+# The first six (and Q13) are the three standard scenarios (data/reference/scenarios.csv), each for two categories.
 queries:
   - {query_id: Q01, category: decor, event_type: wedding_mehndi, guests: 300, area: Gulberg, venue_type: marquee, event_date: "2026-12-19", total_budget_pkr: 2500000}
   - {query_id: Q02, category: catering, event_type: wedding_mehndi, guests: 300, area: Gulberg, venue_type: marquee, event_date: "2026-12-19", total_budget_pkr: 2500000}
@@ -27,3 +27,5 @@ queries:
   - {query_id: Q10, category: dj_sound, event_type: university_gala, guests: 250, area: Cantt, venue_type: lawn, event_date: "2027-03-06", total_budget_pkr: 1500000}
   - {query_id: Q11, category: lighting, event_type: wedding_mehndi, guests: 200, area: Bahria Town, venue_type: farmhouse, event_date: "2026-12-26", total_budget_pkr: 1600000}
   - {query_id: Q12, category: venue, event_type: corporate_other, guests: 100, area: Gulberg, venue_type: hotel, event_date: "2026-11-18", total_budget_pkr: 800000}
+  - {query_id: Q13, category: photography, event_type: wedding_mehndi, guests: 300, area: Gulberg, venue_type: marquee, event_date: "2026-12-19", total_budget_pkr: 2500000}
+  - {query_id: Q14, category: photography, event_type: wedding_walima, guests: 500, area: DHA, venue_type: banquet, event_date: "2027-01-23", total_budget_pkr: 4500000}

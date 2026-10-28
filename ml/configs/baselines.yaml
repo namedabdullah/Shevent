@@ -13,6 +13,7 @@ planner_split:
   # baseline report says its #1 numbers come from placeholder shares.
   source: placeholder
   # Placeholder shares (the API contract's example in README section 9), not market data.
-  default: {venue: 0.30, catering: 0.38, decor: 0.17, dj_sound: 0.08, lighting: 0.07}
-  # Per event type, e.g. birthday: {venue: 0.25, catering: 0.45, decor: 0.18, dj_sound: 0.07, lighting: 0.05}.
+  default: {venue: 0.27, catering: 0.38, decor: 0.14, dj_sound: 0.07, lighting: 0.06, photography: 0.08}
+  # Per event type, e.g. birthday: {venue: 0.24, catering: 0.42, decor: 0.16, dj_sound: 0.07, lighting: 0.05,
+  # photography: 0.06}.
   by_event_type: {}

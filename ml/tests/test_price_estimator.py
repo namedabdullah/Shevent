@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from shevent_ml.config import load_config
+from shevent_ml.config import CATEGORIES, load_config
 from shevent_ml.eval.baselines import MedianPriceLookup
 from shevent_ml.eval.metrics import mape
 from shevent_ml.models.price_estimator import PriceEstimator, conformal_margin, train
@@ -78,7 +78,7 @@ def test_tier_moves_the_price_and_an_unknown_tier_sits_between(trained):
 def test_plan_estimate_scales_catering_by_guests(trained):
     model, _ = trained
     small, large = model.estimate_plan({**PLAN, "guest_count": 100}), model.estimate_plan(PLAN)
-    assert list(large.index) == ["venue", "catering", "decor", "dj_sound", "lighting"]
+    assert list(large.index) == CATEGORIES
     assert large.loc["catering", "mid"] > 2 * small.loc["catering", "mid"]
     assert (large > 0).all().all()
 
@@ -86,7 +86,7 @@ def test_plan_estimate_scales_catering_by_guests(trained):
 def test_drivers_explain_the_event_not_the_category(trained):
     model, _ = trained
     drivers = model.drivers(plan_rows(PLAN), top=3)
-    assert len(drivers) == 5 and all(len(d) == 3 for d in drivers)
+    assert len(drivers) == len(CATEGORIES) and all(len(d) == 3 for d in drivers)
     features = {feature for row in drivers for feature, _, _ in row}
     assert not features & {"category", "price_basis"}
 

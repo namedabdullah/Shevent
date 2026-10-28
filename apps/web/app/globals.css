@@ -258,12 +258,15 @@
 /* Chart colours: one fixed slot per category, in CATEGORIES order, so a category keeps its
    colour on every chart. Steps from the dataviz reference palette, validated (CVD separation,
    lightness band and graphics contrast) against a light page. They are for marks only, never
-   for text, because they do not reach 4.5:1. The validated dark steps are: venue #3987e5,
-   catering #d95926, decor #199e70, dj_sound #c98500, lighting #d55181. */
+   for text, because they do not reach 4.5:1. Photography is reference slot 6; the six were
+   re-validated together on the cream page (worst adjacent CVD ΔE 9.1, normal-vision ΔE 19.6).
+   The validated dark steps are: venue #3987e5, catering #d95926, decor #199e70,
+   dj_sound #c98500, lighting #d55181, photography #008300. */
 :root {
   --series-venue: #2a78d6;
   --series-catering: #eb6834;
   --series-decor: #1baf7a;
   --series-dj_sound: #eda100;
   --series-lighting: #e87ba4;
+  --series-photography: #008300;
 }

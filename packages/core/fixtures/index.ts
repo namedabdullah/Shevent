@@ -170,6 +170,12 @@ const INCLUSION_CHECKLIST: Record<Category, { label: string; keywords: string[] 
     { label: 'Setup and teardown', keywords: ['setup', 'set up', 'teardown'] },
     { label: 'Transport', keywords: ['transport'] },
   ],
+  photography: [
+    { label: 'Number of edited photos', keywords: ['edited', 'photos'] },
+    { label: 'Delivery time', keywords: ['deliver', 'days', 'weeks'] },
+    { label: 'Album or prints', keywords: ['album', 'print'] },
+    { label: 'Overtime charges', keywords: ['overtime', 'extra hour'] },
+  ],
 };
 
 /**

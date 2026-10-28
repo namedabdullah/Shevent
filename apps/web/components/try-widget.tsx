@@ -84,7 +84,7 @@ export function TryWidget() {
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
       <form onSubmit={submit} noValidate className="flex flex-col gap-4 rounded-3xl border border-sand-200 bg-white p-5 shadow-card sm:p-7">
         {field(
           'event_type',

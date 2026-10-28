@@ -1,5 +1,6 @@
 """Shared paths and settings. Paths resolve from the repo root, so code works from any working directory."""
 
+import csv
 import os
 from pathlib import Path
 
@@ -18,6 +19,16 @@ CONFIG_DIR = REPO_ROOT / "ml" / "configs"
 
 # One seed for every split, sample and model, so any run can be reproduced.
 SEED = 42
+
+
+def _reference_categories():
+    with (REFERENCE_DIR / "categories.csv").open(encoding="utf-8", newline="") as f:
+        return [row["category"] for row in csv.DictReader(f)]
+
+
+# The service categories, in data/reference/categories.csv order (the order of CATEGORIES in packages/core). Every
+# model reads them from here, so adding a category means adding a row to that file, not editing lists in code.
+CATEGORIES = _reference_categories()
 
 DEFAULT_MLFLOW_URI = "http://127.0.0.1:5000"
 

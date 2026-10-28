@@ -113,9 +113,9 @@ test('every form control has a label and the chart has a table alternative', asy
 
   await page.goto(`/plans/${journey.planId}`);
   await expect(page.locator('table caption')).toHaveCount(1);
-  await expect(page.locator('tbody tr')).toHaveCount(5);
+  await expect(page.locator('tbody tr')).toHaveCount(6);
   // Colour is never the only channel: each chart colour has a text label in the table and legend.
-  await expect(page.locator('tbody th')).toHaveText(['Venue', 'Catering', 'Decor', 'DJ & Sound', 'Lighting']);
+  await expect(page.locator('tbody th')).toHaveText(['Venue', 'Catering', 'Decor', 'DJ & Sound', 'Lighting', 'Photography']);
 });
 
 test('the planner works with the keyboard only', async ({ page, browserName }) => {

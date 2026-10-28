@@ -37,12 +37,26 @@ def test_median_lookup_backs_off_to_the_category_for_thin_cells():
 
 def test_fixed_planner_split_sums_to_one_per_event():
     planner = FixedPlannerSplit(
-        default={"venue": 0.3, "catering": 0.38, "decor": 0.17, "dj_sound": 0.08, "lighting": 0.07},
+        default={
+            "venue": 0.27,
+            "catering": 0.38,
+            "decor": 0.14,
+            "dj_sound": 0.07,
+            "lighting": 0.06,
+            "photography": 0.08,
+        },
         by_event_type={"birthday": {"venue": 2, "catering": 2}},  # unnormalised, missing categories
     )
     out = planner.predict(pd.DataFrame({"event_type": ["wedding_walima", "birthday"]}))
     assert out.sum(axis=1).tolist() == pytest.approx([1, 1])
-    assert out.loc[1].to_dict() == {"venue": 0.5, "catering": 0.5, "decor": 0, "dj_sound": 0, "lighting": 0}
+    assert out.loc[1].to_dict() == {
+        "venue": 0.5,
+        "catering": 0.5,
+        "decor": 0,
+        "dj_sound": 0,
+        "lighting": 0,
+        "photography": 0,
+    }
 
 
 def test_rank_by_rating_puts_unrated_last():

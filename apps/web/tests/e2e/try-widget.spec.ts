@@ -31,7 +31,7 @@ test('the try widget shows a budget split without signing up', async ({ page }) 
   await expect(result.getByRole('heading', { name: 'Your budget split' })).toBeFocused();
   await expect(result).toContainText('Mehndi / mayun / dholki · 300 guests · Gulberg · Rs 25 lakh');
   await expect(result).toContainText('Sample numbers');
-  await expect(result.locator('tbody tr')).toHaveCount(5);
+  await expect(result.locator('tbody tr')).toHaveCount(6);
   // Catering gets 38% of the sample split: Rs 9.5 lakh of 25 lakh.
   await expect(result.getByRole('row', { name: /Catering/ })).toContainText('Rs 9.5 lakh');
   // Nothing was saved and nobody had to sign in.

@@ -4,6 +4,7 @@
 default_hours:
   dj_sound: 4
   lighting: 4
+  photography: 4
 
 cpi:
   # Every price is moved into this month's rupees. Set it to the month dataset v1 is frozen.

@@ -14,12 +14,10 @@ from pathlib import Path
 import mlflow
 import pandas as pd
 
-from shevent_ml.config import PROCESSED_DIR, load_config, mlflow_tracking_uri
+from shevent_ml.config import CATEGORIES, PROCESSED_DIR, load_config, mlflow_tracking_uri
 from shevent_ml.data.split import is_test, load_split
 from shevent_ml.eval.matching_set import CANDIDATES_FILE, LABELS_FILE, load_labels, score_ranker
 from shevent_ml.eval.metrics import interval_coverage, mape, pinball_loss
-
-CATEGORIES = ["venue", "catering", "decor", "dj_sound", "lighting"]
 
 
 class MedianPriceLookup:

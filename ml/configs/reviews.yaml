@@ -1,7 +1,7 @@
 # Review insights (#6): the aspects every review is labelled on, and how first-pass labels are drafted.
 # Changing the aspects or labels after hand-labelling starts means relabelling, so settle them first.
 
-# README C1. Each aspect gets one label per review.
+# README C1, plus photo and video quality for photographers. Each aspect gets one label per review.
 aspects:
   punctuality: Arriving, setting up and finishing on time
   food_quality: Taste, freshness and quantity of the food
@@ -9,6 +9,7 @@ aspects:
   staff_behaviour: How the staff treated the host and guests
   value_for_money: Whether the price was fair for what was delivered
   hidden_charges: Extra charges that weren't agreed up front (positive = the reviewer says there were none)
+  photo_video_quality: Photos and video, and how long the album or edit took to arrive
 labels: [positive, negative, mixed, not_mentioned]
 
 # The local LLM that drafts labels (README: open-weight model via Ollama, no paid API).
