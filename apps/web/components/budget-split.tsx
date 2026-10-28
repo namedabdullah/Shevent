@@ -27,27 +27,27 @@ export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: E
         <table className="w-full border-collapse text-sm">
           <caption className="sr-only">{t('splitTitle')}</caption>
           <thead>
-            <tr className="border-b border-sand-200 text-xs tracking-wide text-sand-600 uppercase">
+            <tr className="border-b border-line text-xs tracking-wide text-muted uppercase">
               <th scope="col" className="py-2.5 pe-2 sm:pe-3 text-start font-semibold">{t('category')}</th>
               <th scope="col" className="py-2.5 pe-2 sm:pe-3 text-end font-semibold">{t('share')}</th>
               <th scope="col" className="py-2.5 pe-2 sm:pe-3 text-end font-semibold">{t('yourBudget')}</th>
               <th scope="col" className="py-2.5 text-end font-semibold">
                 {t('typicalPrice')}
-                <span className="block text-[0.6875rem] font-normal tracking-normal text-sand-600 normal-case">{AI_ESTIMATE_LABEL}</span>
+                <span className="block text-[0.6875rem] font-normal tracking-normal text-muted normal-case">{AI_ESTIMATE_LABEL}</span>
               </th>
             </tr>
           </thead>
           <tbody className="tabular-nums">
             {rows.map((row) => (
-              <tr key={row.category} className="border-b border-sand-100 last:border-b-0">
-                <th scope="row" className="py-3.5 pe-2 sm:pe-3 text-start font-semibold text-sand-900">
+              <tr key={row.category} className="border-b border-line last:border-b-0">
+                <th scope="row" className="py-3.5 pe-2 sm:pe-3 text-start font-semibold text-ink">
                   {planId ? (
                     <Link
                       href={`/plans/${planId}/${categorySlug(row.category)}`}
-                      className="group -my-2 inline-flex min-h-11 items-center gap-2.5 rounded-lg underline decoration-sand-300 underline-offset-4 transition-colors hover:text-brand-700 hover:decoration-brand-700"
+                      className="group -my-2 inline-flex min-h-11 items-center gap-2.5 rounded-lg underline decoration-line-strong underline-offset-4 transition-colors hover:text-accent-ink hover:decoration-accent"
                     >
                       <CategoryLabel category={row.category} label={row.label} />
-                      <Icon name="chevronRight" className="hidden size-4 text-sand-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700 sm:block" />
+                      <Icon name="chevronRight" className="hidden size-4 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent-ink sm:block" />
                     </Link>
                   ) : (
                     <span className="inline-flex items-center gap-2.5">
@@ -55,12 +55,12 @@ export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: E
                     </span>
                   )}
                 </th>
-                <td className="py-3.5 pe-2 sm:pe-3 text-end text-sand-700">{Math.round(row.share * 100)}%</td>
-                <td className="py-3.5 pe-2 sm:pe-3 text-end font-semibold whitespace-nowrap text-sand-900">{formatPkrCompact(row.pkr)}</td>
-                <td className="py-3.5 text-end text-sand-700">
+                <td className="py-3.5 pe-2 sm:pe-3 text-end text-ink-soft">{Math.round(row.share * 100)}%</td>
+                <td className="py-3.5 pe-2 sm:pe-3 text-end font-semibold whitespace-nowrap text-ink">{formatPkrCompact(row.pkr)}</td>
+                <td className="py-3.5 text-end text-ink-soft">
                   {formatPkrRange(row.range[0], row.range[1])}
                   {row.pkr < row.range[0] && (
-                    <span className="mt-1 flex items-center justify-end gap-1 text-xs font-medium text-amber-800">
+                    <span className="mt-1 flex items-center justify-end gap-1 text-xs font-medium text-warning-ink">
                       <Icon name="alert" className="size-3.5" />
                       {t('belowRange')}
                     </span>

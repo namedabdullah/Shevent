@@ -2,11 +2,13 @@ import { CATEGORIES, CATEGORY_LABELS, CATEGORY_UNITS, type Category } from '@she
 import { UNIT_LABELS } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
+import type { ReactNode } from 'react';
+import { EventStack, type EventCard } from '@/components/event-stack';
 import { Icon, type IconName } from '@/components/icons';
-import { CelebrationSparks, GlowCard, RosetteSeal, StageLights, WordMarquee } from '@/components/motion';
-import { ArchWindow, BeadEdge, HeroArt } from '@/components/ornaments';
+import { CelebrationSparks, GlowCard, RotatingWord, WordMarquee } from '@/components/motion';
+import { SectionLink } from '@/components/smooth-scroll';
 import { TryWidget } from '@/components/try-widget';
-import { buttonStyles, linkStyles } from '@/components/ui/button';
+import { buttonStyles } from '@/components/ui/button';
 import { Eyebrow } from '@/components/ui/page';
 import { WaitlistForm } from '@/components/waitlist-form';
 import { getPathname, Link } from '@/i18n/navigation';
@@ -18,18 +20,44 @@ export async function generateMetadata(): Promise<Metadata> {
 
 const TRUST_ICONS: IconName[] = ['lock', 'scale', 'message', 'tag'];
 
-const sectionTitle = 'text-headline font-semibold text-balance';
+// The hero's card stack: one card per kind of event, with the categories that usually matter most.
+const STACK: { icon: IconName; categories: Category[] }[] = [
+  { icon: 'heart', categories: ['venue', 'catering', 'photography'] },
+  { icon: 'cake', categories: ['venue', 'catering', 'dj_sound'] },
+  { icon: 'briefcase', categories: ['venue', 'catering', 'lighting'] },
+  { icon: 'graduation', categories: ['venue', 'decor', 'dj_sound'] },
+  { icon: 'mic', categories: ['dj_sound', 'lighting', 'venue'] },
+];
+
+/** Eyebrow, title and an optional one-line intro, the same on every section. */
+function SectionHeading({ id, eyebrow, title, intro }: { id: string; eyebrow: string; title: string; intro?: ReactNode }) {
+  return (
+    <div className="reveal flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12">
+      <div className="flex flex-col gap-3">
+        <Eyebrow>{eyebrow}</Eyebrow>
+        <h2 id={id} className="text-headline font-semibold text-balance">
+          {title}
+        </h2>
+      </div>
+      {intro && <p className="max-w-sm text-lg leading-relaxed text-pretty text-ink-soft">{intro}</p>}
+    </div>
+  );
+}
+
+const container = 'mx-auto w-full max-w-6xl px-4 sm:px-6';
 
 export default async function HomePage() {
   const [t, locale] = await Promise.all([getTranslations('Home'), getLocale()]);
-  const highlights = t.raw('highlights') as string[];
   const steps = t.raw('steps') as { title: string; body: string }[];
   const trust = t.raw('trust') as { title: string; body: string }[];
   const faq = t.raw('faq') as { q: string; a: string }[];
   const vendorPoints = t.raw('vendorsPoints') as string[];
   const occasions = t.raw('occasions') as string[];
+  const rotating = t.raw('rotating') as string[];
+  const stack = t.raw('stack') as { title: string; note: string }[];
   const details = t.raw('categoryDetails') as Record<Category, string>;
   const units = new Intl.ListFormat(locale, { type: 'disjunction' });
+  const cards: EventCard[] = stack.map((card, index) => ({ ...card, ...STACK[index]! }));
 
   // FAQPage structured data (WEB_APP_PLAN §5.1), from the same text as the visible answers.
   const faqJsonLd = {
@@ -44,92 +72,64 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(56rem_36rem_at_88%_-8%,var(--color-gold-100),transparent_62%)]" />
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(56rem_28rem_at_78%_0%,var(--accent-soft),transparent_65%)]" />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(var(--line-strong)_1px,transparent_1.2px)] bg-size-[26px_26px] opacity-60 [mask-image:linear-gradient(to_bottom,black,transparent_75%)]"
+        />
         <CelebrationSparks>
-          <div className="relative mx-auto grid w-full max-w-6xl items-center gap-14 px-4 pt-10 pb-20 sm:px-6 md:grid-cols-[1.15fr_0.85fr] md:pt-16 md:pb-24 lg:gap-20">
-            <div className="flex flex-col gap-7">
+          <div className={`relative grid items-center gap-14 pt-14 pb-20 md:grid-cols-[1.1fr_0.9fr] md:pt-24 md:pb-28 lg:gap-20 ${container}`}>
+            <div className="flex flex-col gap-8">
               <Eyebrow className="animate-enter">{t('eyebrow')}</Eyebrow>
-              <h1 className="animate-enter text-display font-semibold text-balance [animation-delay:60ms]">
-                {t.rich('title', { em: (chunks) => <em className="font-medium text-brand-700">{chunks}</em> })}
+              <h1 className="animate-enter text-display font-semibold [animation-delay:60ms]">
+                {t.rich('title', {
+                  event: () => <RotatingWord words={rotating} className="text-accent-ink" />,
+                  line: (chunks) => <span className="block text-balance">{chunks}</span>,
+                })}
               </h1>
-              <p className="max-w-xl animate-enter text-lg leading-relaxed text-pretty text-sand-700 [animation-delay:120ms]">{t('subtitle')}</p>
-              <div className="flex animate-enter flex-col gap-3 [animation-delay:180ms]">
+              <p className="max-w-lg animate-enter text-lg leading-relaxed text-pretty text-ink-soft [animation-delay:120ms]">{t('subtitle')}</p>
+              <div className="flex animate-enter flex-col gap-4 [animation-delay:180ms]">
                 <WaitlistForm />
-                <a href="#try" className={`group inline-flex min-h-11 items-center gap-2 self-start ${linkStyles}`}>
+                <SectionLink hash="try" className="group inline-flex min-h-11 items-center gap-2 self-start font-semibold text-ink">
                   {t('tryLink')}
-                  <Icon name="arrowRight" className="size-4 transition-transform group-hover:translate-x-1" />
-                </a>
+                  <Icon name="arrowRight" className="size-4 text-accent-ink transition-transform duration-300 group-hover:translate-x-1" />
+                </SectionLink>
               </div>
             </div>
-
-            <div className="relative mx-auto w-full max-w-sm md:max-w-md">
-              <RosetteSeal text={t('sealText')} size={128} className="absolute -start-3 top-4 z-10 animate-fade-in [animation-delay:500ms] sm:-start-10 sm:top-10" />
-              <HeroArt />
-              <div className="relative z-10 -mt-24 ms-6 me-0 animate-enter rounded-2xl border border-gold-200 bg-white/95 p-5 shadow-lift backdrop-blur-sm [animation-delay:350ms] sm:-me-4 sm:ms-16 md:-me-6 xl:-me-12">
-                <h2 className="font-display text-lg font-semibold">{t('highlightsTitle')}</h2>
-                <ul className="mt-3 flex flex-col gap-2.5 text-sm text-sand-800">
-                  {highlights.map((item) => (
-                    <li key={item} className="flex gap-2.5">
-                      <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
-                        <Icon name="check" className="size-3" />
-                      </span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="animate-enter [animation-delay:240ms]">
+              <EventStack cards={cards} />
             </div>
           </div>
         </CelebrationSparks>
       </section>
 
-      {/* The occasions and the six categories, drifting with the scroll (decorative; both lists are real) */}
-      <div className="relative overflow-hidden bg-brand-950 py-8 text-gold-100 md:py-10">
-        <BeadEdge className="absolute inset-x-0 top-0" />
+      {/* Every kind of event, and the five categories, drifting with the scroll (decorative). */}
+      <div className="border-y border-line py-6 text-ink md:py-8">
         <WordMarquee rows={[occasions, CATEGORIES.map((category) => CATEGORY_LABELS[category])]} />
-        <BeadEdge className="absolute inset-x-0 bottom-0" />
       </div>
 
-      {/* Try it (#1 + #2 with no sign-up) */}
-      <section id="try" aria-labelledby="try-title" className="scroll-mt-20 border-y border-sand-200 bg-sand-50">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-16 sm:px-6 md:py-24">
-          <div className="reveal grid gap-4 md:grid-cols-2 md:items-end md:gap-12">
-            <div className="flex flex-col gap-3">
-              <Eyebrow>{t('tryEyebrow')}</Eyebrow>
-              <h2 id="try-title" className={sectionTitle}>
-                {t('tryTitle')}
-              </h2>
-            </div>
-            <p className="max-w-xl text-lg leading-relaxed text-pretty text-sand-700">{t('tryIntro')}</p>
-          </div>
+      {/* Budget planner (#1 + #2 with no sign-up) */}
+      <section id="try" aria-labelledby="try-title" className="scroll-mt-20">
+        <div className={`flex flex-col gap-10 py-20 md:py-28 ${container}`}>
+          <SectionHeading id="try-title" eyebrow={t('tryEyebrow')} title={t('tryTitle')} intro={t('tryIntro')} />
           <TryWidget />
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how" aria-labelledby="steps-title" className="scroll-mt-20">
-        <div className="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 md:py-24">
-          <div className="flex max-w-2xl flex-col gap-3">
-            <Eyebrow>{t('stepsEyebrow')}</Eyebrow>
-            <h2 id="steps-title" className={sectionTitle}>
-              {t('stepsTitle')}
-            </h2>
-          </div>
-          <ol className="relative mt-12 grid gap-10 md:grid-cols-3 md:gap-10">
-            {/* The string that ties the steps together: down on phones, across from md. */}
-            <span aria-hidden className="absolute start-7 top-14 bottom-6 border-s-2 border-dotted border-gold-300 md:hidden" />
-            {/* From the first numeral's centre to the third's: the third column starts at 2/3 + 2/3 of the gap. */}
-            <span aria-hidden className="absolute start-7 top-7 hidden w-[calc(66.667%+1.667rem)] border-t-2 border-dotted border-gold-300 md:block" />
+      <section id="how" aria-labelledby="steps-title" className="scroll-mt-20 border-t border-line">
+        <div className={`flex flex-col gap-12 py-20 md:py-28 ${container}`}>
+          <SectionHeading id="steps-title" eyebrow={t('stepsEyebrow')} title={t('stepsTitle')} />
+          <ol className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
             {steps.map((step, index) => (
-              <li key={step.title} className="reveal relative grid grid-cols-[3.5rem_1fr] gap-x-5 gap-y-2 md:flex md:flex-col md:gap-4">
-                <span
-                  aria-hidden
-                  className="row-span-2 flex size-14 items-center justify-center rounded-full border border-gold-300 bg-cream font-display text-2xl font-medium text-brand-700 italic shadow-[0_0_0_6px_var(--color-cream)]"
-                >
-                  {index + 1}
+              <li key={step.title} className="reveal flex flex-col gap-10 bg-surface p-7 sm:p-8">
+                <span aria-hidden className="font-mono text-sm text-accent-ink tabular-nums">
+                  {String(index + 1).padStart(2, '0')}
                 </span>
-                <h3 className="pt-3 text-2xl font-semibold md:pt-2">{step.title}</h3>
-                <p className="max-w-sm leading-relaxed text-sand-700">{step.body}</p>
+                <div className="flex flex-col gap-2">
+                  <h3 className="text-xl font-semibold">{step.title}</h3>
+                  <p className="leading-relaxed text-ink-soft">{step.body}</p>
+                </div>
               </li>
             ))}
           </ol>
@@ -137,27 +137,24 @@ export default async function HomePage() {
       </section>
 
       {/* Categories */}
-      <section aria-labelledby="categories-title" className="border-t border-sand-200 bg-white">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-          <div className="flex flex-col gap-3 lg:sticky lg:top-28 lg:self-start">
-            <Eyebrow>{t('categoriesEyebrow')}</Eyebrow>
-            <h2 id="categories-title" className={sectionTitle}>
-              {t('categoriesTitle')}
-            </h2>
-            <p className="max-w-md text-lg leading-relaxed text-sand-700">{t('categoriesIntro')}</p>
-          </div>
-          <ul className="divide-y divide-sand-200 border-y border-sand-200">
+      <section aria-labelledby="categories-title" className="border-t border-line">
+        <div className={`flex flex-col gap-12 py-20 md:py-28 ${container}`}>
+          <SectionHeading id="categories-title" eyebrow={t('categoriesEyebrow')} title={t('categoriesTitle')} />
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {CATEGORIES.map((category) => (
-              <li key={category} className="reveal grid grid-cols-[auto_1fr] items-start gap-x-5 gap-y-1 py-6 sm:grid-cols-[auto_1fr_auto] sm:gap-x-6">
-                <span className="relative flex size-12 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                  <Icon name={category} className="size-5.5" />
-                  <span aria-hidden className="absolute -end-0.5 -bottom-0.5 size-3.5 rounded-full border-2 border-white" style={{ background: `var(--series-${category})` }} />
+              <li
+                key={category}
+                className="reveal group flex flex-col gap-6 rounded-2xl border border-line bg-surface p-6 transition-[border-color,translate] duration-300 hover:-translate-y-1 hover:border-line-strong"
+              >
+                <span className="relative flex size-11 items-center justify-center rounded-xl bg-subtle text-ink transition-colors duration-300 group-hover:bg-accent-soft group-hover:text-accent-ink">
+                  <Icon name={category} className="size-5" />
+                  <span aria-hidden className="absolute -end-1 -top-1 size-3 rounded-full border-2 border-surface" style={{ background: `var(--series-${category})` }} />
                 </span>
-                <div>
-                  <h3 className="text-2xl font-semibold">{CATEGORY_LABELS[category]}</h3>
-                  <p className="mt-1 leading-relaxed text-sand-700">{details[category]}</p>
+                <div className="flex flex-col gap-1.5">
+                  <h3 className="text-lg font-semibold">{CATEGORY_LABELS[category]}</h3>
+                  <p className="text-sm leading-relaxed text-ink-soft">{details[category]}</p>
                 </div>
-                <p className="col-start-2 text-sm text-sand-600 sm:col-start-3 sm:max-w-44 sm:pt-2 sm:text-end">
+                <p className="mt-auto text-xs text-muted">
                   {t('categoryUnits', { units: units.format(CATEGORY_UNITS[category].map((unit) => UNIT_LABELS[unit])) })}
                 </p>
               </li>
@@ -166,28 +163,22 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Trust: a night section */}
-      <section aria-labelledby="trust-title" className="relative overflow-hidden bg-brand-950 text-brand-100">
-        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,var(--color-gold-200)_1px,transparent_1.5px)] bg-size-[22px_22px] opacity-[0.07]" />
-        <div aria-hidden className="pointer-events-none absolute -end-32 -top-40 size-[32rem] rounded-full bg-brand-700/40 blur-3xl" />
-        <StageLights />
-        <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-4 py-20 sm:px-6 md:py-28 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-          <div className="flex flex-col gap-4">
-            <Eyebrow tone="night">{t('trustEyebrow')}</Eyebrow>
-            <h2 id="trust-title" className={`${sectionTitle} text-white`}>
-              {t('trustTitle')}
-            </h2>
-            <p className="max-w-md text-lg leading-relaxed">{t('trustIntro')}</p>
-          </div>
-          <ul className="grid gap-4 sm:grid-cols-2">
+      {/* Principles: the opposite palette, so the page has one strong change of tone */}
+      <section aria-labelledby="trust-title" className="scope-inverse relative overflow-hidden bg-canvas text-ink">
+        <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(48rem_24rem_at_50%_0%,var(--accent-soft),transparent_70%)]" />
+        <div className={`relative flex flex-col gap-12 py-20 md:py-28 ${container}`}>
+          <SectionHeading id="trust-title" eyebrow={t('trustEyebrow')} title={t('trustTitle')} />
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {trust.map((item, index) => (
               <li key={item.title} className="reveal">
-                <GlowCard className="flex flex-col gap-3">
-                  <span className="flex size-11 items-center justify-center rounded-full bg-gold-300/10 ring-1 ring-gold-300/30">
-                    <Icon name={TRUST_ICONS[index] ?? 'check'} className="size-5 text-gold-300" />
+                <GlowCard className="flex flex-col gap-8">
+                  <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
+                    <Icon name={TRUST_ICONS[index] ?? 'check'} className="size-4.5" />
                   </span>
-                  <h3 className="text-xl font-semibold text-white">{item.title}</h3>
-                  <p className="leading-relaxed text-brand-100/85">{item.body}</p>
+                  <div className="flex flex-col gap-1.5">
+                    <h3 className="text-lg font-semibold">{item.title}</h3>
+                    <p className="text-sm leading-relaxed text-ink-soft">{item.body}</p>
+                  </div>
                 </GlowCard>
               </li>
             ))}
@@ -197,23 +188,23 @@ export default async function HomePage() {
 
       {/* FAQ */}
       <section id="faq" aria-labelledby="faq-title" className="scroll-mt-20">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
-          <div className="flex flex-col gap-3">
+        <div className={`grid gap-10 py-20 md:py-28 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 ${container}`}>
+          <div className="reveal flex flex-col gap-3">
             <Eyebrow>{t('faqEyebrow')}</Eyebrow>
-            <h2 id="faq-title" className={sectionTitle}>
+            <h2 id="faq-title" className="text-headline font-semibold">
               {t('faqTitle')}
             </h2>
           </div>
-          <div className="divide-y divide-sand-200 border-y border-sand-200">
+          <div className="divide-y divide-line border-y border-line">
             {faq.map((item) => (
               <details key={item.q} className="accordion group">
-                <summary className="flex min-h-16 list-none items-center justify-between gap-4 py-4 font-display text-lg font-semibold text-sand-900 transition-colors hover:text-brand-700 sm:text-xl [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-16 list-none items-center justify-between gap-4 py-4 text-lg font-semibold text-ink transition-colors hover:text-accent-ink [&::-webkit-details-marker]:hidden">
                   {item.q}
-                  <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full border border-sand-300 text-brand-700 transition-transform duration-300 group-open:rotate-45">
+                  <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full border border-line-strong text-ink-soft transition-transform duration-300 group-open:rotate-45">
                     <Icon name="plus" className="size-4" />
                   </span>
                 </summary>
-                <p className="pe-12 pb-5 leading-relaxed text-sand-700">{item.a}</p>
+                <p className="max-w-xl pe-12 pb-5 leading-relaxed text-ink-soft">{item.a}</p>
               </details>
             ))}
           </div>
@@ -221,31 +212,30 @@ export default async function HomePage() {
       </section>
 
       {/* For vendors */}
-      <section id="vendors" aria-labelledby="vendors-title" className="scroll-mt-20 px-4 pb-20 sm:px-6 md:pb-28">
-        <div className="reveal mx-auto grid w-full max-w-6xl overflow-hidden rounded-[2rem] bg-gold-50 ring-1 ring-gold-200 md:grid-cols-[1fr_auto]">
-          <div className="flex flex-col items-start gap-5 p-7 sm:p-10 lg:p-14">
-            <Eyebrow>{t('vendorsEyebrow')}</Eyebrow>
-            <h2 id="vendors-title" className={sectionTitle}>
-              {t('vendorsTitle')}
-            </h2>
-            <p className="max-w-xl text-lg leading-relaxed text-sand-700">{t('vendorsBody')}</p>
-            <ul className="flex flex-col gap-2.5 text-sand-800">
+      <section id="vendors" aria-labelledby="vendors-title" className="scroll-mt-20 pb-20 md:pb-28">
+        <div className={container}>
+          <div className="reveal grid gap-10 overflow-hidden rounded-[2rem] border border-line bg-surface p-7 sm:p-10 md:grid-cols-[1.1fr_0.9fr] md:items-center lg:p-14">
+            <div className="flex flex-col items-start gap-5">
+              <Eyebrow>{t('vendorsEyebrow')}</Eyebrow>
+              <h2 id="vendors-title" className="text-headline font-semibold text-balance">
+                {t('vendorsTitle')}
+              </h2>
+              <p className="max-w-md text-lg leading-relaxed text-ink-soft">{t('vendorsBody')}</p>
+              <Link href="/vendor/onboarding" className={buttonStyles({ size: 'lg', className: 'group mt-2' })}>
+                {t('vendorsCta')}
+                <Icon name="arrowRight" className="size-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
+            <ul className="flex flex-col gap-2">
               {vendorPoints.map((point) => (
-                <li key={point} className="flex gap-3">
-                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-brand-700 text-white">
-                    <Icon name="check" className="size-3" />
+                <li key={point} className="flex items-center gap-3 rounded-xl bg-subtle px-4 py-3.5 text-ink">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-accent text-on-accent">
+                    <Icon name="check" className="size-3.5" />
                   </span>
                   {point}
                 </li>
               ))}
             </ul>
-            <Link href="/vendor/onboarding" className={buttonStyles({ size: 'lg', className: 'group mt-2' })}>
-              {t('vendorsCta')}
-              <Icon name="arrowRight" className="size-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-          <div className="hidden items-end px-10 pt-12 md:flex lg:px-14">
-            <ArchWindow className="aspect-[4/5] w-56 lg:w-64" />
           </div>
         </div>
       </section>

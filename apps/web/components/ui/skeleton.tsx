@@ -3,7 +3,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className={`animate-shimmer rounded-xl bg-[linear-gradient(90deg,var(--color-sand-100)_25%,var(--color-sand-50)_50%,var(--color-sand-100)_75%)] bg-size-[200%_100%] ${className}`}
+      className={`animate-shimmer rounded-xl bg-[linear-gradient(90deg,var(--subtle)_25%,var(--surface)_50%,var(--subtle)_75%)] bg-size-[200%_100%] ${className}`}
     />
   );
 }
@@ -19,10 +19,10 @@ export function PageSkeleton({ label }: { label: string }) {
         <Skeleton className="h-5 w-1/2 max-w-sm" />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
-        <Skeleton className="h-40 rounded-3xl" />
-        <Skeleton className="h-40 rounded-3xl" />
+        <Skeleton className="h-40 rounded-2xl" />
+        <Skeleton className="h-40 rounded-2xl" />
       </div>
-      <Skeleton className="h-24 rounded-3xl" />
+      <Skeleton className="h-24 rounded-2xl" />
     </div>
   );
 }

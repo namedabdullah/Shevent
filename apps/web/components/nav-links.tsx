@@ -26,7 +26,7 @@ function isCurrent(link: NavLink, pathname: string | null) {
 export function NavLinkList({ links, variant, label, pathname = null }: { links: NavLink[]; variant: 'bar' | 'tabs'; label: string; pathname?: string | null }) {
   const tabs = variant === 'tabs';
   return (
-    <nav aria-label={label} className={tabs ? 'border-t border-sand-200 md:hidden' : 'hidden md:block'}>
+    <nav aria-label={label} className={tabs ? 'border-t border-line md:hidden' : 'hidden md:block'}>
       <ul className={tabs ? 'mx-auto flex max-w-5xl px-2' : 'flex items-center gap-1'}>
         {links.map((link) => {
           const current = isCurrent(link, pathname);
@@ -37,8 +37,8 @@ export function NavLinkList({ links, variant, label, pathname = null }: { links:
                 aria-current={current ? 'page' : undefined}
                 className={
                   tabs
-                    ? `flex min-h-13 flex-col items-center justify-center gap-0.5 border-b-2 px-1 text-xs font-semibold transition-colors ${current ? 'border-brand-700 text-brand-700' : 'border-transparent text-sand-600 hover:text-sand-900'}`
-                    : `flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-semibold transition-colors ${current ? 'bg-brand-700 text-white shadow-sm' : 'text-sand-700 hover:bg-sand-100 hover:text-sand-900'}`
+                    ? `flex min-h-13 flex-col items-center justify-center gap-0.5 border-b-2 px-1 text-xs font-semibold transition-colors ${current ? 'border-accent text-accent-ink' : 'border-transparent text-muted hover:text-ink'}`
+                    : `flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-semibold transition-colors ${current ? 'bg-accent text-on-accent shadow-sm' : 'text-ink-soft hover:bg-subtle hover:text-ink'}`
                 }
               >
                 <Icon name={link.icon} className={tabs ? 'size-5' : 'size-4'} />

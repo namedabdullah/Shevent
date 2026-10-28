@@ -11,6 +11,7 @@ import { Icon } from '@/components/icons';
 import { SampleDataNotice } from '@/components/sample-data-notice';
 import { SubmitButton } from '@/components/submit-button';
 import { buttonStyles } from '@/components/ui/button';
+import { DateField } from '@/components/ui/date-field';
 import { Field, inputStyles, selectStyles } from '@/components/ui/field';
 import { Link } from '@/i18n/navigation';
 import { track } from '@/lib/analytics';
@@ -85,7 +86,7 @@ export function TryWidget() {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4 rounded-3xl border border-sand-200 bg-white p-5 shadow-card sm:p-7">
+      <form onSubmit={submit} noValidate className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-7">
         {field(
           'event_type',
           tp('eventType'),
@@ -124,7 +125,7 @@ export function TryWidget() {
         {field(
           'event_date',
           tp('date'),
-          <input id={`${id}-event_date`} name="event_date" type="date" required aria-invalid={invalid.includes('event_date')} className={inputStyles} />,
+          <DateField id={`${id}-event_date`} name="event_date" minToday required invalid={invalid.includes('event_date')} />,
         )}
         {field(
           'total_budget_pkr',
@@ -147,19 +148,19 @@ export function TryWidget() {
         <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', block: true, className: 'mt-2' })}>
           {pending ? tp('submitting') : t('submit')}
         </SubmitButton>
-        <p aria-live="polite" className="text-sm font-medium text-red-700 empty:hidden">
+        <p aria-live="polite" className="text-sm font-medium text-danger empty:hidden">
           {failed ? t('failed') : null}
         </p>
       </form>
 
       <div aria-live="polite" aria-busy={pending}>
         {result ? (
-          <section aria-labelledby={`${id}-result`} className="flex animate-enter flex-col gap-5 rounded-3xl border border-sand-200 bg-white p-5 shadow-card sm:p-7">
+          <section aria-labelledby={`${id}-result`} className="flex animate-enter flex-col gap-5 rounded-2xl border border-line bg-surface p-5 shadow-card sm:p-7">
             <div className="flex flex-col gap-1.5">
               <h3 id={`${id}-result`} ref={resultHeading} tabIndex={-1} className="text-2xl font-semibold outline-none sm:text-3xl">
                 {t('resultTitle')}
               </h3>
-              <p className="text-sm text-sand-600">
+              <p className="text-sm text-muted">
                 {t('resultFor', {
                   event: EVENT_TYPE_LABELS[result.request.event_type],
                   guests: result.request.guest_count,
@@ -170,8 +171,8 @@ export function TryWidget() {
             </div>
             <SampleDataNotice response={result.estimate} />
             <BudgetSplit estimate={result.estimate} />
-            <div className="flex flex-col items-start gap-2 rounded-2xl bg-brand-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-sand-700">{t('seeVendorsHint')}</p>
+            <div className="flex flex-col items-start gap-2 rounded-2xl bg-accent-soft p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-ink-soft">{t('seeVendorsHint')}</p>
               <Link
                 href={{
                   pathname: '/plan/new',
@@ -192,14 +193,14 @@ export function TryWidget() {
           </section>
         ) : (
           // What the answer will contain: the five real categories, no made-up numbers.
-          <div className="hidden min-h-[26rem] flex-col items-center justify-center gap-6 rounded-3xl border border-dashed border-sand-300 bg-white/50 p-10 text-center lg:flex">
-            <span className="flex size-14 items-center justify-center rounded-full bg-gold-50 text-gold-700 ring-8 ring-gold-50/60">
+          <div className="hidden min-h-[26rem] flex-col items-center justify-center gap-6 rounded-2xl border border-dashed border-line-strong bg-surface/50 p-10 text-center lg:flex">
+            <span className="flex size-14 items-center justify-center rounded-full bg-accent-soft text-muted ring-8 ring-accent-soft/60">
               <Icon name="wallet" className="size-6" />
             </span>
-            <p className="max-w-xs leading-relaxed text-sand-600">{t('emptyHint')}</p>
+            <p className="max-w-xs leading-relaxed text-muted">{t('emptyHint')}</p>
             <ul aria-hidden className="flex flex-wrap justify-center gap-2">
               {CATEGORIES.map((category) => (
-                <li key={category} className="flex items-center gap-2 rounded-full border border-sand-200 bg-white px-3 py-1.5 text-sm text-sand-700">
+                <li key={category} className="flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-sm text-ink-soft">
                   <span className="size-2.5 rounded-sm" style={{ background: `var(--series-${category})` }} />
                   {CATEGORY_LABELS[category]}
                 </li>

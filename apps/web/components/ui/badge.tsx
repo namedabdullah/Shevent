@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react';
 import { Icon, type IconName } from '@/components/icons';
 
-export type BadgeTone = 'neutral' | 'muted' | 'brand' | 'gold' | 'success' | 'warning' | 'danger';
+export type BadgeTone = 'neutral' | 'muted' | 'solid' | 'accent' | 'success' | 'warning' | 'danger';
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: 'border-sand-300 bg-white text-sand-700',
-  muted: 'border-transparent bg-sand-100 text-sand-700',
-  brand: 'border-transparent bg-brand-700 text-white',
-  gold: 'border-gold-200 bg-gold-50 text-gold-700',
-  success: 'border-green-600/25 bg-green-50 text-green-800',
-  warning: 'border-amber-400/50 bg-amber-50 text-amber-900',
-  danger: 'border-red-300 bg-red-50 text-red-800',
+  neutral: 'border-line-strong bg-surface text-ink-soft',
+  muted: 'border-transparent bg-subtle text-ink-soft',
+  solid: 'border-transparent bg-accent text-on-accent',
+  accent: 'border-accent-line bg-accent-soft text-accent-ink',
+  success: 'border-success-line bg-success-soft text-success-ink',
+  warning: 'border-warning-line bg-warning-soft text-warning-ink',
+  danger: 'border-danger-line bg-danger-soft text-danger-ink',
 };
 
 /** A short label: a status, "Verified", "Sponsored". Always words, optionally with an icon. */

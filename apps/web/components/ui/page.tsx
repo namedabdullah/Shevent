@@ -13,13 +13,11 @@ export function Page({ width = 'default', className = '', children }: { width?: 
   );
 }
 
-/** Small uppercase label above a heading, with the gold rule. */
-export function Eyebrow({ tone = 'gold', className = '', children }: { tone?: 'gold' | 'night'; className?: string; children: ReactNode }) {
+/** Small label above a heading: an accent dot and quiet uppercase text. Works on any theme or scope. */
+export function Eyebrow({ className = '', children }: { className?: string; children: ReactNode }) {
   return (
-    <p
-      className={`flex items-center gap-2.5 text-xs font-semibold tracking-[0.18em] uppercase ${tone === 'night' ? 'text-gold-200' : 'text-gold-700'} ${className}`}
-    >
-      <span aria-hidden className={`h-px w-7 ${tone === 'night' ? 'bg-gold-300' : 'bg-gold-500'}`} />
+    <p className={`flex items-center gap-2 text-xs font-semibold tracking-[0.14em] text-muted uppercase ${className}`}>
+      <span aria-hidden className="size-1.5 rounded-full bg-accent" />
       {children}
     </p>
   );
@@ -30,7 +28,7 @@ export function BackLink({ href, children }: { href: string; children: ReactNode
   return (
     <Link
       href={href}
-      className="group -ms-1 inline-flex min-h-11 items-center gap-1.5 self-start rounded-full px-1 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800"
+      className="group -ms-1 inline-flex min-h-11 items-center gap-1.5 self-start rounded-full px-1 text-sm font-semibold text-accent-ink transition-colors hover:text-accent-ink"
     >
       <Icon name="arrowLeft" className="size-4 transition-transform group-hover:-translate-x-0.5" />
       {children}
@@ -62,7 +60,7 @@ export function PageHeader({
         <div className="flex max-w-3xl min-w-0 flex-col gap-2.5">
           {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
           <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{title}</h1>
-          {description && <div className="text-base leading-relaxed text-pretty text-sand-700 sm:text-lg">{description}</div>}
+          {description && <div className="text-base leading-relaxed text-pretty text-ink-soft sm:text-lg">{description}</div>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
@@ -94,7 +92,7 @@ export function Section({
           <h2 id={id} className="text-2xl font-semibold tracking-tight">
             {title}
           </h2>
-          {description && <p className="text-sand-700">{description}</p>}
+          {description && <p className="text-ink-soft">{description}</p>}
         </div>
         {actions}
       </div>
@@ -106,11 +104,11 @@ export function Section({
 /** A labelled row of facts, e.g. date · guests · area. */
 export function MetaList({ items }: { items: { icon: IconName; label: ReactNode; text: ReactNode }[] }) {
   return (
-    <dl className="flex flex-wrap gap-x-5 gap-y-2 text-sand-700">
+    <dl className="flex flex-wrap gap-x-5 gap-y-2 text-ink-soft">
       {items.map((item, index) => (
         <div key={index} className="flex items-center gap-2">
           <dt className="sr-only">{item.label}</dt>
-          <Icon name={item.icon} className="size-4 text-gold-500" />
+          <Icon name={item.icon} className="size-4 text-muted" />
           <dd>{item.text}</dd>
         </div>
       ))}
@@ -119,7 +117,7 @@ export function MetaList({ items }: { items: { icon: IconName; label: ReactNode;
 }
 
 /** Card surface classes, for <article>, <li> or <Link> elements that need to keep their own tag. */
-export const cardStyles = 'rounded-3xl border border-sand-200 bg-white shadow-card';
+export const cardStyles = 'rounded-2xl border border-line bg-surface';
 
 /** A card that is also a link: lifts on hover and keeps a clear focus ring. */
-export const cardLinkStyles = `${cardStyles} block transition-[border-color,box-shadow,translate] duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift focus-visible:outline-2 focus-visible:outline-offset-2`;
+export const cardLinkStyles = `${cardStyles} block transition-[border-color,box-shadow,translate] duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-card focus-visible:outline-2 focus-visible:outline-offset-2`;

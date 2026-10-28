@@ -7,6 +7,7 @@ import { startTransition, useActionState, useId, useState, type FormEvent, type 
 import { createPlan, type PlanFormState } from '@/app/[locale]/(app)/plan/new/actions';
 import { SubmitButton } from '@/components/submit-button';
 import { buttonStyles } from '@/components/ui/button';
+import { DateField } from '@/components/ui/date-field';
 import { Field, Fieldset, FormSection, inputStyles, selectStyles } from '@/components/ui/field';
 
 export interface PlanFormDefaults {
@@ -22,7 +23,7 @@ const initialState: PlanFormState = { status: 'idle' };
 
 /** A checkbox as a pill: the box stays visible, the whole pill is the label. */
 const pillCheck =
-  'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-full border border-sand-300 bg-white px-4 text-sm font-medium text-sand-800 transition-colors hover:border-brand-300 has-[:checked]:border-brand-700 has-[:checked]:bg-brand-50 has-[:checked]:text-brand-800 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-600';
+  'flex min-h-11 cursor-pointer items-center gap-2.5 rounded-full border border-line-strong bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-accent-line has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:text-accent-ink has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent';
 
 export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; today: string }) {
   const t = useTranslations('Planner');
@@ -77,7 +78,7 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
           {field(
             'event_date',
             t('date'),
-            <input id={`${id}-event_date`} name="event_date" type="date" min={today} defaultValue={defaults.event_date} required aria-invalid={invalid('event_date')} className={inputStyles} />,
+            <DateField id={`${id}-event_date`} name="event_date" min={today} defaultValue={defaults.event_date} required invalid={invalid('event_date')} />,
           )}
           {field(
             'area',
@@ -144,7 +145,7 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
         <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', className: 'self-stretch sm:self-start' })}>
           {pending ? t('submitting') : t('submit')}
         </SubmitButton>
-        <p aria-live="polite" className="text-sm font-medium text-red-700">
+        <p aria-live="polite" className="text-sm font-medium text-danger">
           {state.status === 'error' && state.error === 'failed' ? t('errors.failed') : null}
         </p>
       </div>

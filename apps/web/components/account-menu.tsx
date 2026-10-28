@@ -26,8 +26,8 @@ export async function AccountMenu({ area }: { area: 'host' | 'vendor' }) {
       switchLink={switchLink}
     >
       <form action={signOut}>
-        <SubmitButton className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-start text-sm font-medium text-sand-800 hover:bg-sand-50 disabled:opacity-60">
-          <Icon name="signOut" className="size-4 text-sand-600" />
+        <SubmitButton className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-start text-sm font-medium text-ink hover:bg-subtle disabled:opacity-60">
+          <Icon name="signOut" className="size-4 text-muted" />
           {t('signOut')}
         </SubmitButton>
       </form>

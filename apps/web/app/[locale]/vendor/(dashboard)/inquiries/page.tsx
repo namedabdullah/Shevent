@@ -51,13 +51,13 @@ async function Inbox() {
               <DateLeaf date={row.event_date} />
               <div className="flex min-w-0 flex-col gap-1.5">
                 <h2 className="text-lg font-semibold">{EVENT_TYPE_LABELS[row.event_type]}</h2>
-                <p className="text-sm text-sand-700">
+                <p className="text-sm text-ink-soft">
                   {formatEventDate(row.event_date)} · {t('guestCount', { count: row.guest_count })} · {row.area}
                 </p>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm">
                   <InquiryStatusBadge status={row.status} label={tStatus(row.status)} />
-                  <span className="text-sand-600">
-                    {t('quote')}: <span className="font-semibold text-sand-800 tabular-nums">{row.quote_total_pkr === null ? t('noQuote') : formatPkr(row.quote_total_pkr)}</span>
+                  <span className="text-muted">
+                    {t('quote')}: <span className="font-semibold text-ink tabular-nums">{row.quote_total_pkr === null ? t('noQuote') : formatPkr(row.quote_total_pkr)}</span>
                   </span>
                 </div>
               </div>

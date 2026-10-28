@@ -1,108 +1,281 @@
 @import "tailwindcss";
 
-/* The site is light-only for now: an OS dark-mode switch must not change the page. A real dark theme
-   (every text, surface and chart colour) would need its own validated palette. */
-:root {
+/* ── Themes ────────────────────────────────────────────────────────────────────────────────────
+   Every colour in the app is a semantic token (canvas, surface, ink, muted, line, accent…). A theme
+   fills the tokens in; components never name a hue. The chosen theme is written to
+   <html data-theme> before first paint (see components/theme.tsx). Without JavaScript, the page
+   follows the OS light/dark setting.
+
+   All four palettes are checked for WCAG AA: text tokens ≥ 4.5:1 on canvas, surface and subtle;
+   `control` (form borders) and status solids ≥ 3:1 on surface; on-accent ≥ 4.5:1 on accent.
+
+   `.scope-inverse` flips a section to the opposite palette (a dark band on a light page and the
+   other way round). Utilities read the tokens directly (@theme inline), so the flip only needs the
+   variables redefined on that element. */
+
+:root,
+[data-theme='light'],
+[data-theme='dark'] .scope-inverse,
+[data-theme='ocean'] .scope-inverse {
   color-scheme: light;
+  --canvas: #f6f6f4;
+  --surface: #ffffff;
+  --subtle: #efeeeb;
+  --sunken: #e6e5e1;
+  --line: #e4e3df;
+  --line-strong: #cfcdc8;
+  --control: #8a8780;
+  --ink: #18181b;
+  --ink-soft: #3d3c39;
+  --muted: #64615c;
+  --faint: #a3a09a;
+  --accent: #c9441a;
+  --accent-hover: #ad3912;
+  --on-accent: #ffffff;
+  --accent-ink: #b23c16;
+  --accent-soft: #fcece6;
+  --accent-line: #f3c2b0;
+  --success: #15803d;
+  --success-ink: #14532d;
+  --success-soft: #eaf7ee;
+  --success-line: #a9dbb8;
+  --warning: #b45309;
+  --warning-ink: #78350f;
+  --warning-soft: #fef6e4;
+  --warning-line: #f1cf8c;
+  --danger: #c42b2b;
+  --danger-ink: #7f1d1d;
+  --danger-soft: #fdeded;
+  --danger-line: #f1b3b3;
+  --on-solid: #ffffff;
+  --shadow-rgb: 24 24 27;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364615c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  /* Chart marks (never text). Light steps from the validated dataviz palette. */
+  --series-venue: #2a78d6;
+  --series-catering: #eb6834;
+  --series-decor: #1baf7a;
+  --series-dj_sound: #eda100;
+  --series-lighting: #e87ba4;
+  /* Photography is reference slot 6; the six were re-validated together (worst adjacent CVD ΔE 9.1,
+     normal-vision ΔE 19.6). The same step is used on dark pages. */
+  --series-photography: #008300;
 }
 
-/* Brand: warm cream pages, maroon for actions and links, gold for ornament only.
-   Contrast on the cream page (WCAG): sand-500 5.0:1, sand-600 6.3:1, brand-700 10.0:1; white on
-   brand-700 10.7:1; gold-700 on gold-50 6.8:1. Gold 300–500 never carries text on light surfaces.
-   sand-400 (3.1:1 on white) is the lightest border allowed on form controls.
-   Night sections (brand-900/950) carry white, cream, brand-100 or gold-200 text only. */
+[data-theme='dark'],
+[data-theme='light'] .scope-inverse,
+[data-theme='sand'] .scope-inverse {
+  color-scheme: dark;
+  --canvas: #0f0f11;
+  --surface: #17171a;
+  --subtle: #1f1f23;
+  --sunken: #27272c;
+  --line: #2a2a2f;
+  --line-strong: #3b3b42;
+  --control: #6f6f77;
+  --ink: #f4f4f3;
+  --ink-soft: #d2d2ce;
+  --muted: #a19f99;
+  --faint: #6b6a66;
+  --accent: #ff7a50;
+  --accent-hover: #ff9471;
+  --on-accent: #1b0a04;
+  --accent-ink: #ff8e6a;
+  --accent-soft: #2b1810;
+  --accent-line: #5d2b1b;
+  --success: #4ade80;
+  --success-ink: #bbf7d0;
+  --success-soft: #10261a;
+  --success-line: #1f5134;
+  --warning: #fbbf24;
+  --warning-ink: #fde68a;
+  --warning-soft: #2a210b;
+  --warning-line: #5c4614;
+  --danger: #f87171;
+  --danger-ink: #fecaca;
+  --danger-soft: #2e1414;
+  --danger-line: #6b2424;
+  --on-solid: #0f0f11;
+  --shadow-rgb: 0 0 0;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a19f99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  /* The validated dark steps of the same palette. */
+  --series-venue: #3987e5;
+  --series-catering: #d95926;
+  --series-decor: #199e70;
+  --series-dj_sound: #c98500;
+  --series-lighting: #d55181;
+  --series-photography: #008300;
+}
+
+[data-theme='sand'] {
+  color-scheme: light;
+  --canvas: #f3eee6;
+  --surface: #fffdf9;
+  --subtle: #ebe4d9;
+  --sunken: #e1d8ca;
+  --line: #e2d9cb;
+  --line-strong: #cdbfab;
+  --control: #8e806f;
+  --ink: #241d17;
+  --ink-soft: #473c33;
+  --muted: #6a5d51;
+  --faint: #a8998a;
+  --accent: #8f3d27;
+  --accent-hover: #76311f;
+  --on-accent: #ffffff;
+  --accent-ink: #8f3d27;
+  --accent-soft: #f5e4dc;
+  --accent-line: #e2b9a8;
+  --success: #15803d;
+  --success-ink: #14532d;
+  --success-soft: #eaf5e9;
+  --success-line: #a9d6b3;
+  --warning: #a14a07;
+  --warning-ink: #78350f;
+  --warning-soft: #fbf1dc;
+  --warning-line: #e8c98d;
+  --danger: #b42626;
+  --danger-ink: #7f1d1d;
+  --danger-soft: #fae8e4;
+  --danger-line: #ecb4aa;
+  --on-solid: #ffffff;
+  --shadow-rgb: 52 38 26;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236a5d51' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-theme='ocean'] {
+  color-scheme: dark;
+  --canvas: #0a111c;
+  --surface: #0f1928;
+  --subtle: #152235;
+  --sunken: #1b2a40;
+  --line: #1d2b3f;
+  --line-strong: #2c3d55;
+  --control: #5b6e88;
+  --ink: #e9eff7;
+  --ink-soft: #c3cfde;
+  --muted: #8fa1b7;
+  --faint: #56677d;
+  --accent: #3fd0c0;
+  --accent-hover: #6adccf;
+  --on-accent: #03231f;
+  --accent-ink: #5fdccd;
+  --accent-soft: #0c2a2c;
+  --accent-line: #1b4d4b;
+  --success: #4ade80;
+  --success-ink: #bbf7d0;
+  --success-soft: #0f2a1f;
+  --success-line: #1f5134;
+  --warning: #fbbf24;
+  --warning-ink: #fde68a;
+  --warning-soft: #2a230e;
+  --warning-line: #5c4a14;
+  --danger: #f87171;
+  --danger-ink: #fecaca;
+  --danger-soft: #301822;
+  --danger-line: #6b2430;
+  --on-solid: #0a111c;
+  --shadow-rgb: 0 0 0;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238fa1b7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --series-venue: #3987e5;
+  --series-catering: #d95926;
+  --series-decor: #199e70;
+  --series-dj_sound: #c98500;
+  --series-lighting: #d55181;
+  --series-photography: #008300;
+}
+
+/* No JavaScript yet (or ever): follow the OS. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --canvas: #0f0f11;
+    --surface: #17171a;
+    --subtle: #1f1f23;
+    --sunken: #27272c;
+    --line: #2a2a2f;
+    --line-strong: #3b3b42;
+    --control: #6f6f77;
+    --ink: #f4f4f3;
+    --ink-soft: #d2d2ce;
+    --muted: #a19f99;
+    --faint: #6b6a66;
+    --accent: #ff7a50;
+    --accent-hover: #ff9471;
+    --on-accent: #1b0a04;
+    --accent-ink: #ff8e6a;
+    --accent-soft: #2b1810;
+    --accent-line: #5d2b1b;
+    --on-solid: #0f0f11;
+    --shadow-rgb: 0 0 0;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-control: var(--control);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-success: var(--success);
+  --color-success-ink: var(--success-ink);
+  --color-success-soft: var(--success-soft);
+  --color-success-line: var(--success-line);
+  --color-warning: var(--warning);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-line: var(--warning-line);
+  --color-danger: var(--danger);
+  --color-danger-ink: var(--danger-ink);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+  --color-on-solid: var(--on-solid);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --shadow-card: 0 1px 2px rgb(var(--shadow-rgb) / 0.05), 0 10px 30px -18px rgb(var(--shadow-rgb) / 0.25);
+  --shadow-lift: 0 2px 6px rgb(var(--shadow-rgb) / 0.06), 0 24px 48px -24px rgb(var(--shadow-rgb) / 0.35);
+}
+
 @theme {
-  --color-cream: #fbf7f1;
-
-  --color-sand-50: #f7f1e8;
-  --color-sand-100: #f0e7da;
-  --color-sand-200: #e5d8c6;
-  --color-sand-300: #d3c1aa;
-  --color-sand-400: #9c8873;
-  --color-sand-500: #7a6756;
-  --color-sand-600: #6b5948;
-  --color-sand-700: #4e3f33;
-  --color-sand-800: #3a2e26;
-  --color-sand-900: #271e19;
-
-  --color-brand-50: #fbf0f2;
-  --color-brand-100: #f5dce2;
-  --color-brand-200: #eab8c4;
-  --color-brand-300: #d98a9e;
-  --color-brand-400: #c25c78;
-  --color-brand-500: #a63a5a;
-  --color-brand-600: #8c2846;
-  --color-brand-700: #741c3a;
-  --color-brand-800: #5c142d;
-  --color-brand-900: #440e21;
-  --color-brand-950: #2c0815;
-
-  --color-gold-50: #fbf5e6;
-  --color-gold-100: #f5e7c2;
-  --color-gold-200: #ebd08a;
-  --color-gold-300: #ddb55a;
-  --color-gold-400: #c99a36;
-  --color-gold-500: #b08326;
-  --color-gold-700: #6e5016;
-
-  /* Illustration only (marigold garlands), never text or UI. */
-  --color-marigold-400: #eb9a2c;
-  --color-marigold-500: #d9781a;
-
-  --color-background: var(--color-cream);
-  --color-foreground: var(--color-sand-900);
-
-  /* Display sizes scale with the viewport so the editorial headings hold on a 360px phone. */
-  --text-display: clamp(2.6rem, 1.7rem + 4.1vw, 4.75rem);
+  /* Display sizes scale with the viewport so headings hold on a 360px phone. */
+  --text-display: clamp(2.5rem, 1.55rem + 4.3vw, 5rem);
   --text-display--line-height: 1.02;
-  --text-display--letter-spacing: -0.025em;
-  --text-headline: clamp(2rem, 1.55rem + 2vw, 3.1rem);
+  --text-display--letter-spacing: -0.045em;
+  --text-headline: clamp(1.9rem, 1.45rem + 1.9vw, 3rem);
   --text-headline--line-height: 1.08;
-  --text-headline--letter-spacing: -0.02em;
-
-  --shadow-card: 0 1px 2px rgb(39 30 25 / 0.04), 0 10px 28px -16px rgb(39 30 25 / 0.18);
-  --shadow-lift: 0 2px 4px rgb(39 30 25 / 0.05), 0 22px 44px -20px rgb(68 14 33 / 0.32);
+  --text-headline--letter-spacing: -0.035em;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* Motion. `enter` moves without fading, so it is safe on text (contrast is never measured mid-fade);
-     `fade-in` is for graphics only. Ambient loops are slow and decorative. */
-  --animate-enter: enter 0.5s var(--ease-out-expo) both;
-  --animate-fade-in: fade-in 0.5s ease-out both;
-  --animate-sway: sway 7s ease-in-out infinite;
-  --animate-twinkle: twinkle 3.2s ease-in-out infinite;
+     `fade-in` is for graphics only. */
+  --animate-enter: enter 0.6s var(--ease-out-expo) both;
+  --animate-fade-in: fade-in 0.6s ease-out both;
   --animate-shimmer: shimmer 1.8s linear infinite;
+  --animate-pulse-dot: pulse-dot 1.2s ease-in-out infinite;
 
   @keyframes enter {
     from {
-      translate: 0 10px;
+      translate: 0 12px;
     }
   }
   @keyframes fade-in {
     from {
       opacity: 0;
-    }
-  }
-  /* Starts and ends upright, so a single reduced-motion iteration leaves it straight. */
-  @keyframes sway {
-    0%,
-    100% {
-      rotate: 0deg;
-    }
-    25% {
-      rotate: -1.4deg;
-    }
-    75% {
-      rotate: 1.4deg;
-    }
-  }
-  @keyframes twinkle {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.35;
     }
   }
   @keyframes shimmer {
@@ -113,13 +286,23 @@
       background-position: -200% 0;
     }
   }
+  @keyframes pulse-dot {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
 }
 
-/* Used by .reveal below and by an arbitrary animate-[draw…] in the budget chart, not by an animate-*
-   theme token, so they live outside @theme (Tailwind drops theme keyframes that no token uses). */
+/* Used by .reveal, .scroll-progress and the budget bar's arbitrary animate-[draw…], not by a theme
+   token, so they live outside @theme (Tailwind drops theme keyframes that no token uses). */
 @keyframes slide-up {
   from {
-    translate: 0 2.5rem;
+    translate: 0 3rem;
+    scale: 0.98;
   }
 }
 
@@ -129,25 +312,50 @@
   }
 }
 
-@theme inline {
-  --font-sans: var(--font-body);
-  --font-display: var(--font-heading);
-  --font-mono: var(--font-geist-mono);
+@keyframes grow-x {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@keyframes calendar-next {
+  from {
+    opacity: 0;
+    translate: 1.25rem 0;
+  }
+}
+
+@keyframes calendar-previous {
+  from {
+    opacity: 0;
+    translate: -1.25rem 0;
+  }
+}
+
+@keyframes reveal-graphic {
+  from {
+    opacity: 0;
+    translate: 0 2rem;
+  }
 }
 
 @layer base {
   body {
-    background: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'cv11';
   }
 
   h1,
   h2,
   h3 {
-    font-family: var(--font-display), Georgia, serif;
-    color: var(--color-sand-900);
-    font-variation-settings: 'SOFT' 50;
+    font-family: var(--font-display);
+    color: var(--ink);
+    letter-spacing: -0.025em;
   }
 
   a,
@@ -164,12 +372,17 @@
   }
 
   :focus-visible {
-    outline-color: var(--color-brand-600);
+    outline-color: var(--accent);
   }
 
   ::selection {
-    background: var(--color-gold-100);
-    color: var(--color-sand-900);
+    background: var(--accent-soft);
+    color: var(--ink);
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--accent);
   }
 
   html {
@@ -182,7 +395,7 @@
       scroll-behavior: auto;
     }
 
-    /* One instant iteration: entrances land on their final frame and ambient loops stop upright. */
+    /* One instant iteration: entrances land on their final frame and loops stop. */
     *,
     *::before,
     *::after {
@@ -194,50 +407,193 @@
   }
 }
 
-@layer base {
-  input[type='checkbox'],
-  input[type='radio'] {
-    accent-color: var(--color-brand-700);
-  }
-}
-
 @layer components {
-  /* Native selects keep the platform picker (best on phones) but get the brand chevron. */
+  /* Hidden unless the browser can tie it to the scroll position (below). */
+  .scroll-progress {
+    transform-origin: left center;
+    scale: 0 1;
+  }
+
+  /* ── Selects ──────────────────────────────────────────────────────────────────────────────────
+     A native <select> everywhere (form values, keyboard, screen readers and phones' own pickers keep
+     working). Where the browser supports customizable selects, the picker becomes a themed, animated
+     menu; elsewhere it keeps the themed chevron. */
   .field-select {
     appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b5948' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: var(--chevron);
     background-repeat: no-repeat;
     background-position: right 0.85rem center;
-    background-size: 1.1rem;
+    background-size: 1.05rem;
     padding-inline-end: 2.5rem;
   }
 
-  /* The Mughal arch of Lahore's gateways, as a mask: the brand's signature frame. It stretches with
-     the element, so give arch-shaped panels a portrait aspect ratio. */
-  .arch-mask {
-    --arch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 100V42C0 19 21 6 50 0c29 6 50 19 50 42v58z'/%3E%3C/svg%3E");
-    -webkit-mask: var(--arch) center / 100% 100% no-repeat;
-    mask: var(--arch) center / 100% 100% no-repeat;
+  @supports (appearance: base-select) {
+    .field-select,
+    .field-select::picker(select) {
+      appearance: base-select;
+    }
+
+    .field-select {
+      display: flex;
+      align-items: center;
+      background-image: none;
+      padding-inline-end: 0.85rem;
+    }
+
+    .field-select::picker-icon {
+      content: '';
+      width: 1.05rem;
+      height: 1.05rem;
+      background: var(--chevron) center / contain no-repeat;
+      transition: rotate 0.25s var(--ease-out-expo);
+    }
+
+    .field-select:open::picker-icon {
+      rotate: 180deg;
+    }
+
+    .field-select::picker(select) {
+      margin-block: 0.375rem;
+      max-height: min(20rem, 60vh);
+      overflow-y: auto;
+      padding: 0.3rem;
+      border: 1px solid var(--line);
+      border-radius: 0.9rem;
+      background: var(--surface);
+      color: var(--ink);
+      box-shadow: var(--shadow-lift);
+      opacity: 0;
+      translate: 0 -6px;
+      scale: 0.98;
+      transform-origin: top center;
+      transition:
+        opacity 0.16s ease-out,
+        translate 0.24s var(--ease-out-expo),
+        scale 0.24s var(--ease-out-expo),
+        overlay 0.24s allow-discrete,
+        display 0.24s allow-discrete;
+    }
+
+    .field-select:open::picker(select) {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+
+    @starting-style {
+      .field-select:open::picker(select) {
+        opacity: 0;
+        translate: 0 -6px;
+        scale: 0.98;
+      }
+    }
+
+    .field-select option {
+      gap: 0.5rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 0.6rem;
+      font-size: 0.9375rem;
+      transition: background-color 0.12s;
+    }
+
+    .field-select option:hover,
+    .field-select option:focus-visible {
+      background: var(--subtle);
+      outline: none;
+    }
+
+    .field-select option:checked {
+      background: var(--accent-soft);
+      color: var(--accent-ink);
+      font-weight: 600;
+    }
+
+    .field-select option::checkmark {
+      order: 1;
+      margin-inline-start: auto;
+    }
+
+    /* The "Choose…" placeholder is the closed state only, not a choice. */
+    .field-select option[value='']:disabled {
+      display: none;
+    }
   }
 
-  /* Scroll-linked entrances, where the browser supports them. They only move things: text is never
-     faded, so contrast checks and readers always see it at full strength. */
+  /* ── Date fields ──────────────────────────────────────────────────────────────────────────────
+     The native date input stays (typing, validation, phones' wheel pickers). Where our calendar is
+     available (components/ui/date-field.tsx), the browser's own picker button is hidden. */
+  .date-enhanced::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+
+  .calendar-popover {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow-lift);
+    opacity: 0;
+    translate: 0 -6px;
+    scale: 0.98;
+    transform-origin: top right;
+    transition:
+      opacity 0.16s ease-out,
+      translate 0.24s var(--ease-out-expo),
+      scale 0.24s var(--ease-out-expo),
+      overlay 0.24s allow-discrete,
+      display 0.24s allow-discrete;
+  }
+
+  .calendar-popover:popover-open {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+
+  @starting-style {
+    .calendar-popover:popover-open {
+      opacity: 0;
+      translate: 0 -6px;
+      scale: 0.98;
+    }
+  }
+
+  /* ── Scroll motion ────────────────────────────────────────────────────────────────────────────
+     Scroll-linked entrances where the browser supports them. `.reveal` only moves (text is never
+     faded, so contrast checks always see full colour); `.reveal-graphic` also fades and is for
+     pictures only. */
   @supports (animation-timeline: view()) {
     .reveal {
       animation: slide-up linear both;
       animation-timeline: view();
-      animation-range: entry 0% cover 22%;
+      animation-range: entry 0% cover 25%;
+    }
+
+    .reveal-graphic {
+      animation: reveal-graphic linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+
+    .scroll-progress {
+      animation: grow-x linear both;
+      animation-timeline: scroll(root);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .reveal {
+    .reveal,
+    .reveal-graphic,
+    .scroll-progress {
       animation: none;
     }
   }
 
-  /* <details class="accordion"> opens smoothly where ::details-content is supported; elsewhere it
-     simply opens. */
+  /* <details class="accordion"> opens smoothly where ::details-content is supported. */
   .accordion {
     interpolate-size: allow-keywords;
   }
@@ -246,8 +602,8 @@
     block-size: 0;
     overflow-y: clip;
     transition:
-      block-size 0.35s var(--ease-out-expo),
-      content-visibility 0.35s allow-discrete;
+      block-size 0.4s var(--ease-out-expo),
+      content-visibility 0.4s allow-discrete;
   }
 
   .accordion[open]::details-content {
@@ -255,18 +611,31 @@
   }
 }
 
-/* Chart colours: one fixed slot per category, in CATEGORIES order, so a category keeps its
-   colour on every chart. Steps from the dataviz reference palette, validated (CVD separation,
-   lightness band and graphics contrast) against a light page. They are for marks only, never
-   for text, because they do not reach 4.5:1. Photography is reference slot 6; the six were
-   re-validated together on the cream page (worst adjacent CVD ΔE 9.1, normal-vision ΔE 19.6).
-   The validated dark steps are: venue #3987e5, catering #d95926, decor #199e70,
-   dj_sound #c98500, lighting #d55181, photography #008300. */
-:root {
-  --series-venue: #2a78d6;
-  --series-catering: #eb6834;
-  --series-decor: #1baf7a;
-  --series-dj_sound: #eda100;
-  --series-lighting: #e87ba4;
-  --series-photography: #008300;
+/* Lenis smooth scrolling (components/smooth-scroll.tsx), as lenis@1.3.26's lenis.css, plus turning
+   CSS smooth scrolling off while Lenis drives the scroll. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* A theme change cross-fades through the View Transitions API where it exists. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.35s;
 }

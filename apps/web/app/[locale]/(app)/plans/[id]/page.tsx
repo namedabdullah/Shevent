@@ -81,21 +81,21 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
             <h2 id="split-heading" className="text-2xl font-semibold tracking-tight">
               {t('splitTitle')}
             </h2>
-            {estimate && <p className="text-sm text-sand-600">{t('seeVendorsHint')}</p>}
+            {estimate && <p className="text-sm text-muted">{t('seeVendorsHint')}</p>}
           </div>
           {estimate ? (
             <>
               <BudgetSplit planId={plan.id} estimate={estimate} />
               {estimate.explanations.length > 0 && (
-                <div className="rounded-2xl bg-sand-50 p-4 sm:p-5">
+                <div className="rounded-2xl bg-subtle p-4 sm:p-5">
                   <h3 className="flex items-center gap-2 text-lg font-semibold">
-                    <Icon name="sparkles" className="size-4 text-gold-500" />
+                    <Icon name="sparkles" className="size-4 text-muted" />
                     {t('why')}
                   </h3>
-                  <ul className="mt-2 flex flex-col gap-1.5 text-sand-700">
+                  <ul className="mt-2 flex flex-col gap-1.5 text-ink-soft">
                     {estimate.explanations.map((line) => (
                       <li key={line} className="flex gap-2.5">
-                        <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-gold-400" />
+                        <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-accent" />
                         {line}
                       </li>
                     ))}
@@ -139,14 +139,14 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
                 <li key={step.href}>
                   <Link
                     href={step.href}
-                    className="group flex items-start gap-3 rounded-2xl border border-sand-200 bg-white p-4 transition-[border-color,box-shadow] hover:border-brand-200 hover:shadow-card"
+                    className="group flex items-start gap-3 rounded-2xl border border-line bg-surface p-4 transition-[border-color,box-shadow] hover:border-accent-line hover:shadow-card"
                   >
-                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
                       <Icon name={step.icon} className="size-4.5" />
                     </span>
                     <span className="flex flex-col gap-0.5">
-                      <span className="font-semibold text-sand-900 group-hover:text-brand-700">{step.label}</span>
-                      <span className="text-sm text-sand-600">{step.body}</span>
+                      <span className="font-semibold text-ink group-hover:text-accent-ink">{step.label}</span>
+                      <span className="text-sm text-muted">{step.body}</span>
                     </span>
                   </Link>
                 </li>
@@ -159,13 +159,13 @@ export default async function PlanPage({ params, searchParams }: PageProps<'/[lo
               {t('inquiries')}
             </h2>
             {inquiries?.length ? (
-              <ul className="flex flex-col divide-y divide-sand-100 overflow-hidden rounded-2xl border border-sand-200 bg-white">
+              <ul className="flex flex-col divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
                 {inquiries.map((inquiry) => (
                   <li key={inquiry.id}>
-                    <Link href={`/inquiries/${inquiry.id}`} className="flex flex-col items-start gap-1.5 px-4 py-3.5 transition-colors hover:bg-brand-50/60">
+                    <Link href={`/inquiries/${inquiry.id}`} className="flex flex-col items-start gap-1.5 px-4 py-3.5 transition-colors hover:bg-accent-soft/60">
                       <span>
-                        <span className="font-semibold text-sand-900">{inquiry.vendors?.name}</span>
-                        {inquiry.vendors && <span className="text-sand-600"> · {CATEGORY_LABELS[inquiry.vendors.category]}</span>}
+                        <span className="font-semibold text-ink">{inquiry.vendors?.name}</span>
+                        {inquiry.vendors && <span className="text-muted"> · {CATEGORY_LABELS[inquiry.vendors.category]}</span>}
                       </span>
                       <InquiryStatusBadge status={inquiry.status} label={tStatus(inquiry.status)} />
                     </Link>

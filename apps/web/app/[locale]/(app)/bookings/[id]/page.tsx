@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Icon } from '@/components/icons';
-import { ArchWindow } from '@/components/ornaments';
+import { BrandPanel } from '@/components/brand-panel';
 import { SubmitButton } from '@/components/submit-button';
 import { TrackEvent } from '@/components/track-event';
 import { Badge, type BadgeTone } from '@/components/ui/badge';
@@ -39,32 +39,30 @@ export default async function BookingPage({ params, searchParams }: PageProps<'/
   return (
     <Page width="narrow">
       {query.booked && <TrackEvent event="booking_simulated" />}
-      {/* The confirmation as a keepsake ticket: the arch on the stub, the details on the body. */}
+      {/* The confirmation as a ticket: the mark on the stub, the details on the body. */}
       <article className={`${cardStyles} grid overflow-hidden sm:grid-cols-[11rem_1fr]`}>
-        <div className="relative hidden border-e border-dashed border-sand-300 bg-brand-950 p-5 sm:flex sm:items-center sm:justify-center">
-          <ArchWindow className="aspect-[4/5] w-full" />
-        </div>
+        <BrandPanel className="hidden border-e border-dashed border-line-strong sm:flex" />
         <div className="flex flex-col gap-6 p-6 sm:p-8">
           <header className="flex flex-col gap-3">
             <Badge tone={STATUS_TONE[booking.status] ?? 'neutral'} icon={booking.status === 'cancelled' ? 'info' : 'check'} className="self-start">
               {t(`status.${booking.status}`)}
             </Badge>
             <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">{t('title', { vendor: booking.vendors.name })}</h1>
-            <p className="text-sand-700">{CATEGORY_LABELS[booking.vendors.category]}</p>
+            <p className="text-ink-soft">{CATEGORY_LABELS[booking.vendors.category]}</p>
           </header>
 
-          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 border-y border-dashed border-sand-300 py-5">
-            <dt className="text-sand-600">{t('amount')}</dt>
-            <dd className="font-display text-2xl font-semibold text-sand-900 tabular-nums">{formatPkr(booking.amount_pkr)}</dd>
-            <dt className="text-sand-600">{t('payment')}</dt>
-            <dd className="text-sand-800">{t('simulated')}</dd>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 border-y border-dashed border-line-strong py-5">
+            <dt className="text-muted">{t('amount')}</dt>
+            <dd className="font-display text-2xl font-semibold text-ink tabular-nums">{formatPkr(booking.amount_pkr)}</dd>
+            <dt className="text-muted">{t('payment')}</dt>
+            <dd className="text-ink">{t('simulated')}</dd>
           </dl>
 
           {isHost &&
             (booking.status === 'confirmed' ? (
               <form action={completeBooking.bind(null, booking.id)} className="flex flex-col items-start gap-2">
                 <SubmitButton className={buttonStyles({ size: 'lg' })}>{t('complete')}</SubmitButton>
-                <p className="text-sm text-sand-600">{t('completeHint')}</p>
+                <p className="text-sm text-muted">{t('completeHint')}</p>
               </form>
             ) : booking.status === 'completed' ? (
               <Link href={`/plans/${booking.plan_id}/feedback`} className={buttonStyles({ size: 'lg', className: 'self-start' })}>

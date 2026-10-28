@@ -38,20 +38,20 @@ export default async function NewPlanPage({ searchParams }: PageProps<'/[locale]
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <PlanForm defaults={defaults} today={todayInLahore()} />
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24">
-          <div className="rounded-3xl bg-brand-900 p-6 text-brand-100">
-            <Icon name="sparkles" className="size-6 text-gold-300" />
-            <h2 className="mt-3 text-xl font-semibold text-white">{t('assistantTitle')}</h2>
-            <p className="mt-2 text-sm leading-relaxed">{t('assistantBody')}</p>
-            <Link href="/assistant" className={buttonStyles({ variant: 'gold', size: 'sm', className: 'mt-4' })}>
+          <div className="scope-inverse rounded-2xl bg-canvas p-6 text-ink">
+            <Icon name="sparkles" className="size-5 text-accent-ink" />
+            <h2 className="mt-3 text-lg font-semibold">{t('assistantTitle')}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">{t('assistantBody')}</p>
+            <Link href="/assistant" className={buttonStyles({ size: 'sm', className: 'mt-4' })}>
               {t('assistantLink')}
             </Link>
           </div>
-          <div className="rounded-3xl border border-sand-200 p-6">
+          <div className="rounded-2xl border border-line p-6">
             <h2 className="text-lg font-semibold">{t('nextTitle')}</h2>
-            <ol className="mt-3 flex flex-col gap-3 text-sm text-sand-700">
+            <ol className="mt-3 flex flex-col gap-3 text-sm text-ink-soft">
               {next.map((step, index) => (
                 <li key={step} className="flex gap-3">
-                  <span aria-hidden className="flex size-6 shrink-0 items-center justify-center rounded-full border border-gold-300 font-display text-sm text-brand-700 italic">
+                  <span aria-hidden className="flex size-6 shrink-0 items-center justify-center rounded-full border border-line-strong font-display text-sm text-accent-ink italic">
                     {index + 1}
                   </span>
                   {step}

@@ -93,25 +93,25 @@ export function ChatPanel({
   }
 
   return (
-    <section aria-labelledby="chat-heading" className="flex min-w-0 flex-col overflow-hidden rounded-3xl border border-sand-200 bg-white shadow-card">
-      <div className="flex items-center gap-3 border-b border-sand-100 px-5 py-4">
-        <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+    <section aria-labelledby="chat-heading" className="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
+      <div className="flex items-center gap-3 border-b border-line px-5 py-4">
+        <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent-ink">
           <Icon name="message" className="size-4.5" />
         </span>
         <h2 id="chat-heading" className="text-lg font-semibold">
           {t('title', { name: otherName })}
         </h2>
       </div>
-      <ol ref={listRef} aria-live="polite" className="flex max-h-[28rem] min-h-64 flex-col gap-3 overflow-y-auto bg-sand-50/70 px-4 py-5 sm:px-5">
-        {messages.length === 0 && <li className="m-auto max-w-xs text-center text-sm leading-relaxed text-sand-600">{t('empty')}</li>}
+      <ol ref={listRef} aria-live="polite" className="flex max-h-[28rem] min-h-64 flex-col gap-3 overflow-y-auto bg-subtle/70 px-4 py-5 sm:px-5">
+        {messages.length === 0 && <li className="m-auto max-w-xs text-center text-sm leading-relaxed text-muted">{t('empty')}</li>}
         {messages.map((message) => {
           const mine = message.sender_id === currentUserId;
           return (
             <li key={message.id} className={`flex animate-enter flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
-              <span className="px-1 text-xs font-medium text-sand-600">{mine ? t('you') : otherName}</span>
+              <span className="px-1 text-xs font-medium text-muted">{mine ? t('you') : otherName}</span>
               <p
                 className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-[0.9375rem] leading-relaxed whitespace-pre-wrap shadow-sm ${
-                  mine ? 'rounded-ee-md bg-brand-700 text-white' : 'rounded-es-md border border-sand-200 bg-white text-sand-900'
+                  mine ? 'rounded-ee-md bg-accent text-on-accent' : 'rounded-es-md border border-line bg-surface text-ink'
                 }`}
               >
                 {message.body}
@@ -120,7 +120,7 @@ export function ChatPanel({
           );
         })}
       </ol>
-      <form onSubmit={send} className="flex items-end gap-2 border-t border-sand-100 p-3 sm:p-4">
+      <form onSubmit={send} className="flex items-end gap-2 border-t border-line p-3 sm:p-4">
         <label htmlFor={inputId} className="sr-only">
           {t('label')}
         </label>

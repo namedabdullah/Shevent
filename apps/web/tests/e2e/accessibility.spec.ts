@@ -125,27 +125,33 @@ test('the planner works with the keyboard only', async ({ page, browserName }) =
   await expect(page.getByRole('heading', { name: 'Plan your event' })).toBeVisible();
   await page.waitForLoadState('networkidle'); // keys pressed before hydration are lost
   await page.getByLabel('Type of event').focus();
+  // Choose with the keyboard. Where selects are customizable (Chromium), ArrowDown opens the menu and
+  // Enter picks; a native select changes value on ArrowDown and ignores Enter. Both end with a value.
   await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  await expect(page.getByLabel('Type of event')).not.toHaveValue('');
   await page.keyboard.press('Tab');
   await page.keyboard.type('120');
   await page.keyboard.press('Tab');
   await expect(page.getByLabel('Date')).toBeFocused();
 });
 
-// Regression: a dark OS setting once turned the page background near-black under dark-grey text
-// (contrast 1.9:1). The site is light-only, so dark-mode visitors must get the same cream page.
+// Regression: a dark OS setting once turned the page near-black under dark-grey text (contrast
+// 1.9:1). Since the multi-theme redesign (2026-10-28) the default theme follows the OS on purpose,
+// so a dark OS must get the complete dark palette, and it must still pass axe.
 test.describe('with the OS set to dark mode', () => {
   test.use({ colorScheme: 'dark' });
 
-  test('pages stay light and readable', async ({ page }) => {
+  test('pages use the dark theme and stay readable', async ({ page }) => {
     for (const path of ['/', '/sign-in']) {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
-      // Playwright's iPhone WebKit reports stale computed styles for <body> on the landing page
-      // until something is painted, although a screenshot shows the cream page. So paint first.
+      // Playwright's iPhone WebKit reports stale computed styles for <body> until something is
+      // painted. So paint first.
       await page.screenshot();
+      await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
       const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-      expect(background, `${path} background`).toBe('rgb(251, 247, 241)');
+      expect(background, `${path} background`).toBe('rgb(15, 15, 17)');
       await expectNoSeriousViolations(page, `${path} (dark OS)`);
     }
   });

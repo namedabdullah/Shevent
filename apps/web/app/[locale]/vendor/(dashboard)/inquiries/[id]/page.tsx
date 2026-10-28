@@ -98,7 +98,7 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
               ]}
             />
           </div>
-          {preferences.length > 0 && <p className="text-sm text-sand-700">{t('preferences', { list: preferences.join(', ') })}</p>}
+          {preferences.length > 0 && <p className="text-sm text-ink-soft">{t('preferences', { list: preferences.join(', ') })}</p>}
         </div>
       </PageHeader>
 
@@ -118,16 +118,16 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
 
         <section aria-labelledby="quote-heading" className={`${cardStyles} flex flex-col gap-5 p-5 sm:p-6`}>
           <h2 id="quote-heading" className="flex items-center gap-2 text-xl font-semibold">
-            <Icon name="receipt" className="size-5 text-gold-500" />
+            <Icon name="receipt" className="size-5 text-muted" />
             {tInquiry('quote')}
           </h2>
           {quote && (
             <div className="flex flex-col gap-3">
               <h3 className="text-lg font-semibold">{t('yourQuote')}</h3>
               <QuoteDetails quote={quote} />
-              <p className="text-sm font-semibold text-sand-800">{t('hostSees')}</p>
+              <p className="text-sm font-semibold text-ink">{t('hostSees')}</p>
               <SampleDataNotice response={check} />
-              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-sand-600">{tInquiry('checkUnavailable')}</p>}
+              {check ? <FairnessBadge check={check} /> : <p className="text-sm text-muted">{tInquiry('checkUnavailable')}</p>}
             </div>
           )}
 
@@ -140,7 +140,7 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           {inquiry.status === 'closed' && <Notice>{t('closed')}</Notice>}
 
           {canQuote && (
-            <div className={`flex flex-col gap-4 ${quote ? 'border-t border-sand-100 pt-5' : ''}`}>
+            <div className={`flex flex-col gap-4 ${quote ? 'border-t border-line pt-5' : ''}`}>
               <h3 className="text-lg font-semibold">{quote ? t('reviseQuote') : t('sendQuote')}</h3>
               <QuoteForm
                 action={sendQuote.bind(null, inquiry.id)}
@@ -153,9 +153,9 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           )}
 
           {canQuote && (
-            <form action={declineInquiry.bind(null, inquiry.id)} className="flex flex-col gap-1.5 border-t border-sand-100 pt-4">
+            <form action={declineInquiry.bind(null, inquiry.id)} className="flex flex-col gap-1.5 border-t border-line pt-4">
               <SubmitButton className={buttonStyles({ variant: 'ghost', size: 'sm', className: '-ms-4 self-start' })}>{t('decline')}</SubmitButton>
-              <p className="text-xs text-sand-600">{t('declineHint')}</p>
+              <p className="text-xs text-muted">{t('declineHint')}</p>
             </form>
           )}
         </section>

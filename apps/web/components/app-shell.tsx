@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from 'react';
 import { AccountMenu } from '@/components/account-menu';
 import { Logo } from '@/components/logo';
 import { NavLinkList, NavLinks, type NavLink } from '@/components/nav-links';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 import { Badge } from '@/components/ui/badge';
 import { PageSkeleton } from '@/components/ui/skeleton';
 
@@ -42,16 +43,17 @@ export async function AppShell({
   );
   return (
     <>
-      <header className="z-30 border-b border-sand-200 bg-cream/95 backdrop-blur-md md:sticky md:top-0">
+      <header className="z-30 border-b border-line/80 bg-canvas/80 backdrop-blur-xl md:sticky md:top-0">
         <div className="mx-auto flex min-h-16 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
           <Logo name={t('Metadata.siteName')} />
           {area === 'vendor' && (
-            <Badge tone="gold" className="tracking-wide uppercase">
+            <Badge tone="accent" className="tracking-wide uppercase">
               {t('Vendor.nav.badge')}
             </Badge>
           )}
           <div className="ms-5 hidden md:block">{nav('bar')}</div>
-          <div className="ms-auto">
+          <div className="ms-auto flex items-center gap-1.5">
+            <ThemeSwitcher />
             <Suspense fallback={null}>
               <AccountMenu area={area} />
             </Suspense>

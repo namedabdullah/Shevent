@@ -100,14 +100,14 @@ export function VendorProfileForm({
           )
         ) : (
           <div className="flex flex-col gap-1.5">
-            <p className="text-sm font-semibold text-sand-800">{t('category')}</p>
+            <p className="text-sm font-semibold text-ink">{t('category')}</p>
             {defaults.category && (
-              <p className="flex items-center gap-2 font-medium text-sand-900">
-                <Icon name={defaults.category} className="size-4 text-gold-500" />
+              <p className="flex items-center gap-2 font-medium text-ink">
+                <Icon name={defaults.category} className="size-4 text-muted" />
                 {CATEGORY_LABELS[defaults.category]}
               </p>
             )}
-            <p className="text-sm text-sand-600">{t('categoryFixed')}</p>
+            <p className="text-sm text-muted">{t('categoryFixed')}</p>
           </div>
         )}
         {category === 'venue' &&
@@ -191,7 +191,7 @@ export function VendorProfileForm({
             <input type="checkbox" name="public_consent" defaultChecked={defaults.public_consent ?? false} aria-describedby={`${id}-consent-hint`} />
             {t('consent')}
           </label>
-          <p id={`${id}-consent-hint`} className="ps-7 text-sm text-sand-600">
+          <p id={`${id}-consent-hint`} className="ps-7 text-sm text-muted">
             {t('consentHint')}
           </p>
         </div>
@@ -201,7 +201,7 @@ export function VendorProfileForm({
         <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', className: 'self-stretch sm:self-start' })}>
           {mode === 'create' ? (pending ? t('creating') : t('create')) : pending ? t('saving') : t('save')}
         </SubmitButton>
-        <p aria-live="polite" className={`text-sm font-medium ${state.status === 'saved' ? 'text-green-800' : 'text-red-700'}`}>
+        <p aria-live="polite" className={`text-sm font-medium ${state.status === 'saved' ? 'text-success-ink' : 'text-danger'}`}>
           {state.status === 'saved' ? t('saved') : state.status === 'error' ? t(state.error === 'failed' ? 'errors.failed' : 'errors.invalid') : null}
         </p>
       </div>

@@ -70,17 +70,17 @@ async function PlanList() {
           <Link href={`/plans/${plan.id}`} className={`${cardLinkStyles} group flex h-full items-start gap-4 p-5`}>
             <DateLeaf date={plan.event_date} />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <p className="font-display text-xl font-semibold text-sand-900">{EVENT_TYPE_LABELS[plan.event_type]}</p>
-              <p className="flex items-center gap-1.5 text-sm text-sand-600">
-                <Icon name="mapPin" className="size-3.5 text-gold-500" />
+              <p className="font-display text-xl font-semibold text-ink">{EVENT_TYPE_LABELS[plan.event_type]}</p>
+              <p className="flex items-center gap-1.5 text-sm text-muted">
+                <Icon name="mapPin" className="size-3.5 text-muted" />
                 {plan.area}
               </p>
-              <p className="mt-2 text-sm text-sand-700">
+              <p className="mt-2 text-sm text-ink-soft">
                 {formatEventDate(plan.event_date)} · {t('guests', { count: plan.guest_count })} ·{' '}
-                <span className="font-semibold text-sand-900 tabular-nums">{formatPkrCompact(plan.total_budget_pkr)}</span>
+                <span className="font-semibold text-ink tabular-nums">{formatPkrCompact(plan.total_budget_pkr)}</span>
               </p>
             </div>
-            <Icon name="chevronRight" className="mt-1 size-5 text-sand-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700" />
+            <Icon name="chevronRight" className="mt-1 size-5 text-faint transition-transform group-hover:translate-x-0.5 group-hover:text-accent-ink" />
           </Link>
         </li>
       ))}
