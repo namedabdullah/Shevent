@@ -32,8 +32,12 @@ CATEGORIES = {
     "DJ / Sound": "dj_sound",
     "DJ/Sound": "dj_sound",
     "Lighting": "lighting",
+    "Photography": "photography",
+    "Photographers": "photography",
+    "Photography / Video": "photography",
+    "Photo & Video": "photography",
 }
-PREFIX = {"venue": "VEN", "catering": "CAT", "decor": "DEC", "dj_sound": "DJS", "lighting": "LGT"}
+PREFIX = {"venue": "VEN", "catering": "CAT", "decor": "DEC", "dj_sound": "DJS", "lighting": "LGT", "photography": "PHO"}
 UNITS = {
     "per head": "per_head",
     "per setup": "per_setup",

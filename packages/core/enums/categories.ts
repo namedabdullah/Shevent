@@ -1,6 +1,6 @@
 // Mirrors data/reference/categories.csv (checked by enums.test.ts).
 
-export const CATEGORIES = ['venue', 'catering', 'decor', 'dj_sound', 'lighting'] as const;
+export const CATEGORIES = ['venue', 'catering', 'decor', 'dj_sound', 'lighting', 'photography'] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -9,6 +9,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   decor: 'Decor',
   dj_sound: 'DJ & Sound',
   lighting: 'Lighting',
+  photography: 'Photography',
 };
 
 export const PRICE_UNITS = ['per_head', 'per_event', 'per_hour', 'per_package', 'per_slot', 'per_setup'] as const;
@@ -20,6 +21,7 @@ export const CATEGORY_UNITS: Record<Category, readonly PriceUnit[]> = {
   decor: ['per_package', 'per_event', 'per_setup'],
   dj_sound: ['per_event', 'per_hour', 'per_package'],
   lighting: ['per_event', 'per_setup', 'per_package', 'per_hour'],
+  photography: ['per_event', 'per_package', 'per_hour'],
 };
 
 // Venue sub_types in categories.csv

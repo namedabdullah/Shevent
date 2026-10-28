@@ -37,4 +37,4 @@ new_vendor:
   boost: 0.03
 
 # Where #1 isn't available, the category budget is this share of the total (the planner split baseline).
-fallback_shares: {venue: 0.30, catering: 0.38, decor: 0.17, dj_sound: 0.08, lighting: 0.07}
+fallback_shares: {venue: 0.27, catering: 0.38, decor: 0.14, dj_sound: 0.07, lighting: 0.06, photography: 0.08}

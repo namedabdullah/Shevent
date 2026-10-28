@@ -36,7 +36,7 @@ test('the assistant asks for what is missing, shows the split and saves through 
 
   await input.fill(`${date.words}, budget 25 lakh`);
   await page.getByRole('button', { name: 'Send' }).click();
-  await expect(chat.locator('tbody tr')).toHaveCount(5);
+  await expect(chat.locator('tbody tr')).toHaveCount(6);
   await expect(chat.getByRole('row', { name: /Catering/ })).toContainText('Rs 9.5 lakh');
   // The reply's numbers are the host's own and the estimate's.
   await expect(chat).toContainText('The biggest share goes to catering, about Rs 9.5 lakh.');

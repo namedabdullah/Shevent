@@ -16,7 +16,7 @@ synthetic_holdout: 0.1
 # Minimums applied after the model: no category gets less than the cheapest realistic price for this event, which
 # is #2's low price for a vendor of this tier. If the minimums don't fit, the host is told the budget is too low.
 guardrails:
-  categories: [venue, catering, decor, dj_sound, lighting]
+  categories: [venue, catering, decor, dj_sound, lighting, photography]
   tier: budget
 
 # Explain a category's share when it differs from the typical event's by at least this many percentage points.

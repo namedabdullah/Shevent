@@ -38,7 +38,14 @@ from shevent_ml.tracking import set_seed, training_run
 
 ARTIFACT_DIR = REPO_ROOT / "ml" / "artifacts" / "budget_allocator"
 SHARES = [f"share_{c}" for c in CATEGORIES]
-LABELS = {"venue": "Venue", "catering": "Catering", "decor": "Decor", "dj_sound": "DJ & sound", "lighting": "Lighting"}
+LABELS = {
+    "venue": "Venue",
+    "catering": "Catering",
+    "decor": "Decor",
+    "dj_sound": "DJ & sound",
+    "lighting": "Lighting",
+    "photography": "Photography",
+}
 EVENT_LABELS = dict(
     pd.read_csv(REFERENCE_DIR / "vocab.csv", dtype=str).query("field == 'event_type'")[["value", "description"]].values
 )
@@ -136,8 +143,9 @@ class Encoder:
 
 
 class SplitNet(nn.Module):
-    def __init__(self, n_in, hidden, dropout, n_out=5):
+    def __init__(self, n_in, hidden, dropout, n_out=None):
         super().__init__()
+        n_out = n_out or len(CATEGORIES)
         layers, width = [], n_in
         for size in hidden:
             layers += [nn.Linear(width, size), nn.ReLU(), nn.Dropout(dropout)]

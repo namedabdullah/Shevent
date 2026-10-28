@@ -10,9 +10,9 @@
   "Home": {
     "eyebrow": "Coming soon to Lahore",
     "title": "Plan your event with <em>real price ranges</em>, not guesswork",
-    "subtitle": "Shevent splits your budget across venue, catering, decor, DJ & sound and lighting, shows typical prices for your area and date, and matches you with vendors that fit. Join the waitlist and we'll tell you when it opens.",
+    "subtitle": "Shevent splits your budget across venue, catering, decor, DJ & sound, lighting and photography, shows typical prices for your area and date, and matches you with vendors that fit. Join the waitlist and we'll tell you when it opens.",
     "highlights": [
-      "Your budget split across five categories",
+      "Your budget split across six categories",
       "Typical price ranges for your area and date",
       "Vendors matched to your plan"
     ],
@@ -33,7 +33,7 @@
       }
     ],
     "categoriesTitle": "Everything for the big day",
-    "categoriesIntro": "Plan the five things that make up most of an event budget in Lahore.",
+    "categoriesIntro": "Plan the six things that make up most of an event budget in Lahore.",
     "trustTitle": "Built to be fair",
     "trust": [
       {
@@ -54,11 +54,11 @@
       }
     ],
     "vendorsTitle": "Are you a vendor in Lahore?",
-    "vendorsBody": "Caterers, decorators, venues, DJs and lighting teams can list their business for free and answer hosts who already have a plan and a budget.",
+    "vendorsBody": "Caterers, decorators, venues, DJs, lighting teams and photographers can list their business for free and answer hosts who already have a plan and a budget.",
     "vendorsCta": "List your business",
     "tryLink": "Or try the budget planner now, no sign-up",
     "tryTitle": "Try it: see your budget split",
-    "tryIntro": "No sign-up needed. Tell us about your event and we'll split your budget across the five categories and show typical prices for each.",
+    "tryIntro": "No sign-up needed. Tell us about your event and we'll split your budget across the six categories and show typical prices for each.",
     "tryEyebrow": "The budget planner",
     "stepsEyebrow": "Three steps",
     "categoriesEyebrow": "What we plan",
@@ -67,7 +67,8 @@
       "catering": "Menus for mehndi, baraat, walima and every party in between.",
       "decor": "Stage, flowers, entrance and table styling.",
       "dj_sound": "DJs and sound systems for the dance floor and the speeches.",
-      "lighting": "Fairy lights, stage lighting and the glow that photographs well."
+      "lighting": "Fairy lights, stage lighting and the glow that photographs well.",
+      "photography": "Photographers and videographers for the photos, the highlight film and the album."
     },
     "categoryUnits": "Usually priced {units}",
     "trustEyebrow": "Honest by design",
@@ -135,7 +136,7 @@
     "resultFor": "{event} · {guests} guests · {area} · {budget}",
     "seeVendors": "See vendors for this plan",
     "seeVendorsHint": "Sign in with your email to save the plan. Your answers come with you.",
-    "emptyHint": "Your split across venue, catering, decor, DJ & sound and lighting will appear here."
+    "emptyHint": "Your split across venue, catering, decor, DJ & sound, lighting and photography will appear here."
   },
   "Nav": {
     "signIn": "Sign in",
@@ -188,7 +189,7 @@
   },
   "Planner": {
     "title": "Plan your event",
-    "intro": "Tell us about the event and your total budget. We'll split it across venue, catering, decor, DJ & sound and lighting, and show typical prices for each.",
+    "intro": "Tell us about the event and your total budget. We'll split it across venue, catering, decor, DJ & sound, lighting and photography, and show typical prices for each.",
     "eventSection": "The event",
     "eventType": "Type of event",
     "choose": "Choose…",
@@ -219,7 +220,7 @@
     "assistantLink": "Open the assistant",
     "nextTitle": "What happens next",
     "next": [
-      "Shevent splits your budget across the five categories.",
+      "Shevent splits your budget across the six categories.",
       "You see typical prices for each, labelled as estimates.",
       "Choose a category to see vendors that fit and message them."
     ]

@@ -8,15 +8,14 @@ source doesn't know is left missing, and LightGBM learns what to do with missing
 import numpy as np
 import pandas as pd
 
-from shevent_ml.config import REFERENCE_DIR
+from shevent_ml.config import CATEGORIES, REFERENCE_DIR
 from shevent_ml.features.calendar import SEASONS, calendar_features
 from shevent_ml.features.events import PREFERENCES, VENUE_TYPES
 from shevent_ml.features.vendors import TIER_RANK
 
-CATEGORIES = ["venue", "catering", "decor", "dj_sound", "lighting"]
 PRICE_BASES = ["per_head", "flat"]
 # The basis each category is estimated on for an event plan.
-DEFAULT_BASIS = {"venue": "flat", "catering": "per_head", "decor": "flat", "dj_sound": "flat", "lighting": "flat"}
+DEFAULT_BASIS = {c: "per_head" if c == "catering" else "flat" for c in CATEGORIES}
 
 
 def _reference(field):

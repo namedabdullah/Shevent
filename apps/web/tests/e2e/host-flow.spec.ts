@@ -1,5 +1,6 @@
 // S6 Host journey + S7 honesty rules, on fixtures: plan → split → matches → packages → inquiry and
 // live chat → quote with fairness label → simulated booking → completed → feedback.
+import { CATEGORIES } from '@shevent/core/enums';
 import { expect, test } from '@playwright/test';
 import { ACCUSATION_WORDS, psql, signIn, uniqueEmail } from './helpers';
 
@@ -51,9 +52,9 @@ test('host plans an event, chats with a vendor, books and gives feedback', async
     await expect(page.getByText('Sample numbers for illustration, not market prices')).toBeVisible();
     await expect(page.getByText('AI estimate, not a vendor quote').first()).toBeVisible();
     const priceCells = page.locator('tbody tr td:last-child');
-    await expect(priceCells).toHaveCount(5);
+    await expect(priceCells).toHaveCount(6);
     for (const cell of await priceCells.all()) expect(await cell.innerText()).toMatch(RANGE);
-    await expect(page.locator('[role="group"][aria-label="Your budget split"] > div')).toHaveCount(5);
+    await expect(page.locator('[role="group"][aria-label="Your budget split"] > div')).toHaveCount(6);
     await remember();
   });
 
@@ -146,7 +147,7 @@ test('host plans an event, chats with a vendor, books and gives feedback', async
       const text = await card.innerText();
       const total = Number(/Rs ([\d,]+)\n?\s*\d+% of your budget/.exec(text)?.[1]?.replace(/,/g, '') ?? Number.NaN);
       expect(total, text).toBeLessThanOrEqual(2_500_000);
-      expect((text.match(/Demo /g) ?? []).length, 'one vendor per category').toBe(5);
+      expect((text.match(/Demo /g) ?? []).length, 'one vendor per category').toBe(CATEGORIES.length);
     }
     await remember();
   });
@@ -168,7 +169,7 @@ test('a failed estimate keeps the plan and offers a retry', async ({ page }) => 
   await expect(page.getByText("We couldn't work out your budget split yet")).toBeVisible();
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(page.getByRole('heading', { name: 'Your budget split' })).toBeVisible();
-  await expect(page.locator('tbody tr')).toHaveCount(5);
+  await expect(page.locator('tbody tr')).toHaveCount(6);
 });
 
 test('the planner can be pre-filled from the URL (for the landing-page widget)', async ({ page }) => {

@@ -71,8 +71,9 @@ describe('fixtureEstimate', () => {
   it('scales the fixture to the requested budget and stays within the contract', () => {
     const result = fixtureEstimate({ ...estimateRequestFixture, total_budget_pkr: 1_000_000 });
     expect(estimateResponseSchema.safeParse(result).success).toBe(true);
-    expect(result.allocation.venue.pkr).toBe(300_000);
-    expect(result.allocation.venue.range).toEqual([260_000, 352_000]);
+    expect(result.allocation.venue.pkr).toBe(270_000);
+    expect(result.allocation.venue.range).toEqual([234_000, 316_000]);
+    expect(Object.keys(result.allocation)).toContain('photography');
     expect(Object.values(result.allocation).reduce((sum, item) => sum + item.pkr, 0)).toBe(1_000_000);
   });
 });

@@ -19,11 +19,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from shevent_ml.config import PROCESSED_DIR, SEED, load_config
+from shevent_ml.config import CATEGORIES, PROCESSED_DIR, SEED, load_config
 from shevent_ml.features.calendar import calendar_features
 from shevent_ml.features.events import OUTDOOR_VENUES
 
-CATEGORIES = ["venue", "catering", "decor", "dj_sound", "lighting"]
 TIERS = ["budget", "mid", "premium"]
 PER_HEAD = {"catering"}
 

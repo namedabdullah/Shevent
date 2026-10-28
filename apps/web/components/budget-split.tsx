@@ -28,9 +28,9 @@ export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: E
           <caption className="sr-only">{t('splitTitle')}</caption>
           <thead>
             <tr className="border-b border-sand-200 text-xs tracking-wide text-sand-600 uppercase">
-              <th scope="col" className="py-2.5 pe-3 text-start font-semibold">{t('category')}</th>
-              <th scope="col" className="py-2.5 pe-3 text-end font-semibold">{t('share')}</th>
-              <th scope="col" className="py-2.5 pe-3 text-end font-semibold">{t('yourBudget')}</th>
+              <th scope="col" className="py-2.5 pe-2 sm:pe-3 text-start font-semibold">{t('category')}</th>
+              <th scope="col" className="py-2.5 pe-2 sm:pe-3 text-end font-semibold">{t('share')}</th>
+              <th scope="col" className="py-2.5 pe-2 sm:pe-3 text-end font-semibold">{t('yourBudget')}</th>
               <th scope="col" className="py-2.5 text-end font-semibold">
                 {t('typicalPrice')}
                 <span className="block text-[0.6875rem] font-normal tracking-normal text-sand-600 normal-case">{AI_ESTIMATE_LABEL}</span>
@@ -40,7 +40,7 @@ export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: E
           <tbody className="tabular-nums">
             {rows.map((row) => (
               <tr key={row.category} className="border-b border-sand-100 last:border-b-0">
-                <th scope="row" className="py-3.5 pe-3 text-start font-semibold text-sand-900">
+                <th scope="row" className="py-3.5 pe-2 sm:pe-3 text-start font-semibold text-sand-900">
                   {planId ? (
                     <Link
                       href={`/plans/${planId}/${categorySlug(row.category)}`}
@@ -55,8 +55,8 @@ export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: E
                     </span>
                   )}
                 </th>
-                <td className="py-3.5 pe-3 text-end text-sand-700">{Math.round(row.share * 100)}%</td>
-                <td className="py-3.5 pe-3 text-end font-semibold whitespace-nowrap text-sand-900">{formatPkrCompact(row.pkr)}</td>
+                <td className="py-3.5 pe-2 sm:pe-3 text-end text-sand-700">{Math.round(row.share * 100)}%</td>
+                <td className="py-3.5 pe-2 sm:pe-3 text-end font-semibold whitespace-nowrap text-sand-900">{formatPkrCompact(row.pkr)}</td>
                 <td className="py-3.5 text-end text-sand-700">
                   {formatPkrRange(row.range[0], row.range[1])}
                   {row.pkr < row.range[0] && (
@@ -78,7 +78,8 @@ export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: E
 function CategoryLabel({ category, label }: { category: Category; label: string }) {
   return (
     <>
-      <span aria-hidden className="size-3 shrink-0 rounded-[3px]" style={{ background: `var(--series-${category})` }} />
+      {/* Hidden on phones so six rows fit 360px without scrolling; the bar's legend pairs each colour with its name. */}
+      <span aria-hidden className="hidden size-3 shrink-0 rounded-[3px] sm:inline-block" style={{ background: `var(--series-${category})` }} />
       {label}
     </>
   );

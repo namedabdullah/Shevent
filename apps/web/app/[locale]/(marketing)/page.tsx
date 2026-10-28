@@ -83,7 +83,7 @@ export default async function HomePage() {
         </CelebrationSparks>
       </section>
 
-      {/* The occasions and the five categories, drifting with the scroll (decorative; both lists are real) */}
+      {/* The occasions and the six categories, drifting with the scroll (decorative; both lists are real) */}
       <div className="relative overflow-hidden bg-brand-950 py-8 text-gold-100 md:py-10">
         <BeadEdge className="absolute inset-x-0 top-0" />
         <WordMarquee rows={[occasions, CATEGORIES.map((category) => CATEGORY_LABELS[category])]} />

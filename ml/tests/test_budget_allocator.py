@@ -98,8 +98,9 @@ def test_allocate_applies_guardrails_and_explains(trained):
 def test_allocate_says_when_the_budget_is_too_low(trained):
     model, _ = trained
     out = model.allocate({**PLAN, "total_budget_pkr": 300_000}, {c: 100_000 for c in CATEGORIES})
-    assert out["budget_too_low"] and out["minimum_budget_pkr"] == 500_000
-    assert "Rs 200,000 more" in out["warnings"][0]
+    # Rs 1 lakh for each of the six categories: Rs 6 lakh, Rs 3 lakh more than the budget.
+    assert out["budget_too_low"] and out["minimum_budget_pkr"] == 600_000
+    assert "Rs 300,000 more" in out["warnings"][0]
     assert out["explanations"] == []
 
 

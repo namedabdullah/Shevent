@@ -36,6 +36,11 @@ EXAMPLES = [
             "food_quality": "mixed",
         },
     ),
+    (
+        "Photographer ne pictures bohat achi lein, lekin album teen mahine baad mila aur extra copies ke paise alag "
+        "liye.",
+        {"photo_video_quality": "mixed", "hidden_charges": "negative"},
+    ),
 ]
 
 

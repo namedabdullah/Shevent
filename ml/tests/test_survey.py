@@ -26,7 +26,8 @@ HEADERS = [
     "Decor (stage, flowers, theme): amount spent (PKR)",
     "DJ / sound / music: amount spent (PKR)",
     "Lighting: amount spent (PKR)",
-    "Everything else (photography, clothes, invitations, transport, etc.): amount spent (PKR)",
+    "Photography / videography: amount spent (PKR)",
+    "Everything else (clothes, invitations, transport, etc.): amount spent (PKR)",
     "Did you go over budget?",
     "Anything else you'd like to share?",
 ]
@@ -54,6 +55,7 @@ ROWS = [
         "500000",
         "150k",
         "100000",
+        "200000",
         "300000",
         "Yes, by less than 10%",
         "Call me on 0300 1234567",
@@ -75,6 +77,7 @@ ROWS = [
         "40000",
         "20000",
         "0",
+        "15000",
         "",
         "No",
         "",
@@ -92,6 +95,7 @@ ROWS = [
         "",
         "",
         "2000000",
+        "",
         "",
         "",
         "",
@@ -125,11 +129,12 @@ def test_build_survey_maps_questions_and_computes_shares():
     assert (first["event_type"], first["area"], first["venue_type"]) == ("wedding_mehndi", "DHA", "marquee")
     assert first["event_date"] == pd.Timestamp("2025-12-15") and first["total_budget_pkr"] == 2_500_000
     assert first["has_split"]
-    spend = [600000, 1_100_000, 500000, 150000, 100000]
+    spend = [600000, 1_100_000, 500000, 150000, 100000, 200000]
     assert first["share_catering"] == pytest.approx(1_100_000 / sum(spend))
-    # A zero is a real answer ("didn't spend"); the planned budget falls back to the five categories' spend.
+    assert first["share_photography"] == pytest.approx(200000 / sum(spend))
+    # A zero is a real answer ("didn't spend"); the planned budget falls back to the six categories' spend.
     assert birthday["has_split"] and birthday["share_venue"] == 0 and birthday["venue_type"] == "other"
-    assert birthday["total_budget_pkr"] == 180000
+    assert birthday["total_budget_pkr"] == 195000
     # Blank amounts mean "don't know": no split.
     assert not walima["has_split"] and np.isnan(walima["share_catering"])
     # The free-text answer (which here holds a phone number) is never kept.
@@ -156,3 +161,10 @@ def test_build_writes_the_survey_table(tmp_path):
     assert manifest["rows"]["survey"] == 3 and "host_survey.csv" in manifest["raw_files"]
     assert pd.read_parquet(tmp_path / "out" / "survey.parquet")["has_split"].sum() == 2
     assert json.loads((tmp_path / "out" / "manifest.json").read_text())["dataset_hash"] == manifest["dataset_hash"]
+
+
+def test_an_export_without_the_photography_question_gives_no_splits():
+    """Responses from before photography was added put it under "everything else", so their split is incomplete."""
+    old = export(ROWS).drop(columns=["Photography / videography: amount spent (PKR)"])
+    survey = build_survey(old, load_reference()["area_aliases"])
+    assert not survey["has_split"].any() and survey["spend_photography"].isna().all()

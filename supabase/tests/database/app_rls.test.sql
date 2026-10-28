@@ -56,7 +56,7 @@ select set_config('request.jwt.claims', null, true);
 set local role anon;
 
 -- Counted by name, because E2E runs on a local database add listings of their own.
-select is((select count(*)::int from public.vendors where is_demo or slug = 'test-caterers'), 14, 'anyone can browse vendors (13 demo + 1 new)');
+select is((select count(*)::int from public.vendors where is_demo or slug = 'test-caterers'), 16, 'anyone can browse vendors (15 demo + 1 new)');
 select throws_ok($$ select * from public.plans $$, '42501', null, 'anon cannot read plans');
 select throws_ok($$ select public.become_vendor() $$, '42501', null, 'anon cannot become a vendor');
 

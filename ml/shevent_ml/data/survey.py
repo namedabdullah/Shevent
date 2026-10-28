@@ -2,7 +2,7 @@
 
 Google Forms exports one column per question, headed by the question text, so columns are matched on how their
 header starts. Amounts may be typed as "450000", "Rs 4,50,000", "4.5 lakh" or "1.5 crore". The free-text answer
-(Q23) is dropped: it may hold personal details.
+(Q24) is dropped: it may hold personal details.
 """
 
 import hashlib
@@ -11,6 +11,7 @@ import re
 import numpy as np
 import pandas as pd
 
+from shevent_ml.config import CATEGORIES
 from shevent_ml.data.clean import map_area
 
 # Header start (lower case) -> column. Order matters: the first match wins.
@@ -31,6 +32,7 @@ QUESTIONS = [
     ("decor", "spend_decor"),
     ("dj / sound", "spend_dj_sound"),
     ("lighting", "spend_lighting"),
+    ("photography / video", "spend_photography"),
     ("everything else", "spend_other"),
     ("did you go over budget", "over_budget"),
 ]
@@ -54,7 +56,7 @@ VENUE_TYPES = {
     "home": "other",
     "other": "other",
 }
-SPEND = ["spend_venue", "spend_catering", "spend_decor", "spend_dj_sound", "spend_lighting"]
+SPEND = [f"spend_{c}" for c in CATEGORIES]
 UNITS = {
     "crore": 1e7,
     "cr": 1e7,
