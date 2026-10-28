@@ -29,23 +29,26 @@ export function BudgetSplitBar({ items, title }: { items: SplitItem[]; title: st
     <figure className="flex flex-col gap-3">
       <figcaption className="sr-only">{title}</figcaption>
       <div className="relative">
-        <div role="group" aria-label={title} className="flex h-6 w-full gap-[2px]">
-          {items.map((item, i) => (
-            <div
-              key={item.category}
-              role="img"
-              tabIndex={0}
-              aria-label={`${item.label}: ${percent(item.share)}, ${item.amount}`}
-              onPointerEnter={(event) => show(i, event.currentTarget)}
-              onPointerLeave={() => setActive(null)}
-              onFocus={(event) => show(i, event.currentTarget)}
-              onBlur={() => setActive(null)}
-              className={`min-w-0 outline-none transition-[filter] focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
-                i === items.length - 1 ? 'rounded-e-[4px]' : ''
-              } ${active?.index === i ? 'brightness-110' : ''}`}
-              style={{ flexGrow: item.share, flexBasis: 0, background: `var(--series-${item.category})` }}
-            />
-          ))}
+        {/* The bar draws in from the start once; the wrapper animates so the group keeps exactly one child per segment. */}
+        <div className="origin-left animate-[draw_0.9s_var(--ease-out-expo)_both]">
+          <div role="group" aria-label={title} className="flex h-8 w-full gap-[2px]">
+            {items.map((item, i) => (
+              <div
+                key={item.category}
+                role="img"
+                tabIndex={0}
+                aria-label={`${item.label}: ${percent(item.share)}, ${item.amount}`}
+                onPointerEnter={(event) => show(i, event.currentTarget)}
+                onPointerLeave={() => setActive(null)}
+                onFocus={(event) => show(i, event.currentTarget)}
+                onBlur={() => setActive(null)}
+                className={`min-w-0 outline-none transition-[filter,translate] duration-200 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
+                  i === 0 ? 'rounded-s-lg' : ''
+                } ${i === items.length - 1 ? 'rounded-e-lg' : ''} ${active?.index === i ? '-translate-y-0.5 brightness-110' : ''}`}
+                style={{ flexGrow: item.share, flexBasis: 0, background: `var(--series-${item.category})` }}
+              />
+            ))}
+          </div>
         </div>
 
         {activeItem && active && (

@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
+import { ArchWindow } from '@/components/ornaments';
 import { SignInForm } from '@/components/sign-in-form';
+import { Eyebrow } from '@/components/ui/page';
 import { getCurrentUser } from '@/lib/auth';
 import { safeNext } from '@/lib/routes';
 
@@ -14,13 +16,19 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function SignInPage({ searchParams }: PageProps<'/[locale]/sign-in'>) {
   const t = await getTranslations('Auth');
   return (
-    <main className="flex flex-1 items-start justify-center px-4 py-12 sm:items-center sm:py-16">
-      <div className="flex w-full max-w-md flex-col gap-4 rounded-3xl border border-sand-200 bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="text-sand-700">{t('intro')}</p>
-        <Suspense fallback={null}>
-          <SignInPanel searchParams={searchParams} />
-        </Suspense>
+    <main id="main" className="flex flex-1 items-start justify-center px-4 py-10 sm:items-center sm:py-16">
+      <div className="grid w-full max-w-4xl animate-enter overflow-hidden rounded-[2rem] border border-sand-200 bg-white shadow-lift md:grid-cols-[1fr_20rem]">
+        <div className="flex flex-col gap-4 p-6 sm:p-10">
+          <Eyebrow>{t('eyebrow')}</Eyebrow>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{t('title')}</h1>
+          <p className="max-w-md leading-relaxed text-sand-700">{t('intro')}</p>
+          <Suspense fallback={null}>
+            <SignInPanel searchParams={searchParams} />
+          </Suspense>
+        </div>
+        <div className="hidden items-end justify-center bg-brand-950 px-10 pt-14 md:flex">
+          <ArchWindow className="aspect-[4/5] w-full" />
+        </div>
       </div>
     </main>
   );

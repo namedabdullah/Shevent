@@ -1,7 +1,7 @@
 'use client';
 
 import { createApiClient } from '@shevent/core/api';
-import { AREAS, EVENT_TYPES, EVENT_TYPE_LABELS } from '@shevent/core/enums';
+import { AREAS, CATEGORIES, CATEGORY_LABELS, EVENT_TYPES, EVENT_TYPE_LABELS } from '@shevent/core/enums';
 import { formatPkrCompact, parsePkr, todayInLahore } from '@shevent/core/format';
 import { estimateRequestSchema, type EstimateRequest, type EstimateResponse } from '@shevent/core/schemas';
 import { useTranslations } from 'next-intl';
@@ -10,14 +10,13 @@ import { BudgetSplit } from '@/components/budget-split';
 import { Icon } from '@/components/icons';
 import { SampleDataNotice } from '@/components/sample-data-notice';
 import { SubmitButton } from '@/components/submit-button';
+import { buttonStyles } from '@/components/ui/button';
+import { Field, inputStyles, selectStyles } from '@/components/ui/field';
 import { Link } from '@/i18n/navigation';
 import { track } from '@/lib/analytics';
 
 // The browser goes through the /api/ai proxy; with fixtures on it answers from packages/core.
 const api = createApiClient({ baseUrl: '/api/ai', fixtures: process.env.NEXT_PUBLIC_API_FIXTURES === 'true' });
-
-const inputClass =
-  'min-h-11 w-full rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600';
 
 type Result = { request: EstimateRequest; budgetText: string; estimate: EstimateResponse };
 
@@ -73,27 +72,24 @@ export function TryWidget() {
   }
 
   const field = (name: string, label: string, control: ReactNode, hint?: ReactNode) => (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={`${id}-${name}`} className="text-sm font-medium">
-        {label}
-      </label>
+    <Field
+      id={`${id}-${name}`}
+      label={label}
+      hint={hint}
+      hintId={`${id}-${name}-hint`}
+      error={invalid.includes(name) ? tp(`errors.${name}` as 'errors.event_type') : undefined}
+    >
       {control}
-      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-sand-600">{hint}</p>}
-      {invalid.includes(name) && (
-        <p className="text-sm text-red-700" role="alert">
-          {tp(`errors.${name}` as 'errors.event_type')}
-        </p>
-      )}
-    </div>
+    </Field>
   );
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
-      <form onSubmit={submit} noValidate className="flex flex-col gap-4 rounded-2xl border border-sand-200 bg-white p-5 shadow-sm sm:p-6">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <form onSubmit={submit} noValidate className="flex flex-col gap-4 rounded-3xl border border-sand-200 bg-white p-5 shadow-card sm:p-7">
         {field(
           'event_type',
           tp('eventType'),
-          <select id={`${id}-event_type`} name="event_type" defaultValue="" required aria-invalid={invalid.includes('event_type')} className={inputClass}>
+          <select id={`${id}-event_type`} name="event_type" defaultValue="" required aria-invalid={invalid.includes('event_type')} className={selectStyles}>
             <option value="" disabled>
               {tp('choose')}
             </option>
@@ -108,12 +104,12 @@ export function TryWidget() {
           {field(
             'guest_count',
             tp('guests'),
-            <input id={`${id}-guest_count`} name="guest_count" type="number" inputMode="numeric" min={10} max={5000} required aria-invalid={invalid.includes('guest_count')} className={inputClass} />,
+            <input id={`${id}-guest_count`} name="guest_count" type="number" inputMode="numeric" min={10} max={5000} required aria-invalid={invalid.includes('guest_count')} className={inputStyles} />,
           )}
           {field(
             'area',
             tp('area'),
-            <select id={`${id}-area`} name="area" defaultValue="" required aria-invalid={invalid.includes('area')} className={inputClass}>
+            <select id={`${id}-area`} name="area" defaultValue="" required aria-invalid={invalid.includes('area')} className={selectStyles}>
               <option value="" disabled>
                 {tp('choose')}
               </option>
@@ -128,7 +124,7 @@ export function TryWidget() {
         {field(
           'event_date',
           tp('date'),
-          <input id={`${id}-event_date`} name="event_date" type="date" required aria-invalid={invalid.includes('event_date')} className={inputClass} />,
+          <input id={`${id}-event_date`} name="event_date" type="date" required aria-invalid={invalid.includes('event_date')} className={inputStyles} />,
         )}
         {field(
           'total_budget_pkr',
@@ -144,26 +140,23 @@ export function TryWidget() {
             required
             aria-invalid={invalid.includes('total_budget_pkr')}
             aria-describedby={`${id}-total_budget_pkr-hint`}
-            className={inputClass}
+            className={inputStyles}
           />,
           parsedBudget ? tp('budgetParsed', { amount: formatPkrCompact(parsedBudget) }) : tp('budgetHint'),
         )}
-        <SubmitButton
-          pending={pending}
-          className="mt-1 min-h-12 rounded-full bg-brand-700 px-6 font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
-        >
+        <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', block: true, className: 'mt-2' })}>
           {pending ? tp('submitting') : t('submit')}
         </SubmitButton>
-        <p aria-live="polite" className="text-sm text-red-700 empty:hidden">
+        <p aria-live="polite" className="text-sm font-medium text-red-700 empty:hidden">
           {failed ? t('failed') : null}
         </p>
       </form>
 
       <div aria-live="polite" aria-busy={pending}>
         {result ? (
-          <section aria-labelledby={`${id}-result`} className="flex flex-col gap-5 rounded-2xl border border-sand-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="flex flex-col gap-1">
-              <h3 id={`${id}-result`} ref={resultHeading} tabIndex={-1} className="text-2xl font-semibold outline-none">
+          <section aria-labelledby={`${id}-result`} className="flex animate-enter flex-col gap-5 rounded-3xl border border-sand-200 bg-white p-5 shadow-card sm:p-7">
+            <div className="flex flex-col gap-1.5">
+              <h3 id={`${id}-result`} ref={resultHeading} tabIndex={-1} className="text-2xl font-semibold outline-none sm:text-3xl">
                 {t('resultTitle')}
               </h3>
               <p className="text-sm text-sand-600">
@@ -177,7 +170,8 @@ export function TryWidget() {
             </div>
             <SampleDataNotice response={result.estimate} />
             <BudgetSplit estimate={result.estimate} />
-            <div className="flex flex-col items-start gap-2 border-t border-sand-100 pt-4">
+            <div className="flex flex-col items-start gap-2 rounded-2xl bg-brand-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-sand-700">{t('seeVendorsHint')}</p>
               <Link
                 href={{
                   pathname: '/plan/new',
@@ -189,20 +183,28 @@ export function TryWidget() {
                     budget: result.budgetText,
                   },
                 }}
-                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-brand-700 px-6 font-semibold text-white transition-colors hover:bg-brand-800"
+                className={buttonStyles({ className: 'shrink-0' })}
               >
                 {t('seeVendors')}
                 <Icon name="arrowRight" className="size-4" />
               </Link>
-              <p className="text-sm text-sand-600">{t('seeVendorsHint')}</p>
             </div>
           </section>
         ) : (
-          <div className="hidden h-full min-h-72 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-sand-300 p-8 text-center lg:flex">
-            <span className="flex size-12 items-center justify-center rounded-full bg-gold-50 text-gold-700">
+          // What the answer will contain: the five real categories, no made-up numbers.
+          <div className="hidden min-h-[26rem] flex-col items-center justify-center gap-6 rounded-3xl border border-dashed border-sand-300 bg-white/50 p-10 text-center lg:flex">
+            <span className="flex size-14 items-center justify-center rounded-full bg-gold-50 text-gold-700 ring-8 ring-gold-50/60">
               <Icon name="wallet" className="size-6" />
             </span>
-            <p className="max-w-xs text-sand-600">{t('emptyHint')}</p>
+            <p className="max-w-xs leading-relaxed text-sand-600">{t('emptyHint')}</p>
+            <ul aria-hidden className="flex flex-wrap justify-center gap-2">
+              {CATEGORIES.map((category) => (
+                <li key={category} className="flex items-center gap-2 rounded-full border border-sand-200 bg-white px-3 py-1.5 text-sm text-sand-700">
+                  <span className="size-2.5 rounded-sm" style={{ background: `var(--series-${category})` }} />
+                  {CATEGORY_LABELS[category]}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

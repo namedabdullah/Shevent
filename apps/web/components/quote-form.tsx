@@ -3,18 +3,20 @@
 import { createApiClient } from '@shevent/core/api';
 import { CATEGORY_UNITS, type Category, type PriceUnit } from '@shevent/core/enums';
 import { formatPkr, formatPkrCompact, parsePkr, UNIT_LABELS } from '@shevent/core/format';
-import { quoteTotalPkr, splitList, type EventSpec, type QuoteCheckRequest, type QuoteCheckResponse } from '@shevent/core/schemas';import { useTranslations } from 'next-intl';
+import { quoteTotalPkr, splitList, type EventSpec, type QuoteCheckRequest, type QuoteCheckResponse } from '@shevent/core/schemas';
+import { useTranslations } from 'next-intl';
 import { startTransition, useActionState, useEffect, useId, useState, type FormEvent, type ReactNode } from 'react';
 import type { QuoteFormState } from '@/app/[locale]/vendor/(dashboard)/inquiries/[id]/actions';
 import { FairnessBadge } from '@/components/fairness-badge';
+import { Icon } from '@/components/icons';
 import { SampleDataNotice } from '@/components/sample-data-notice';
 import { SubmitButton } from '@/components/submit-button';
+import { buttonStyles } from '@/components/ui/button';
+import { Field, inputStyles, selectStyles, textareaStyles } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const initialState: QuoteFormState = { status: 'idle' };
 const PREVIEW_DELAY_MS = 500;
-
-const inputClass =
-  'min-h-11 w-full rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600';
 
 // The browser goes through the /api/ai proxy; with fixtures on it answers from packages/core.
 const api = createApiClient({ baseUrl: '/api/ai', fixtures: process.env.NEXT_PUBLIC_API_FIXTURES === 'true', fixtureDelayMs: 0 });
@@ -109,23 +111,20 @@ export function QuoteForm({
   }
 
   const field = (name: string, label: string, control: ReactNode, hint?: ReactNode, errorKey = name) => (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={`${id}-${name}`} className="text-sm font-medium">
-        {label}
-      </label>
+    <Field
+      id={`${id}-${name}`}
+      label={label}
+      hint={hint}
+      hintId={`${id}-${name}-hint`}
+      error={invalid(errorKey) ? t(`errors.${errorKey}` as 'errors.unit') : undefined}
+    >
       {control}
-      {hint && <p id={`${id}-${name}-hint`} className="text-sm text-sand-600">{hint}</p>}
-      {invalid(errorKey) && (
-        <p className="text-sm text-red-700" role="alert">
-          {t(`errors.${errorKey}` as 'errors.unit')}
-        </p>
-      )}
-    </div>
+    </Field>
   );
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-5" noValidate>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {field(
           'amount',
           t('amount'),
@@ -141,7 +140,7 @@ export function QuoteForm({
             required
             aria-invalid={invalid('amount_pkr')}
             aria-describedby={`${id}-amount-hint`}
-            className={inputClass}
+            className={`${inputStyles} font-semibold tabular-nums placeholder:font-normal`}
           />,
           parsedAmount ? t('amountParsed', { amount: formatPkrCompact(parsedAmount) }) : undefined,
           'amount_pkr',
@@ -149,7 +148,7 @@ export function QuoteForm({
         {field(
           'unit',
           t('unit'),
-          <select id={`${id}-unit`} name="unit" value={unit} onChange={(event) => setUnit(event.target.value as PriceUnit)} aria-invalid={invalid('unit')} className={inputClass}>
+          <select id={`${id}-unit`} name="unit" value={unit} onChange={(event) => setUnit(event.target.value as PriceUnit)} aria-invalid={invalid('unit')} className={selectStyles}>
             {units.map((value) => (
               <option key={value} value={value}>
                 {UNIT_LABELS[value]}
@@ -173,12 +172,12 @@ export function QuoteForm({
               onChange={(event) => setHours(event.target.value)}
               required
               aria-invalid={invalid('hours')}
-              className={inputClass}
+              className={inputStyles}
             />,
           )}
       </div>
       {total !== undefined && (
-        <p className="font-medium tabular-nums">
+        <p className="flex animate-enter items-center justify-between gap-3 rounded-2xl bg-sand-50 px-4 py-3 font-semibold text-sand-900 tabular-nums">
           {t('total', { total: formatPkr(total) })}
         </p>
       )}
@@ -193,14 +192,14 @@ export function QuoteForm({
           onChange={(event) => setInclusions(event.target.value)}
           aria-invalid={invalid('inclusions')}
           aria-describedby={`${id}-inclusions-hint`}
-          className={`${inputClass} py-2`}
+          className={textareaStyles}
         />,
         t('inclusionsHint'),
       )}
       {field(
         'exclusions',
         t('exclusions'),
-        <textarea id={`${id}-exclusions`} name="exclusions" rows={2} defaultValue={defaults.exclusions?.join('\n') ?? ''} aria-invalid={invalid('exclusions')} className={`${inputClass} py-2`} />,
+        <textarea id={`${id}-exclusions`} name="exclusions" rows={2} defaultValue={defaults.exclusions?.join('\n') ?? ''} aria-invalid={invalid('exclusions')} className={textareaStyles} />,
       )}
       {field(
         'notes',
@@ -214,7 +213,7 @@ export function QuoteForm({
           onChange={(event) => setNotes(event.target.value)}
           aria-invalid={invalid('notes')}
           aria-describedby={`${id}-notes-hint`}
-          className={`${inputClass} py-2`}
+          className={textareaStyles}
         />,
         t('contactHint'),
       )}
@@ -222,17 +221,23 @@ export function QuoteForm({
         {field(
           'valid_until',
           t('validUntil'),
-          <input id={`${id}-valid_until`} name="valid_until" type="date" min={today} aria-invalid={invalid('valid_until')} className={inputClass} />,
+          <input id={`${id}-valid_until`} name="valid_until" type="date" min={today} aria-invalid={invalid('valid_until')} className={inputStyles} />,
         )}
       </div>
       {/* Above the button, so the vendor sees the label before sending, also on a phone. */}
-      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3 rounded-lg border border-dashed border-sand-400 p-4">
-        <h4 id={`${id}-preview`} className="font-semibold">{t('previewTitle')}</h4>
+      <section aria-labelledby={`${id}-preview`} className="flex flex-col gap-3 rounded-2xl border border-dashed border-sand-400 bg-sand-50/70 p-4">
+        <h4 id={`${id}-preview`} className="flex items-center gap-2 font-display text-lg font-semibold text-sand-900">
+          <Icon name="scale" className="size-4.5 text-gold-500" />
+          {t('previewTitle')}
+        </h4>
         <div aria-live="polite" className="flex flex-col gap-3">
           {!requestKey ? (
             <p className="text-sm text-sand-600">{t('previewHint')}</p>
           ) : current === null ? (
-            <p className="text-sm text-sand-600">{t('previewLoading')}</p>
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-sand-600">{t('previewLoading')}</p>
+              <Skeleton className="h-24 rounded-2xl" />
+            </div>
           ) : current === 'error' ? (
             <p className="text-sm text-sand-600">{t('previewUnavailable')}</p>
           ) : (
@@ -244,10 +249,10 @@ export function QuoteForm({
         </div>
       </section>
       <div className="flex flex-col gap-2">
-        <SubmitButton pending={pending} className="min-h-11 self-start rounded-lg bg-brand-700 px-6 font-medium text-white transition-colors hover:bg-brand-800 disabled:opacity-60">
+        <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', block: true })}>
           {pending ? t('sending') : t('send')}
         </SubmitButton>
-        <p aria-live="polite" className="text-sm text-red-700">
+        <p aria-live="polite" className="text-sm font-medium text-red-700">
           {state.status === 'error' && state.error === 'failed' ? t('errors.failed') : null}
         </p>
       </div>

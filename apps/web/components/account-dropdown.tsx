@@ -69,7 +69,7 @@ export function AccountDropdown({
       <div
         id={panelId}
         hidden={!open}
-        className="absolute end-0 top-full z-40 mt-2 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-sand-200 bg-white p-2 shadow-lg shadow-sand-900/10"
+        className="absolute end-0 top-full z-40 mt-2 w-72 max-w-[calc(100vw-2rem)] origin-top-right animate-enter rounded-2xl border border-sand-200 bg-white p-2 shadow-lift"
       >
         <div className="border-b border-sand-100 px-3 pt-2 pb-3">
           <p className="text-xs text-sand-600">{signedInAs}</p>

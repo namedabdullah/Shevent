@@ -37,8 +37,8 @@ export function NavLinkList({ links, variant, label, pathname = null }: { links:
                 aria-current={current ? 'page' : undefined}
                 className={
                   tabs
-                    ? `flex min-h-12 flex-col items-center justify-center gap-0.5 border-b-2 px-1 text-xs font-medium transition-colors ${current ? 'border-brand-700 text-brand-700' : 'border-transparent text-sand-600 hover:text-sand-900'}`
-                    : `flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium transition-colors ${current ? 'bg-brand-50 text-brand-700' : 'text-sand-700 hover:bg-sand-100 hover:text-sand-900'}`
+                    ? `flex min-h-13 flex-col items-center justify-center gap-0.5 border-b-2 px-1 text-xs font-semibold transition-colors ${current ? 'border-brand-700 text-brand-700' : 'border-transparent text-sand-600 hover:text-sand-900'}`
+                    : `flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-semibold transition-colors ${current ? 'bg-brand-700 text-white shadow-sm' : 'text-sand-700 hover:bg-sand-100 hover:text-sand-900'}`
                 }
               >
                 <Icon name={link.icon} className={tabs ? 'size-5' : 'size-4'} />
