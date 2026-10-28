@@ -1,0 +1,40 @@
+# #3 Vendor Matching (python -m shevent_ml.models.matching). Change values here, not in code.
+
+# The fit score is a weighted mean of five parts, each from 0 (poor fit) to 1 (great fit).
+weights:
+  price: 0.30 # the vendor's likely price against this category's share of the budget (#1, #2)
+  location: 0.25 # serves the event's area
+  capacity: 0.15 # can handle the guest count
+  experience: 0.10 # does this kind of event
+  quality: 0.20 # rating, adjusted for how many reviews it rests on (later also #6 review and #7 portfolio signals)
+
+# A part the vendor's listing doesn't tell us scores this, so missing data neither helps nor hurts much.
+unknown: 0.5
+
+price:
+  # price / budget at or below this ratio is a full fit; above it the score falls linearly...
+  full_fit_up_to: 1.0
+  # ...reaching zero at this ratio (60% over budget).
+  zero_at: 1.6
+  # Far below the budget (e.g. a budget caterer for a premium wedding) is a slight mismatch.
+  much_cheaper_below: 0.4
+  much_cheaper_score: 0.8
+
+location:
+  serves_area: 1.0
+  # Listed only as "Other" or with no area: we don't know.
+  area_unknown: 0.5
+  elsewhere: 0.1
+
+capacity:
+  # More guests than the vendor's maximum: left out of the matches altogether.
+  exclude_over_capacity: true
+  under_minimum: 0.3
+
+# Vendors with fewer reviews than this get a small boost so new vendors are seen (implementation plan, #3). It's small enough never to lift a poor fit above a good one.
+new_vendor:
+  max_reviews: 5
+  boost: 0.03
+
+# Where #1 isn't available, the category budget is this share of the total (the planner split baseline).
+fallback_shares: {venue: 0.30, catering: 0.38, decor: 0.17, dj_sound: 0.08, lighting: 0.07}
