@@ -3,7 +3,7 @@ import { formatNumber, formatPkrCompact } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { FeedbackForm } from '@/components/feedback-form';
-import { Link } from '@/i18n/navigation';
+import { Page, PageHeader } from '@/components/ui/page';
 import { getPlan, planEstimate } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
 import { saveFeedback } from './actions';
@@ -29,19 +29,17 @@ export default async function FeedbackPage({ params }: PageProps<'/[locale]/plan
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
-      <header className="flex flex-col gap-2">
-        <Link href={`/plans/${plan.id}`} className="text-sm underline underline-offset-4">
-          ← {t('backToPlan')}
-        </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="max-w-2xl text-sand-700">{t('intro', { event: EVENT_TYPE_LABELS[plan.event_type] })}</p>
-      </header>
+    <Page>
+      <PageHeader
+        back={{ href: `/plans/${plan.id}`, label: t('backToPlan') }}
+        title={t('title')}
+        description={t('intro', { event: EVENT_TYPE_LABELS[plan.event_type] })}
+      />
       <FeedbackForm
         action={saveFeedback.bind(null, plan.id)}
         budgets={budgets}
         defaults={{ spend, guests: existing?.guest_count_actual?.toString(), rating: existing?.rating }}
       />
-    </main>
+    </Page>
   );
 }

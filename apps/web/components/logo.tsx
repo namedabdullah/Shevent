@@ -17,11 +17,11 @@ export function LogoMark({ className = 'size-8' }: { className?: string }) {
   );
 }
 
-/** The wordmark, linking home. Its accessible name is just "Shevent". */
+/** The wordmark, linking home. Its accessible name is just "Shevent". The rosette turns on hover. */
 export function Logo({ name }: { name: string }) {
   return (
-    <Link href="/" className="-mx-1 flex min-h-11 items-center gap-2 rounded-lg px-1 font-display text-2xl font-semibold tracking-tight text-brand-800">
-      <LogoMark />
+    <Link href="/" className="group -mx-1 flex min-h-11 shrink-0 items-center gap-2 rounded-lg px-1 font-display text-2xl font-semibold tracking-tight text-brand-800">
+      <LogoMark className="size-8 transition-transform duration-700 ease-out group-hover:rotate-45" />
       {name}
     </Link>
   );

@@ -9,7 +9,8 @@
 /* Brand: warm cream pages, maroon for actions and links, gold for ornament only.
    Contrast on the cream page (WCAG): sand-500 5.0:1, sand-600 6.3:1, brand-700 10.0:1; white on
    brand-700 10.7:1; gold-700 on gold-50 6.8:1. Gold 300–500 never carries text on light surfaces.
-   sand-400 (3.1:1 on white) is the lightest border allowed on form controls. */
+   sand-400 (3.1:1 on white) is the lightest border allowed on form controls.
+   Night sections (brand-900/950) carry white, cream, brand-100 or gold-200 text only. */
 @theme {
   --color-cream: #fbf7f1;
 
@@ -34,6 +35,7 @@
   --color-brand-700: #741c3a;
   --color-brand-800: #5c142d;
   --color-brand-900: #440e21;
+  --color-brand-950: #2c0815;
 
   --color-gold-50: #fbf5e6;
   --color-gold-100: #f5e7c2;
@@ -43,8 +45,88 @@
   --color-gold-500: #b08326;
   --color-gold-700: #6e5016;
 
+  /* Illustration only (marigold garlands), never text or UI. */
+  --color-marigold-400: #eb9a2c;
+  --color-marigold-500: #d9781a;
+
   --color-background: var(--color-cream);
   --color-foreground: var(--color-sand-900);
+
+  /* Display sizes scale with the viewport so the editorial headings hold on a 360px phone. */
+  --text-display: clamp(2.6rem, 1.7rem + 4.1vw, 4.75rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.025em;
+  --text-headline: clamp(2rem, 1.55rem + 2vw, 3.1rem);
+  --text-headline--line-height: 1.08;
+  --text-headline--letter-spacing: -0.02em;
+
+  --shadow-card: 0 1px 2px rgb(39 30 25 / 0.04), 0 10px 28px -16px rgb(39 30 25 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(39 30 25 / 0.05), 0 22px 44px -20px rgb(68 14 33 / 0.32);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Motion. `enter` moves without fading, so it is safe on text (contrast is never measured mid-fade);
+     `fade-in` is for graphics only. Ambient loops are slow and decorative. */
+  --animate-enter: enter 0.5s var(--ease-out-expo) both;
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-sway: sway 7s ease-in-out infinite;
+  --animate-twinkle: twinkle 3.2s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.8s linear infinite;
+
+  @keyframes enter {
+    from {
+      translate: 0 10px;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+  /* Starts and ends upright, so a single reduced-motion iteration leaves it straight. */
+  @keyframes sway {
+    0%,
+    100% {
+      rotate: 0deg;
+    }
+    25% {
+      rotate: -1.4deg;
+    }
+    75% {
+      rotate: 1.4deg;
+    }
+  }
+  @keyframes twinkle {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+/* Used by .reveal below and by an arbitrary animate-[draw…] in the budget chart, not by an animate-*
+   theme token, so they live outside @theme (Tailwind drops theme keyframes that no token uses). */
+@keyframes slide-up {
+  from {
+    translate: 0 2.5rem;
+  }
+}
+
+@keyframes draw {
+  from {
+    scale: 0 1;
+  }
 }
 
 @theme inline {
@@ -65,6 +147,7 @@
   h3 {
     font-family: var(--font-display), Georgia, serif;
     color: var(--color-sand-900);
+    font-variation-settings: 'SOFT' 50;
   }
 
   a,
@@ -84,13 +167,91 @@
     outline-color: var(--color-brand-600);
   }
 
+  ::selection {
+    background: var(--color-gold-100);
+    color: var(--color-sand-900);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    /* One instant iteration: entrances land on their final frame and ambient loops stop upright. */
     *,
     *::before,
     *::after {
       transition-duration: 0.01ms !important;
       animation-duration: 0.01ms !important;
+      animation-delay: 0s !important;
+      animation-iteration-count: 1 !important;
     }
+  }
+}
+
+@layer base {
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--color-brand-700);
+  }
+}
+
+@layer components {
+  /* Native selects keep the platform picker (best on phones) but get the brand chevron. */
+  .field-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b5948' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 1.1rem;
+    padding-inline-end: 2.5rem;
+  }
+
+  /* The Mughal arch of Lahore's gateways, as a mask: the brand's signature frame. It stretches with
+     the element, so give arch-shaped panels a portrait aspect ratio. */
+  .arch-mask {
+    --arch: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath d='M0 100V42C0 19 21 6 50 0c29 6 50 19 50 42v58z'/%3E%3C/svg%3E");
+    -webkit-mask: var(--arch) center / 100% 100% no-repeat;
+    mask: var(--arch) center / 100% 100% no-repeat;
+  }
+
+  /* Scroll-linked entrances, where the browser supports them. They only move things: text is never
+     faded, so contrast checks and readers always see it at full strength. */
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: slide-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 22%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      animation: none;
+    }
+  }
+
+  /* <details class="accordion"> opens smoothly where ::details-content is supported; elsewhere it
+     simply opens. */
+  .accordion {
+    interpolate-size: allow-keywords;
+  }
+
+  .accordion::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition:
+      block-size 0.35s var(--ease-out-expo),
+      content-visibility 0.35s allow-discrete;
+  }
+
+  .accordion[open]::details-content {
+    block-size: auto;
   }
 }
 

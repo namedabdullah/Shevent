@@ -3,6 +3,8 @@ import { Suspense, type ReactNode } from 'react';
 import { AccountMenu } from '@/components/account-menu';
 import { Logo } from '@/components/logo';
 import { NavLinkList, NavLinks, type NavLink } from '@/components/nav-links';
+import { Badge } from '@/components/ui/badge';
+import { PageSkeleton } from '@/components/ui/skeleton';
 
 /**
  * Layout for signed-in areas. The header renders in the static shell; everything that reads the
@@ -40,13 +42,15 @@ export async function AppShell({
   );
   return (
     <>
-      <header className="z-30 border-b border-sand-200 bg-cream/95 backdrop-blur md:sticky md:top-0">
-        <div className="mx-auto flex min-h-16 w-full max-w-5xl items-center gap-4 px-4 sm:px-6">
+      <header className="z-30 border-b border-sand-200 bg-cream/95 backdrop-blur-md md:sticky md:top-0">
+        <div className="mx-auto flex min-h-16 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
           <Logo name={t('Metadata.siteName')} />
           {area === 'vendor' && (
-            <span className="rounded-full bg-gold-50 px-2.5 py-0.5 text-xs font-semibold tracking-wide text-gold-700 uppercase">{t('Vendor.nav.badge')}</span>
+            <Badge tone="gold" className="tracking-wide uppercase">
+              {t('Vendor.nav.badge')}
+            </Badge>
           )}
-          <div className="ms-6 hidden md:block">{nav('bar')}</div>
+          <div className="ms-5 hidden md:block">{nav('bar')}</div>
           <div className="ms-auto">
             <Suspense fallback={null}>
               <AccountMenu area={area} />
@@ -55,7 +59,7 @@ export async function AppShell({
         </div>
         {nav('tabs')}
       </header>
-      <Suspense fallback={<p className="mx-auto w-full max-w-5xl px-4 py-8 text-sand-600 sm:px-6">{t('App.loading')}</p>}>
+      <Suspense fallback={<PageSkeleton label={t('App.loading')} />}>
         <Gate>{children}</Gate>
       </Suspense>
     </>

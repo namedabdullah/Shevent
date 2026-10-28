@@ -3,7 +3,15 @@ import { formatEventDate } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
+import { DateLeaf } from '@/components/date-leaf';
+import { Icon, type IconName } from '@/components/icons';
 import { TrackEvent } from '@/components/track-event';
+import { Badge } from '@/components/ui/badge';
+import { buttonStyles, linkStyles } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Notice } from '@/components/ui/notice';
+import { Page, PageHeader, Section } from '@/components/ui/page';
+import { ListSkeleton } from '@/components/ui/skeleton';
 import { Link } from '@/i18n/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { requireListing } from '@/lib/vendor';
@@ -13,13 +21,20 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('dashboardTitle') };
 }
 
-export default function VendorDashboardPage({ searchParams }: PageProps<'/[locale]/vendor'>) {
+const STATS: { status: 'open' | 'quoted' | 'booked'; icon: IconName }[] = [
+  { status: 'open', icon: 'inbox' },
+  { status: 'quoted', icon: 'receipt' },
+  { status: 'booked', icon: 'check' },
+];
+
+export default async function VendorDashboardPage({ searchParams }: PageProps<'/[locale]/vendor'>) {
+  const t = await getTranslations('App');
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-4 py-8 sm:px-6">
-      <Suspense fallback={null}>
+    <Page>
+      <Suspense fallback={<ListSkeleton label={t('loading')} />}>
         <Dashboard searchParams={searchParams} />
       </Suspense>
-    </main>
+    </Page>
   );
 }
 
@@ -40,56 +55,84 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
   return (
     <>
       {query.onboarded && <TrackEvent event="vendor_onboarded" />}
-      <header className="flex flex-col gap-2">
-        <p className="text-sm text-sand-600">{tVendor('dashboardTitle')}</p>
-        <h1 className="text-3xl font-semibold tracking-tight">{vendor.name}</h1>
-        <p className="flex flex-wrap items-center gap-2 text-sand-700">
-          {CATEGORY_LABELS[vendor.category]} · {vendor.base_area}
-          <span className="rounded-full border border-sand-400 px-2 py-0.5 text-xs">{vendor.verified ? `✓ ${t('verified')}` : t('notVerified')}</span>
-          <span className="rounded-full border border-sand-400 px-2 py-0.5 text-xs">{vendor.public_consent ? t('publicOn') : t('publicOff')}</span>
-        </p>
-        <Link href="/vendor/profile" className="text-sm underline underline-offset-4">
-          {t('editListing')}
-        </Link>
-      </header>
+      <PageHeader
+        eyebrow={tVendor('dashboardTitle')}
+        title={vendor.name}
+        actions={
+          <Link href="/vendor/profile" className={buttonStyles({ variant: 'secondary', size: 'sm' })}>
+            <Icon name="store" className="size-4" />
+            {t('editListing')}
+          </Link>
+        }
+      >
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sand-700">
+          <span className="flex items-center gap-1.5">
+            <Icon name={vendor.category} className="size-4 text-gold-500" />
+            {CATEGORY_LABELS[vendor.category]}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Icon name="mapPin" className="size-4 text-gold-500" />
+            {vendor.base_area}
+          </span>
+          <Badge tone={vendor.verified ? 'success' : 'neutral'} icon="shield">
+            {vendor.verified ? t('verified') : t('notVerified')}
+          </Badge>
+          <Badge tone={vendor.public_consent ? 'gold' : 'muted'}>{vendor.public_consent ? t('publicOn') : t('publicOff')}</Badge>
+        </div>
+      </PageHeader>
 
       {query.onboarded && (
-        <p role="status" className="rounded-lg border border-green-600 bg-green-50 px-4 py-3 text-green-950">
+        <Notice tone="success" role="status">
           {t('onboarded')}
-        </p>
+        </Notice>
       )}
 
-      <dl className="grid grid-cols-3 gap-3">
-        {(['open', 'quoted', 'booked'] as const).map((status) => (
-          <div key={status} className="flex flex-col gap-1 rounded-xl border border-sand-200 bg-white px-4 py-3">
-            <dt className="text-sm text-sand-600">{t(status === 'open' ? 'waiting' : status)}</dt>
-            <dd className="text-2xl font-semibold tabular-nums">{count(status)}</dd>
+      <dl className="grid grid-cols-3 gap-3 sm:gap-4">
+        {STATS.map(({ status, icon }, index) => (
+          <div
+            key={status}
+            className={`flex flex-col gap-2 rounded-3xl p-4 sm:p-5 ${index === 0 ? 'bg-brand-900 text-brand-100' : 'border border-sand-200 bg-white shadow-card'}`}
+          >
+            <Icon name={icon} className={`size-5 ${index === 0 ? 'text-gold-300' : 'text-gold-500'}`} />
+            <dt className={`text-sm leading-snug ${index === 0 ? 'text-brand-100' : 'text-sand-600'}`}>{t(status === 'open' ? 'waiting' : status)}</dt>
+            <dd className={`font-display text-3xl font-semibold tabular-nums sm:text-4xl ${index === 0 ? 'text-white' : 'text-sand-900'}`}>{count(status)}</dd>
           </div>
         ))}
       </dl>
 
-      <section aria-labelledby="waiting-heading" className="flex flex-col gap-3">
-        <h2 id="waiting-heading" className="text-xl font-semibold">{t('needsQuote')}</h2>
+      <Section
+        id="waiting-heading"
+        title={t('needsQuote')}
+        actions={
+          <Link href="/vendor/inquiries" className={`inline-flex min-h-11 items-center gap-1.5 text-sm ${linkStyles}`}>
+            {t('allInquiries')}
+            <Icon name="arrowRight" className="size-4" />
+          </Link>
+        }
+      >
         {waiting.length === 0 ? (
-          <p className="text-sand-700">{t('noneWaiting')}</p>
+          <EmptyState icon="inbox" compact>
+            {t('noneWaiting')}
+          </EmptyState>
         ) : (
-          <ul className="flex flex-col divide-y divide-sand-200 rounded-xl border border-sand-200 bg-white">
+          <ul className="flex flex-col divide-y divide-sand-100 overflow-hidden rounded-3xl border border-sand-200 bg-white shadow-card">
             {waiting.map((row) => (
               <li key={row.inquiry_id}>
-                <Link href={`/vendor/inquiries/${row.inquiry_id}`} className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 hover:bg-sand-100">
-                  <span className="font-medium">{EVENT_TYPE_LABELS[row.event_type]}</span>
-                  <span className="text-sm text-sand-600">
-                    {formatEventDate(row.event_date)} · {tInbox('guestCount', { count: row.guest_count })} · {row.area}
+                <Link href={`/vendor/inquiries/${row.inquiry_id}`} className="group flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-brand-50/60 sm:px-5">
+                  <DateLeaf date={row.event_date} />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className="font-semibold text-sand-900">{EVENT_TYPE_LABELS[row.event_type]}</span>
+                    <span className="text-sm text-sand-600">
+                      {formatEventDate(row.event_date)} · {tInbox('guestCount', { count: row.guest_count })} · {row.area}
+                    </span>
                   </span>
+                  <Icon name="chevronRight" className="size-5 text-sand-400 transition-transform group-hover:translate-x-0.5 group-hover:text-brand-700" />
                 </Link>
               </li>
             ))}
           </ul>
         )}
-        <Link href="/vendor/inquiries" className="text-sm underline underline-offset-4">
-          {t('allInquiries')}
-        </Link>
-      </section>
+      </Section>
     </>
   );
 }

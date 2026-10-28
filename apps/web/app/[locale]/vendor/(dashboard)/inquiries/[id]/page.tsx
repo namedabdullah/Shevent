@@ -7,12 +7,17 @@ import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { ChatPanel } from '@/components/chat-panel';
 import { FairnessBadge } from '@/components/fairness-badge';
+import { Icon } from '@/components/icons';
 import { QuoteDetails } from '@/components/quote-details';
 import { QuoteForm } from '@/components/quote-form';
 import { SampleDataNotice } from '@/components/sample-data-notice';
+import { InquiryStatusBadge } from '@/components/status-badge';
 import { SubmitButton } from '@/components/submit-button';
 import { TrackEvent } from '@/components/track-event';
-import { Link } from '@/i18n/navigation';
+import { buttonStyles } from '@/components/ui/button';
+import { Notice } from '@/components/ui/notice';
+import { cardStyles, MetaList, Page, PageHeader } from '@/components/ui/page';
+import { PageSkeleton } from '@/components/ui/skeleton';
 import { getAi } from '@/lib/ai';
 import { isUuid, planToSpec } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
@@ -24,13 +29,12 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t('metaTitle') };
 }
 
-export default function VendorInquiryPage({ params, searchParams }: PageProps<'/[locale]/vendor/inquiries/[id]'>) {
+export default async function VendorInquiryPage({ params, searchParams }: PageProps<'/[locale]/vendor/inquiries/[id]'>) {
+  const t = await getTranslations('App');
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
-      <Suspense fallback={null}>
-        <Inquiry params={params} searchParams={searchParams} />
-      </Suspense>
-    </main>
+    <Suspense fallback={<PageSkeleton label={t('loading')} />}>
+      <Inquiry params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }
 
@@ -80,53 +84,64 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
   const preferences = brief.preferences.filter(isPreference).map((value) => PREFERENCE_LABELS[value]);
 
   return (
-    <>
+    <Page>
       {query.quoted && <TrackEvent event="quote_sent" />}
-      <header className="flex flex-col gap-2">
-        <Link href="/vendor/inquiries" className="text-sm underline underline-offset-4">
-          ← {t('backToInbox')}
-        </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">{t('title', { event: EVENT_TYPE_LABELS[brief.event_type], area: brief.area })}</h1>
-        <p className="text-sand-700">
-          {tStatus(inquiry.status)} ·{' '}
-          {t('details', {
-            date: formatEventDate(brief.event_date),
-            guests: tInquiry('guests', { count: brief.guest_count }),
-            venue: brief.venue_type ? VENUE_TYPE_LABELS[brief.venue_type] : t('anyVenue'),
-          })}
-        </p>
-        {preferences.length > 0 && <p className="text-sm text-sand-700">{t('preferences', { list: preferences.join(', ') })}</p>}
-      </header>
+      <PageHeader back={{ href: '/vendor/inquiries', label: t('backToInbox') }} title={t('title', { event: EVENT_TYPE_LABELS[brief.event_type], area: brief.area })}>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            <InquiryStatusBadge status={inquiry.status} label={tStatus(inquiry.status)} />
+            <MetaList
+              items={[
+                { icon: 'calendar', label: tInquiry('dateLabel'), text: formatEventDate(brief.event_date) },
+                { icon: 'users', label: tInquiry('guestsLabel'), text: tInquiry('guests', { count: brief.guest_count }) },
+                { icon: 'venue', label: tInquiry('venueLabel'), text: brief.venue_type ? VENUE_TYPE_LABELS[brief.venue_type] : t('anyVenue') },
+              ]}
+            />
+          </div>
+          {preferences.length > 0 && <p className="text-sm text-sand-700">{t('preferences', { list: preferences.join(', ') })}</p>}
+        </div>
+      </PageHeader>
 
       {query.quoted && (
-        <p role="status" className="rounded-lg border border-green-600 bg-green-50 px-4 py-3 text-green-950">
+        <Notice tone="success" role="status">
           {t('quoteSent')}
-        </p>
+        </Notice>
       )}
-      {query.action === 'failed' && <p role="alert" className="text-red-700">{t('actionFailed')}</p>}
+      {query.action === 'failed' && (
+        <Notice tone="error" role="alert">
+          {t('actionFailed')}
+        </Notice>
+      )}
 
-      <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-start">
         <ChatPanel inquiryId={inquiry.id} currentUserId={user.id} otherName={tInquiry('host')} initialMessages={messages ?? []} />
 
-        <section aria-labelledby="quote-heading" className="flex flex-col gap-4">
-          <h2 id="quote-heading" className="text-xl font-semibold">{tInquiry('quote')}</h2>
+        <section aria-labelledby="quote-heading" className={`${cardStyles} flex flex-col gap-5 p-5 sm:p-6`}>
+          <h2 id="quote-heading" className="flex items-center gap-2 text-xl font-semibold">
+            <Icon name="receipt" className="size-5 text-gold-500" />
+            {tInquiry('quote')}
+          </h2>
           {quote && (
             <div className="flex flex-col gap-3">
-              <h3 className="font-semibold">{t('yourQuote')}</h3>
+              <h3 className="text-lg font-semibold">{t('yourQuote')}</h3>
               <QuoteDetails quote={quote} />
-              <p className="text-sm font-medium">{t('hostSees')}</p>
+              <p className="text-sm font-semibold text-sand-800">{t('hostSees')}</p>
               <SampleDataNotice response={check} />
               {check ? <FairnessBadge check={check} /> : <p className="text-sm text-sand-600">{tInquiry('checkUnavailable')}</p>}
             </div>
           )}
 
-          {inquiry.status === 'booked' && <p className="rounded-lg border border-green-600 bg-green-50 px-4 py-3 text-green-950">{t('booked')}</p>}
-          {inquiry.status === 'declined' && <p className="text-sand-700">{t('declined')}</p>}
-          {inquiry.status === 'closed' && <p className="text-sand-700">{t('closed')}</p>}
+          {inquiry.status === 'booked' && (
+            <Notice tone="success" role="status">
+              {t('booked')}
+            </Notice>
+          )}
+          {inquiry.status === 'declined' && <Notice>{t('declined')}</Notice>}
+          {inquiry.status === 'closed' && <Notice>{t('closed')}</Notice>}
 
           {canQuote && (
-            <div className="flex flex-col gap-3">
-              <h3 className="font-semibold">{quote ? t('reviseQuote') : t('sendQuote')}</h3>
+            <div className={`flex flex-col gap-4 ${quote ? 'border-t border-sand-100 pt-5' : ''}`}>
+              <h3 className="text-lg font-semibold">{quote ? t('reviseQuote') : t('sendQuote')}</h3>
               <QuoteForm
                 action={sendQuote.bind(null, inquiry.id)}
                 category={vendor.category}
@@ -138,15 +153,13 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           )}
 
           {canQuote && (
-            <form action={declineInquiry.bind(null, inquiry.id)} className="flex flex-col gap-1 border-t border-sand-200 pt-4">
-              <SubmitButton className="min-h-11 self-start rounded-lg border border-sand-400 px-4 text-sm font-medium hover:bg-sand-100 disabled:opacity-60">
-                {t('decline')}
-              </SubmitButton>
+            <form action={declineInquiry.bind(null, inquiry.id)} className="flex flex-col gap-1.5 border-t border-sand-100 pt-4">
+              <SubmitButton className={buttonStyles({ variant: 'ghost', size: 'sm', className: '-ms-4 self-start' })}>{t('decline')}</SubmitButton>
               <p className="text-xs text-sand-600">{t('declineHint')}</p>
             </form>
           )}
         </section>
       </div>
-    </>
+    </Page>
   );
 }

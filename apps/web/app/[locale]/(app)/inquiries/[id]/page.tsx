@@ -6,11 +6,17 @@ import { getTranslations } from 'next-intl/server';
 import { notFound, redirect } from 'next/navigation';
 import { ChatPanel } from '@/components/chat-panel';
 import { FairnessBadge } from '@/components/fairness-badge';
+import { Icon } from '@/components/icons';
 import { QuoteDetails } from '@/components/quote-details';
 import { QuoteListener } from '@/components/quote-listener';
 import { SampleDataNotice } from '@/components/sample-data-notice';
+import { InquiryStatusBadge } from '@/components/status-badge';
 import { SubmitButton } from '@/components/submit-button';
 import { TrackEvent } from '@/components/track-event';
+import { buttonStyles } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Notice } from '@/components/ui/notice';
+import { cardStyles, MetaList, Page, PageHeader } from '@/components/ui/page';
 import { Link } from '@/i18n/navigation';
 import { getAi } from '@/lib/ai';
 import { requireUser } from '@/lib/auth';
@@ -71,29 +77,43 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
+    <Page>
       {query.sent && <TrackEvent event="inquiry_sent" />}
       {(inquiry.status === 'open' || inquiry.status === 'quoted') && <QuoteListener inquiryId={inquiry.id} />}
-      <header className="flex flex-col gap-2">
-        <Link href={`/plans/${inquiry.plan_id}`} className="text-sm underline underline-offset-4">
-          ← {t('backToPlan')}
-        </Link>
-        <h1 className="text-3xl font-semibold tracking-tight">{vendor.name}</h1>
-        <p className="text-sand-700">
-          {CATEGORY_LABELS[vendor.category]} · {tStatus(inquiry.status)}
-          {brief && <> · {EVENT_TYPE_LABELS[brief.event_type]}, {formatEventDate(brief.event_date)}, {t('guests', { count: brief.guest_count })}, {brief.area}</>}
-        </p>
-      </header>
+      <PageHeader back={{ href: `/plans/${inquiry.plan_id}`, label: t('backToPlan') }} eyebrow={CATEGORY_LABELS[vendor.category]} title={vendor.name}>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <InquiryStatusBadge status={inquiry.status} label={tStatus(inquiry.status)} />
+          {brief && (
+            <MetaList
+              items={[
+                { icon: 'sparkles', label: t('eventLabel'), text: EVENT_TYPE_LABELS[brief.event_type] },
+                { icon: 'calendar', label: t('dateLabel'), text: formatEventDate(brief.event_date) },
+                { icon: 'users', label: t('guestsLabel'), text: t('guests', { count: brief.guest_count }) },
+                { icon: 'mapPin', label: t('areaLabel'), text: brief.area },
+              ]}
+            />
+          )}
+        </div>
+      </PageHeader>
 
-      {query.book === 'failed' && <p role="alert" className="text-red-700">{t('bookFailed')}</p>}
+      {query.book === 'failed' && (
+        <Notice tone="error" role="alert">
+          {t('bookFailed')}
+        </Notice>
+      )}
 
-      <div className="grid gap-8 lg:grid-cols-[3fr_2fr]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start">
         <ChatPanel inquiryId={inquiry.id} currentUserId={user.id} otherName={vendor.name} initialMessages={messages ?? []} />
 
-        <section aria-labelledby="quote-heading" className="flex flex-col gap-3">
-          <h2 id="quote-heading" className="text-xl font-semibold">{t('quote')}</h2>
+        <section aria-labelledby="quote-heading" className={`${cardStyles} flex flex-col gap-4 p-5 sm:p-6 lg:sticky lg:top-24`}>
+          <h2 id="quote-heading" className="flex items-center gap-2 text-xl font-semibold">
+            <Icon name="receipt" className="size-5 text-gold-500" />
+            {t('quote')}
+          </h2>
           {!quote ? (
-            <p className="text-sand-700">{t('noQuoteHost')}</p>
+            <EmptyState icon="receipt" compact>
+              {t('noQuoteHost')}
+            </EmptyState>
           ) : (
             <>
               <QuoteDetails quote={quote} />
@@ -101,16 +121,18 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
               {check ? <FairnessBadge check={check} /> : <p className="text-sm text-sand-600">{t('checkUnavailable')}</p>}
 
               {booking ? (
-                <Link href={`/bookings/${booking.id}`} className="min-h-11 self-start rounded-lg border border-sand-400 px-4 py-2.5 text-sm font-medium hover:bg-sand-100">
+                <Link href={`/bookings/${booking.id}`} className={buttonStyles({ variant: 'secondary' })}>
                   {t('viewBooking')}
+                  <Icon name="arrowRight" className="size-4" />
                 </Link>
               ) : (
                 inquiry.status === 'quoted' && (
-                  <form action={bookQuote.bind(null, inquiry.id, quote.id)} className="flex flex-col gap-1">
-                    <SubmitButton className="min-h-11 self-start rounded-lg bg-brand-700 px-5 font-medium text-white hover:bg-brand-800 disabled:opacity-60">
-                      {t('book', { total: formatPkr(quote.total_pkr) })}
-                    </SubmitButton>
-                    <p className="text-xs text-sand-600">{t('simulated')}</p>
+                  <form action={bookQuote.bind(null, inquiry.id, quote.id)} className="flex flex-col gap-2 border-t border-sand-100 pt-4">
+                    <SubmitButton className={buttonStyles({ size: 'lg', block: true })}>{t('book', { total: formatPkr(quote.total_pkr) })}</SubmitButton>
+                    <p className="flex items-center justify-center gap-1.5 text-xs text-sand-600">
+                      <Icon name="info" className="size-3.5" />
+                      {t('simulated')}
+                    </p>
                   </form>
                 )
               )}
@@ -118,6 +140,6 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
           )}
         </section>
       </div>
-    </main>
+    </Page>
   );
 }

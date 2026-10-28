@@ -3,7 +3,10 @@
 import { useTranslations } from 'next-intl';
 import { startTransition, useActionState, useEffect, useId, type FormEvent } from 'react';
 import { submitLead, type LeadFormState } from '@/app/[locale]/(marketing)/actions';
+import { Icon } from '@/components/icons';
 import { SubmitButton } from '@/components/submit-button';
+import { buttonStyles } from '@/components/ui/button';
+import { inputStyles } from '@/components/ui/field';
 import { track } from '@/lib/analytics';
 import { getAttribution } from '@/lib/attribution';
 
@@ -21,7 +24,10 @@ export function WaitlistForm() {
 
   if (state.status === 'success') {
     return (
-      <p role="status" className="rounded-lg bg-emerald-50 px-4 py-3 text-emerald-900">
+      <p role="status" className="flex max-w-lg animate-enter items-center gap-3 rounded-2xl border border-green-600/30 bg-green-50 px-4 py-3.5 text-green-950">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-green-700 text-white">
+          <Icon name="check" className="size-4" />
+        </span>
         {t('success')}
       </p>
     );
@@ -40,12 +46,12 @@ export function WaitlistForm() {
   const error = state.status === 'error' ? state.error : undefined;
 
   return (
-    <form onSubmit={submit} className="flex w-full max-w-md flex-col gap-2" noValidate>
+    <form onSubmit={submit} className="flex w-full max-w-lg flex-col gap-2" noValidate>
       <input type="hidden" name="type" value="waitlist" />
       {/* Honeypot, hidden from people and screen readers */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="absolute -start-[9999px] h-0 w-0 opacity-0" />
 
-      <label htmlFor={inputId} className="text-sm font-medium">
+      <label htmlFor={inputId} className="text-sm font-semibold text-sand-800">
         {t('label')}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -60,16 +66,13 @@ export function WaitlistForm() {
           placeholder={t('placeholder')}
           aria-invalid={error === 'invalid'}
           aria-describedby={messageId}
-          className="min-h-11 flex-1 rounded-lg border border-sand-400 bg-white px-3 text-base text-sand-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-600 aria-invalid:border-red-600"
+          className={`${inputStyles} min-h-12 flex-1 rounded-full px-5`}
         />
-        <SubmitButton
-          pending={pending}
-          className="min-h-11 rounded-lg bg-brand-700 px-5 font-medium text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
-        >
+        <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', className: 'shrink-0' })}>
           {pending ? t('submitting') : t('submit')}
         </SubmitButton>
       </div>
-      <p id={messageId} aria-live="polite" className={error ? 'text-sm text-red-700' : 'text-sm text-sand-600'}>
+      <p id={messageId} aria-live="polite" className={error ? 'text-sm font-medium text-red-700' : 'text-sm text-sand-600'}>
         {error ? t(`errors.${error}`) : t('privacy')}
       </p>
     </form>

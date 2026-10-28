@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "skip": "Skip to content"
+  },
   "Metadata": {
     "siteName": "Shevent",
     "title": "Shevent: plan your event in Lahore",
@@ -6,7 +9,7 @@
   },
   "Home": {
     "eyebrow": "Coming soon to Lahore",
-    "title": "Plan your event with real price ranges, not guesswork",
+    "title": "Plan your event with <em>real price ranges</em>, not guesswork",
     "subtitle": "Shevent splits your budget across venue, catering, decor, DJ & sound and lighting, shows typical prices for your area and date, and matches you with vendors that fit. Join the waitlist and we'll tell you when it opens.",
     "highlights": [
       "Your budget split across five categories",
@@ -44,6 +47,10 @@
       {
         "title": "Talk inside Shevent",
         "body": "Chat and quotes stay in one place, with no phone numbers passed around."
+      },
+      {
+        "title": "Sponsored stays separate",
+        "body": "Paid listings are always labelled and shown apart. Payment never changes how vendors are matched."
       }
     ],
     "vendorsTitle": "Are you a vendor in Lahore?",
@@ -51,7 +58,62 @@
     "vendorsCta": "List your business",
     "tryLink": "Or try the budget planner now, no sign-up",
     "tryTitle": "Try it: see your budget split",
-    "tryIntro": "No sign-up needed. Tell us about your event and we'll split your budget across the five categories and show typical prices for each."
+    "tryIntro": "No sign-up needed. Tell us about your event and we'll split your budget across the five categories and show typical prices for each.",
+    "tryEyebrow": "The budget planner",
+    "stepsEyebrow": "Three steps",
+    "categoriesEyebrow": "What we plan",
+    "categoryDetails": {
+      "venue": "Marquees, banquet halls, farmhouses, lawns and rooftops.",
+      "catering": "Menus for mehndi, baraat, walima and every party in between.",
+      "decor": "Stage, flowers, entrance and table styling.",
+      "dj_sound": "DJs and sound systems for the dance floor and the speeches.",
+      "lighting": "Fairy lights, stage lighting and the glow that photographs well."
+    },
+    "categoryUnits": "Usually priced {units}",
+    "trustEyebrow": "Honest by design",
+    "trustIntro": "Shevent gives you numbers to plan with, and it's careful about what those numbers are.",
+    "faqEyebrow": "Questions",
+    "faqTitle": "Good to know",
+    "faq": [
+      {
+        "q": "Are the prices on Shevent quotes?",
+        "a": "No. Price ranges are AI estimates of what similar events in Lahore usually cost, and they're always labelled that way. Real prices come from vendors, as quotes sent to you inside Shevent."
+      },
+      {
+        "q": "Do vendors see my budget?",
+        "a": "No. Vendors see what they need to quote: the type of event, the date, the number of guests and the area. Your budget stays with you."
+      },
+      {
+        "q": "How does the quote check work?",
+        "a": "When a vendor sends a quote, Shevent compares it with the typical range for your event and adds a short note, such as \"Within the typical range\", plus questions worth asking. It's guidance, never an accusation."
+      },
+      {
+        "q": "Can I book and pay through Shevent?",
+        "a": "You can accept a quote and the vendor sees the booking straight away. While Shevent is in preview, payments are simulated, so no money is charged."
+      },
+      {
+        "q": "When does Shevent open?",
+        "a": "Soon. Join the waitlist and we'll tell you when it opens in Lahore. You can try the budget planner today without signing up."
+      }
+    ],
+    "vendorsEyebrow": "For vendors",
+    "vendorsPoints": [
+      "Inquiries from hosts who already have a plan",
+      "See how your quote compares before you send it",
+      "Chat and quotes in one inbox"
+    ],
+    "sealText": "Plan · Price · Book · Lahore · ",
+    "occasions": [
+      "Mehndi",
+      "Baraat",
+      "Walima",
+      "Nikah",
+      "Birthdays",
+      "Corporate galas",
+      "Launches",
+      "Farewells",
+      "Music nights"
+    ]
   },
   "Waitlist": {
     "label": "Email or WhatsApp number",
@@ -76,7 +138,12 @@
     "emptyHint": "Your split across venue, catering, decor, DJ & sound and lighting will appear here."
   },
   "Nav": {
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "label": "Main",
+    "how": "How it works",
+    "planner": "Budget planner",
+    "vendors": "For vendors",
+    "faq": "Questions"
   },
   "Auth": {
     "title": "Sign in to Shevent",
@@ -94,7 +161,8 @@
       "failed": "We couldn't send the link. Please wait a minute and try again.",
       "link": "That sign-in link has expired or was already used. Ask for a new one.",
       "google": "Google sign-in didn't work. Try the email link instead."
-    }
+    },
+    "eyebrow": "Welcome"
   },
   "App": {
     "plans": "My plans",
@@ -114,7 +182,9 @@
     "newPlan": "Plan a new event",
     "empty": "You haven't made a plan yet. Start one to get your budget split and matched vendors.",
     "guests": "{count} guests",
-    "loadError": "We couldn't load your plans. Please refresh the page."
+    "loadError": "We couldn't load your plans. Please refresh the page.",
+    "eyebrow": "Planning",
+    "emptyTitle": "No plans yet"
   },
   "Planner": {
     "title": "Plan your event",
@@ -142,7 +212,17 @@
       "area": "Choose the area.",
       "total_budget_pkr": "Enter a budget such as 25 lakh, 1 crore or 850000.",
       "failed": "We couldn't save your plan. Please try again."
-    }
+    },
+    "eyebrow": "New plan",
+    "assistantTitle": "Rather describe it in your own words?",
+    "assistantBody": "Tell the planning assistant about your event in English, Urdu or Roman Urdu. It fills in this form for you to check.",
+    "assistantLink": "Open the assistant",
+    "nextTitle": "What happens next",
+    "next": [
+      "Shevent splits your budget across the five categories.",
+      "You see typical prices for each, labelled as estimates.",
+      "Choose a category to see vendors that fit and message them."
+    ]
   },
   "Assistant": {
     "title": "Planning assistant",
@@ -178,7 +258,8 @@
     "savePlan": "Save as a plan",
     "savePlanHint": "Opens the planner with these details filled in, so you can check them before saving.",
     "fallback": "Let's finish this with the planner form. What I understood is already filled in.",
-    "openForm": "Open the planner form"
+    "openForm": "Open the planner form",
+    "eyebrow": "Chat to plan"
   },
   "PlanDashboard": {
     "metaTitle": "Your plan",
@@ -203,7 +284,15 @@
     "packagesLink": "Compare ready-made vendor packages",
     "feedbackLink": "After the event: tell us what you actually spent",
     "inquiries": "Your inquiries",
-    "noInquiries": "No inquiries yet. Pick a category above to find vendors."
+    "noInquiries": "No inquiries yet. Pick a category above to find vendors.",
+    "eyebrow": "Your plan",
+    "backToPlans": "My plans",
+    "dateLabel": "Date",
+    "guestsLabel": "Guests",
+    "venueLabel": "Venue",
+    "budgetLabel": "Budget",
+    "packagesBody": "One vendor per category, three ways to fit your budget.",
+    "feedbackBody": "Real spending makes the next estimates better."
   },
   "InquiryStatus": {
     "open": "Waiting for a quote",
@@ -239,7 +328,9 @@
     "rating": "{rating}★ ({count, plural, one {# review} other {# reviews}})",
     "noReviews": "No reviews yet",
     "openChat": "Open chat",
-    "sendInquiry": "Send inquiry"
+    "sendInquiry": "Send inquiry",
+    "categoriesLabel": "Categories",
+    "ranked": "{count, plural, one {# vendor, best fit first} other {# vendors, best fit first}}"
   },
   "Chat": {
     "title": "Chat with {name}",
@@ -274,7 +365,12 @@
     "book": "Book for {total}",
     "simulated": "Payment is simulated: no money is charged.",
     "bookFailed": "We couldn't book this quote. Please refresh and try again.",
-    "viewBooking": "View booking"
+    "viewBooking": "View booking",
+    "eventLabel": "Event",
+    "dateLabel": "Date",
+    "guestsLabel": "Guests",
+    "areaLabel": "Area",
+    "venueLabel": "Venue"
   },
   "Booking": {
     "metaTitle": "Booking",
@@ -310,7 +406,8 @@
       "guests": "Enter the number of guests.",
       "rating": "Choose a rating.",
       "save": "We couldn't save your feedback. Please try again."
-    }
+    },
+    "outcomeSection": "The day itself"
   },
   "Packages": {
     "title": "Vendor packages",
@@ -331,7 +428,8 @@
       "listing": "My listing",
       "label": "Vendor",
       "badge": "Vendor"
-    }
+    },
+    "onboardingEyebrow": "For vendors"
   },
   "VendorProfile": {
     "title": "My listing",
@@ -380,7 +478,9 @@
       "price_tier": "Choose a price level, or leave it as not sure.",
       "invalid": "Some details need fixing. Check the messages above.",
       "failed": "We couldn't save your listing. Please try again."
-    }
+    },
+    "eyebrow": "Your business",
+    "publicSection": "Public profile"
   },
   "VendorDashboard": {
     "onboarded": "Your listing is ready. Hosts can now send you inquiries.",
@@ -403,13 +503,13 @@
     "quote": "Your quote",
     "noQuote": "Not sent",
     "open": "Open",
-    "guestCount": "{count} guests"
+    "guestCount": "{count} guests",
+    "emptyTitle": "No inquiries yet"
   },
   "VendorInquiry": {
     "metaTitle": "Inquiry",
     "backToInbox": "Back to inquiries",
     "title": "{event} in {area}",
-    "details": "{date} · {guests} · {venue}",
     "anyVenue": "Venue not chosen yet",
     "preferences": "The host cares about: {list}",
     "quoteSent": "Your quote was sent. The host can see it now.",
@@ -460,10 +560,25 @@
     "planEvent": "Plan an event",
     "forVendors": "For vendors",
     "made": "Made in Lahore",
-    "label": "Footer"
+    "label": "Footer",
+    "planTitle": "Plan",
+    "vendorsTitle": "Vendors",
+    "planner": "Budget planner",
+    "how": "How it works",
+    "listBusiness": "List your business",
+    "estimateNote": "Every price range on Shevent is an AI estimate, not a vendor quote.",
+    "preview": "Preview: payments are simulated and no money is charged."
   },
   "NotFound": {
     "title": "Page not found",
-    "back": "Back to the home page"
+    "back": "Back to the home page",
+    "body": "The link may be old, or the page may have moved. Everything else is where you left it."
+  },
+  "Error": {
+    "title": "Something went wrong",
+    "body": "This page didn't load properly. That's usually temporary, so please try again.",
+    "reference": "Reference: {digest}",
+    "retry": "Try again",
+    "home": "Back to the home page"
   }
 }
