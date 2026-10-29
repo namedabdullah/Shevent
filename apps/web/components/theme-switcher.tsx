@@ -6,7 +6,7 @@ import { Icon, type IconName } from '@/components/icons';
 import { isThemeChoice, THEME_CHOICES, THEME_STORAGE_KEY, THEME_SWATCHES, type Theme, type ThemeChoice } from '@/lib/theme';
 
 const DARK_QUERY = '(prefers-color-scheme: dark)';
-const ICONS: Record<ThemeChoice, IconName> = { system: 'monitor', light: 'sun', dark: 'moon', sand: 'palette', ocean: 'palette' };
+const ICONS: Record<ThemeChoice, IconName> = { system: 'monitor', light: 'sun', dark: 'moon', sand: 'palette' };
 
 const resolve = (choice: ThemeChoice): Theme => (choice === 'system' ? (window.matchMedia(DARK_QUERY).matches ? 'dark' : 'light') : choice);
 
@@ -67,7 +67,7 @@ function Swatch({ choice }: { choice: ThemeChoice }) {
   );
 }
 
-/** A small theme menu: System, Light, Dark, Sand, Ocean. Radio buttons inside a disclosure panel. */
+/** A small theme menu: System, Light, Dark, Sand. Radio buttons inside a disclosure panel. */
 export function ThemeSwitcher() {
   const t = useTranslations('Theme');
   const choice = useThemeChoice();

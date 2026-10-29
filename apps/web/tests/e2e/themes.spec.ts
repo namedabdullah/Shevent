@@ -3,7 +3,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-const THEMES = ['Light', 'Dark', 'Sand', 'Ocean'] as const;
+const THEMES = ['Light', 'Dark', 'Sand'] as const;
 
 async function expectNoSeriousViolations(page: Page, name: string) {
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
@@ -33,8 +33,8 @@ test('every theme is readable on the landing page and the sign-in page', async (
   }
   await page.goto('/sign-in');
   await page.waitForLoadState('networkidle');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'ocean');
-  await expectNoSeriousViolations(page, '/sign-in (Ocean)');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'sand');
+  await expectNoSeriousViolations(page, '/sign-in (Sand)');
 });
 
 test('the chosen theme survives a reload, and System follows the OS', async ({ page }) => {

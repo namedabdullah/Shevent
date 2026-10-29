@@ -3,7 +3,7 @@
 
 export const THEME_STORAGE_KEY = 'shevent-theme';
 
-export const THEME_CHOICES = ['system', 'light', 'dark', 'sand', 'ocean'] as const;
+export const THEME_CHOICES = ['system', 'light', 'dark', 'sand'] as const;
 export type ThemeChoice = (typeof THEME_CHOICES)[number];
 export type Theme = Exclude<ThemeChoice, 'system'>;
 
@@ -12,7 +12,6 @@ export const THEME_SWATCHES: Record<Theme, { canvas: string; accent: string }> =
   light: { canvas: '#f6f6f4', accent: '#c9441a' },
   dark: { canvas: '#0f0f11', accent: '#ff7a50' },
   sand: { canvas: '#f3eee6', accent: '#8f3d27' },
-  ocean: { canvas: '#0a111c', accent: '#3fd0c0' },
 };
 
 export function isThemeChoice(value: unknown): value is ThemeChoice {

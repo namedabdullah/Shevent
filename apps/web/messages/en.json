@@ -608,8 +608,7 @@
     "system": "System",
     "light": "Light",
     "dark": "Dark",
-    "sand": "Sand",
-    "ocean": "Ocean"
+    "sand": "Sand"
   },
   "DatePicker": {
     "open": "Open calendar",
