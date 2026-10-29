@@ -6,7 +6,7 @@
    <html data-theme> before first paint (see components/theme.tsx). Without JavaScript, the page
    follows the OS light/dark setting.
 
-   All four palettes are checked for WCAG AA: text tokens ≥ 4.5:1 on canvas, surface and subtle;
+   All three palettes are checked for WCAG AA: text tokens ≥ 4.5:1 on canvas, surface and subtle;
    `control` (form borders) and status solids ≥ 3:1 on surface; on-accent ≥ 4.5:1 on accent.
 
    `.scope-inverse` flips a section to the opposite palette (a dark band on a light page and the
@@ -15,8 +15,7 @@
 
 :root,
 [data-theme='light'],
-[data-theme='dark'] .scope-inverse,
-[data-theme='ocean'] .scope-inverse {
+[data-theme='dark'] .scope-inverse {
   color-scheme: light;
   --canvas: #f6f6f4;
   --surface: #ffffff;
@@ -140,48 +139,6 @@
   --on-solid: #ffffff;
   --shadow-rgb: 52 38 26;
   --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236a5d51' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-}
-
-[data-theme='ocean'] {
-  color-scheme: dark;
-  --canvas: #0a111c;
-  --surface: #0f1928;
-  --subtle: #152235;
-  --sunken: #1b2a40;
-  --line: #1d2b3f;
-  --line-strong: #2c3d55;
-  --control: #5b6e88;
-  --ink: #e9eff7;
-  --ink-soft: #c3cfde;
-  --muted: #8fa1b7;
-  --faint: #56677d;
-  --accent: #3fd0c0;
-  --accent-hover: #6adccf;
-  --on-accent: #03231f;
-  --accent-ink: #5fdccd;
-  --accent-soft: #0c2a2c;
-  --accent-line: #1b4d4b;
-  --success: #4ade80;
-  --success-ink: #bbf7d0;
-  --success-soft: #0f2a1f;
-  --success-line: #1f5134;
-  --warning: #fbbf24;
-  --warning-ink: #fde68a;
-  --warning-soft: #2a230e;
-  --warning-line: #5c4a14;
-  --danger: #f87171;
-  --danger-ink: #fecaca;
-  --danger-soft: #301822;
-  --danger-line: #6b2430;
-  --on-solid: #0a111c;
-  --shadow-rgb: 0 0 0;
-  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238fa1b7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  --series-venue: #3987e5;
-  --series-catering: #d95926;
-  --series-decor: #199e70;
-  --series-dj_sound: #c98500;
-  --series-lighting: #d55181;
-  --series-photography: #008300;
 }
 
 /* No JavaScript yet (or ever): follow the OS. */
