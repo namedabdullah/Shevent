@@ -69,3 +69,30 @@ def precision_at_k(ranked_relevance, k, threshold=2):
     """Share of the top k with relevance >= threshold (2 = 'good match' on the 0-3 scale)."""
     top = np.asarray(ranked_relevance, dtype=float)[:k]
     return float((top >= threshold).sum() / k)
+
+
+def quadratic_weighted_kappa(true, predicted, n_levels):
+    """Agreement between two ordinal labellings (levels 0..n_levels-1) beyond chance, from -1 to 1 (1 = identical).
+
+    Disagreeing by two levels costs four times as much as by one. 0 when either side uses a single level throughout,
+    since agreement can't then be told apart from chance.
+    """
+    true, predicted = np.asarray(true, dtype=int), np.asarray(predicted, dtype=int)
+    observed = np.zeros((n_levels, n_levels))
+    np.add.at(observed, (true, predicted), 1)
+    expected = np.outer(observed.sum(axis=1), observed.sum(axis=0)) / max(len(true), 1)
+    levels = np.arange(n_levels)
+    weights = (levels[:, None] - levels[None, :]) ** 2 / (n_levels - 1) ** 2
+    denominator = (weights * expected).sum()
+    return float(1 - (weights * observed).sum() / denominator) if denominator else 0.0
+
+
+def set_precision_recall(true_sets, predicted_sets):
+    """Micro-averaged precision and recall of predicted item sets against true ones (e.g. checklist items)."""
+    hits = sum(len(set(t) & set(p)) for t, p in zip(true_sets, predicted_sets, strict=True))
+    predicted = sum(len(set(p)) for p in predicted_sets)
+    true = sum(len(set(t)) for t in true_sets)
+    return {
+        "precision": hits / predicted if predicted else float("nan"),
+        "recall": hits / true if true else float("nan"),
+    }

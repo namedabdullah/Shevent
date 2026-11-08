@@ -1,7 +1,7 @@
 'use client';
 
 import { createApiClient } from '@shevent/core/api';
-import { CATEGORY_UNITS, type Category, type PriceUnit } from '@shevent/core/enums';
+import { CATEGORY_UNITS, type Category, type PriceTier, type PriceUnit } from '@shevent/core/enums';
 import { formatPkr, formatPkrCompact, parsePkr, UNIT_LABELS } from '@shevent/core/format';
 import { quoteTotalPkr, splitList, type EventSpec, type QuoteCheckRequest, type QuoteCheckResponse } from '@shevent/core/schemas';
 import { useTranslations } from 'next-intl';
@@ -41,6 +41,7 @@ export function QuoteForm({
   category,
   spec,
   today,
+  vendorTier,
   defaults = {},
 }: {
   action: (state: QuoteFormState, formData: FormData) => Promise<QuoteFormState>;
@@ -48,6 +49,8 @@ export function QuoteForm({
   /** The event without the host's budget (from inquiry_brief). */
   spec: EventSpec;
   today: string;
+  /** The listing's tier: the preview compares the quote with vendors of the same tier, as the host's check does. */
+  vendorTier?: PriceTier | null;
   defaults?: QuoteFormDefaults;
 }) {
   const t = useTranslations('QuoteForm');
@@ -57,6 +60,7 @@ export function QuoteForm({
   const [unit, setUnit] = useState<PriceUnit>(defaults.unit && units.includes(defaults.unit) ? defaults.unit : units[0]!);
   const [hours, setHours] = useState(defaults.hours ? String(defaults.hours) : '');
   const [inclusions, setInclusions] = useState(defaults.inclusions?.join('\n') ?? '');
+  const [exclusions, setExclusions] = useState(defaults.exclusions?.join('\n') ?? '');
   const [notes, setNotes] = useState(defaults.notes ?? '');
   const [preview, setPreview] = useState<{ key: string; result: QuoteCheckResponse | 'error' } | null>(null);
   const id = useId();
@@ -78,7 +82,9 @@ export function QuoteForm({
         hours: parsedHours,
         // Over-long items would fail validation; the server reports them on send instead.
         inclusions: splitList(inclusions).filter((item) => item.length <= 100).slice(0, 50),
+        exclusions: splitList(exclusions).filter((item) => item.length <= 100).slice(0, 50),
         notes: notes.trim() ? notes.trim().slice(0, 2000) : undefined,
+        vendor_tier: vendorTier ?? undefined,
       } satisfies QuoteCheckRequest)
     : null;
 
@@ -200,7 +206,15 @@ export function QuoteForm({
       {field(
         'exclusions',
         t('exclusions'),
-        <textarea id={`${id}-exclusions`} name="exclusions" rows={2} defaultValue={defaults.exclusions?.join('\n') ?? ''} aria-invalid={invalid('exclusions')} className={textareaStyles} />,
+        <textarea
+          id={`${id}-exclusions`}
+          name="exclusions"
+          rows={2}
+          value={exclusions}
+          onChange={(event) => setExclusions(event.target.value)}
+          aria-invalid={invalid('exclusions')}
+          className={textareaStyles}
+        />,
       )}
       {field(
         'notes',

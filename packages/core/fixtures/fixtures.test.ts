@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CATEGORIES } from '../enums';
 import {
@@ -21,6 +23,7 @@ import {
   fixtureRecommend,
   fixtureReviewInsights,
   fixtureVendors,
+  INCLUSION_CHECKLIST,
   isFixtureResponse,
   portfolioCheckFixture,
 } from './index';
@@ -96,7 +99,33 @@ describe('fixtureQuoteCheck', () => {
   });
 
   it('asks only about inclusions the quote does not mention', () => {
-    expect(fixtureQuoteCheck(quote(3000)).ask_about).toEqual(['Serving staff', 'Service tax', 'Transport']);
-    expect(fixtureQuoteCheck(quote(3000, ['Serving staff', 'Tax included'])).ask_about).toEqual(['Transport']);
+    expect(fixtureQuoteCheck(quote(3000)).ask_about).toEqual(['Serving staff', 'Crockery and cutlery', 'Service tax', 'Transport']);
+    expect(fixtureQuoteCheck(quote(3000, ['Serving staff', 'Tax included'])).ask_about).toEqual(['Crockery and cutlery', 'Transport']);
+  });
+
+  it('lists exclusions as charged extra, checklist items first', () => {
+    const result = fixtureQuoteCheck({ ...quote(3000, ['Waiters']), exclusions: ['Live BBQ station', 'Transport'] });
+    expect(result.charged_extra).toEqual(['Transport', 'Live BBQ station']);
+    expect(result.ask_about).toEqual(['Crockery and cutlery', 'Service tax']);
+  });
+
+  it('says how far below the range a quote is, and keeps it green', () => {
+    const result = fixtureQuoteCheck(quote(1400));
+    expect(result.level).toBe('green');
+    expect(result.percent_below_low).toBe(50);
+    expect(result.compared_with).toBe('all_vendors');
+  });
+});
+
+describe('INCLUSION_CHECKLIST', () => {
+  it('is identical to data/reference/quote_checklist.csv', () => {
+    const file = fileURLToPath(new URL('../../../data/reference/quote_checklist.csv', import.meta.url));
+    const [, ...rows] = readFileSync(file, 'utf8').trim().split(/\r?\n/);
+    const fromCsv: Record<string, { item: string; label: string; keywords: string[] }[]> = {};
+    for (const row of rows) {
+      const [category, item, label, keywords] = row.split(',');
+      (fromCsv[category!] ??= []).push({ item: item!, label: label!, keywords: keywords!.split('|') });
+    }
+    expect(INCLUSION_CHECKLIST).toEqual(fromCsv);
   });
 });

@@ -1,0 +1,20 @@
+category,item,label,keywords,needs_number
+venue,generator_fuel,Generator fuel,generator|genset|fuel|diesel,no
+venue,service_tax,Service tax,tax|gst|pst,no
+venue,overtime,Overtime charges,overtime|extra hour|extra time,no
+catering,serving_staff,Serving staff,staff|waiter|bearer,no
+catering,crockery,Crockery and cutlery,crockery|cutlery|plates,no
+catering,service_tax,Service tax,tax|gst|pst,no
+catering,transport,Transport,transport|delivery|carriage,no
+decor,setup_teardown,Setup and teardown,setup|set up|set-up|teardown|dismantl|installation,no
+decor,transport,Transport,transport|delivery|carriage,no
+dj_sound,overtime,Overtime charges,overtime|extra hour|extra time,no
+dj_sound,sound_permit,Sound permit,permit|noc,no
+dj_sound,generator_fuel,Generator fuel,generator|genset|fuel|diesel,no
+lighting,generator_fuel,Generator fuel,generator|genset|fuel|diesel,no
+lighting,setup_teardown,Setup and teardown,setup|set up|set-up|teardown|dismantl|installation,no
+lighting,transport,Transport,transport|delivery|carriage,no
+photography,edited_photos,Number of edited photos,edited|photos|pictures|pics|images,yes
+photography,delivery_time,Delivery time,deliver|turnaround|days|weeks,yes
+photography,album_prints,Album or prints,album|print,no
+photography,overtime,Overtime charges,overtime|extra hour|extra time,no
