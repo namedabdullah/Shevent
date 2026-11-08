@@ -1,0 +1,28 @@
+# #4 Package Builder (python -m shevent_ml.models.packages). Change values here, not in code.
+
+# The packages are solved in this order, and each must differ from the ones solved before it. Balanced comes first,
+# so it is the best fit; cheapest and highest quality are then the best different bundles of their kind.
+solve_order: [balanced, cheapest, highest_quality]
+# ...in at least this many categories.
+min_different: 1
+
+# A cap for each CP-SAT solve, not a target: on a few hundred vendors a solve takes milliseconds. Too tight a cap
+# drops packages on a busy machine (a solve that runs out of time with no answer gives no package).
+max_seconds_per_solve: 0.5
+# One worker gives the same answer on every run (with more, ties can depend on thread timing).
+workers: 1
+
+# Vendors listed only for other areas are left out. Vendors with no area listed stay in, ranked lower by #3.
+exclude_other_areas: true
+# Each category's solver pool: the top N by match score, the N cheapest and the top N by quality, merged.
+candidates_per_list: 25
+
+evaluation:
+  # Real vendors are too few for a timing test (photography has none), so the evaluation also builds a synthetic
+  # vendor pool: each vendor takes its tier, unit price and guest range from one synthetic event.
+  synthetic_vendors_per_category: 60
+  synthetic_plans: 200
+  # The same events again with this share of their budget: tight budgets are where a per-category greedy pick
+  # overshoots the total.
+  tight_budget_share: 0.7
+  seed: 42

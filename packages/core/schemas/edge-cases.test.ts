@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { AREAS, CATEGORIES, EVENT_TYPES, VENUE_TYPES } from '../enums';
-import { estimateRequestFixture, fixtureQuoteCheck } from '../fixtures';
-import { estimateRequestSchema, quoteCheckRequestSchema, type QuoteCheckRequest } from './index';
+import { estimateRequestFixture, fixturePackages, fixtureQuoteCheck } from '../fixtures';
+import { estimateRequestSchema, packagesResponseSchema, quoteCheckRequestSchema, type QuoteCheckRequest } from './index';
 
 const base = estimateRequestFixture;
 const accepts = (overrides: Record<string, unknown>) => estimateRequestSchema.safeParse({ ...base, ...overrides }).success;
@@ -99,5 +99,26 @@ describe('fixtures follow the reference CSVs', () => {
       const text = readFileSync(fileURLToPath(new URL(`../../../data/reference/${file}`, import.meta.url)), 'utf8');
       expect(text.trim().split(/\r?\n/).length).toBeGreaterThan(1);
     }
+  });
+});
+
+describe('#4 packages contract', () => {
+  const response = fixturePackages({ plan: base, categories: ['venue', 'catering'] });
+  const withItem = (change: Record<string, unknown>) => ({
+    ...response,
+    packages: [{ ...response.packages[0]!, items: [{ ...response.packages[0]!.items[0]!, ...change }, response.packages[0]!.items[1]!] }],
+  });
+
+  it('accepts the fixture', () => {
+    expect(packagesResponseSchema.safeParse(response).success).toBe(true);
+  });
+
+  it('rejects a price outside its range', () => {
+    const [low] = response.packages[0]!.items[0]!.price_range;
+    expect(packagesResponseSchema.safeParse(withItem({ price_range: [low, low] })).success).toBe(false);
+  });
+
+  it('rejects a package over the budget', () => {
+    expect(packagesResponseSchema.safeParse({ ...response, budget_pkr: response.packages[0]!.total_pkr - 1 }).success).toBe(false);
   });
 });

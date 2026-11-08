@@ -122,27 +122,38 @@ const PACKAGE_SPEND: Record<PackageKind, number> = { cheapest: 0.75, balanced: 0
 /** #4: three bundles that spend 75%, 90% and 100% of each category's allocation. */
 export function fixturePackages(request: PackagesRequest): PackagesResponse {
   const estimate = fixtureEstimate(request.plan);
+  const unavailable = new Set(request.unavailable_vendor_ids);
+  const options = (category: Category) =>
+    fixtureVendors.filter((v) => v.category === category && !v.sponsored && !unavailable.has(v.vendor_id));
+  const filled = request.categories.filter((category) => options(category).length > 0);
   const pick = (kind: PackageKind, category: Category) => {
-    const options = fixtureVendors.filter((v) => v.category === category && !v.sponsored);
     const rank = (v: FixtureVendor) =>
       kind === 'cheapest' ? -v.price_factor : kind === 'highest_quality' ? (v.rating ?? 0) : v.fixture_score;
-    return options.reduce((best, v) => (rank(v) > rank(best) ? v : best));
+    return options(category).reduce((best, v) => (rank(v) > rank(best) ? v : best));
   };
 
-  const packages = (Object.keys(PACKAGE_SPEND) as PackageKind[]).map((kind) => {
-    const items = request.categories.map((category) => {
+  const packages = filled.length === 0 ? [] : (Object.keys(PACKAGE_SPEND) as PackageKind[]).map((kind) => {
+    const items = filled.map((category) => {
       const vendor = pick(kind, category);
+      const price_pkr = floorTo1000(estimate.allocation[category].pkr * PACKAGE_SPEND[kind]);
       return {
         vendor: toSummary(vendor),
-        price_pkr: floorTo1000(estimate.allocation[category].pkr * PACKAGE_SPEND[kind]),
+        price_pkr,
         price_is_estimate: vendor.review_count === 0,
+        price_range: [floorTo1000(price_pkr * 0.85), Math.ceil((price_pkr * 1.15) / 1000) * 1000] as PriceRange,
         score: vendor.fixture_score,
       };
     });
     return { kind, total_pkr: items.reduce((sum, item) => sum + item.price_pkr, 0), items };
   });
 
-  return { budget_pkr: request.plan.total_budget_pkr, packages, model_version: FIXTURE_MODEL_VERSION };
+  return {
+    budget_pkr: request.plan.total_budget_pkr,
+    packages,
+    unfilled_categories: request.categories.filter((category) => !filled.includes(category)),
+    cheapest_total_pkr: null,
+    model_version: FIXTURE_MODEL_VERSION,
+  };
 }
 
 /**

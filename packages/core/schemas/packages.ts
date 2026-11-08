@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { CATEGORIES } from '../enums';
-import { modelVersionSchema, vendorSummarySchema } from './common';
+import { modelVersionSchema, priceRangeSchema, vendorSummarySchema } from './common';
 import { estimateRequestSchema } from './estimate';
 
 export const PACKAGE_KINDS = ['cheapest', 'balanced', 'highest_quality'] as const;
@@ -20,6 +20,8 @@ export const packagesRequestSchema = z.object({
     .array(z.enum(CATEGORIES))
     .min(1)
     .refine((categories) => new Set(categories).size === categories.length, { message: 'categories must be unique' }),
+  /** Vendors already booked on the event date: never put in a package. */
+  unavailable_vendor_ids: z.array(z.string()).max(1000).optional(),
 });
 export type PackagesRequest = z.infer<typeof packagesRequestSchema>;
 
@@ -28,7 +30,11 @@ export const packageItemSchema = z.object({
   price_pkr: z.number().nonnegative(),
   /** True when the vendor has no listed price and #2 filled it in. */
   price_is_estimate: z.boolean(),
+  /** The listed price range, or #2's 80% range when price_is_estimate. price_pkr is inside it. */
+  price_range: priceRangeSchema,
   score: z.number().min(0).max(1),
+}).refine((item) => item.price_range[0] <= item.price_pkr && item.price_pkr <= item.price_range[1], {
+  message: 'price_pkr must be inside price_range',
 });
 
 export const packageSchema = z
@@ -46,6 +52,10 @@ export const packagesResponseSchema = z
   .object({
     budget_pkr: z.number().nonnegative(),
     packages: z.array(packageSchema).max(3),
+    /** Requested categories with no vendor that can take the event (area, guests, date); left out of every package. */
+    unfilled_categories: z.array(z.enum(CATEGORIES)),
+    /** When no package fits the budget: the cheapest bundle's total, so the host knows how far off it is. */
+    cheapest_total_pkr: z.number().nonnegative().nullable(),
     model_version: modelVersionSchema,
   })
   // Phase 3 exit gate: every package #4 returns is within budget.

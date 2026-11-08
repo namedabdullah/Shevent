@@ -30,6 +30,7 @@ from shevent_ml.eval.metrics import interval_coverage, mape, pinball_loss
 from shevent_ml.models.price_features import (
     CATEGORICAL,
     FEATURES,
+    TIER_RANK,
     plan_rows,
     quote_rows,
     real_rows,
@@ -107,11 +108,17 @@ class PriceEstimator:
 
     def estimate_plan(self, plan, tier=None):
         """Per-category ranges for an event plan, in PKR for the whole event (per-head prices times guests)."""
-        rows = plan_rows(plan, tier)
+        return self.estimate_plan_tiers(plan, [tier])[tier]
+
+    def estimate_plan_tiers(self, plan, tiers):
+        """estimate_plan for several tiers (None: any tier), from one feature build and one prediction."""
+        base = plan_rows(plan)
+        rows = pd.concat([base.assign(tier_rank=float(TIER_RANK.get(t, np.nan))) for t in tiers], ignore_index=True)
         prices = self.predict(rows)
         guests = np.where(rows["price_basis"] == "per_head", plan["guest_count"], 1)
-        totals = prices.mul(guests, axis=0).round(-3)
-        return totals.set_index(rows["category"].astype(str))
+        totals = prices.mul(guests, axis=0).round(-3).set_index(rows["category"].astype(str))
+        n = len(base)
+        return {t: totals.iloc[i * n : (i + 1) * n] for i, t in enumerate(tiers)}
 
     def save(self, path=ARTIFACT_DIR, report=None):
         path.mkdir(parents=True, exist_ok=True)

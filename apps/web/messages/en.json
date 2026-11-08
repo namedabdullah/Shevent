@@ -441,6 +441,10 @@
     "intro": "Three ready-made combinations that fit your {budget} budget: one vendor per category.",
     "unavailable": "We couldn't build packages right now. Please try again in a few minutes.",
     "ofBudget": "{percent}% of your budget",
+    "range": "Usual range {range}",
+    "unfilled": "No vendor on Shevent can take {categories} for this event yet, so the packages leave it out.",
+    "noneFit": "No combination of vendors fits your {budget} budget. The cheapest costs about {cheapest}.",
+    "noVendors": "No vendors on Shevent can take this event yet.",
     "openChat": "Open chat",
     "sendInquiry": "Send inquiry"
   },
