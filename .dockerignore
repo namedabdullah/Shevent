@@ -1,0 +1,15 @@
+# The model server image (server/Dockerfile) only needs ml/, server/, data/reference and the demo vendors.
+**/node_modules
+**/.venv
+**/__pycache__
+**/.next
+.git
+apps
+data/raw
+data/images
+data/processed
+data/splits
+data/feedback
+data/*.xlsx
+*.md
+*.pdf

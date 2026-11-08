@@ -6,9 +6,10 @@ solve_order: [balanced, cheapest, highest_quality]
 # ...in at least this many categories.
 min_different: 1
 
-# A cap for each CP-SAT solve, not a target: on a few hundred vendors a solve takes milliseconds. Too tight a cap
-# drops packages on a busy machine (a solve that runs out of time with no answer gives no package).
-max_seconds_per_solve: 0.5
+# A cap on each CP-SAT solve, not a target: on a few hundred vendors a solve takes milliseconds. It is CP-SAT's
+# deterministic time (counted work, roughly seconds on a laptop), not the clock, so a busy machine can't cut a solve
+# short and the same request always gets the same packages.
+max_work_per_solve: 1.0
 # One worker gives the same answer on every run (with more, ties can depend on thread timing).
 workers: 1
 

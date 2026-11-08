@@ -98,12 +98,15 @@ class VendorMatcher:
                     source.loc[needs] = "estimated"
         return total.to_numpy(dtype=float), source.to_numpy()
 
-    def score(self, plan, category, vendors, with_reasons=True):
-        """The candidates of this category with each part's score, the fit score, reasons and sponsored flag."""
+    def score(self, plan, category, vendors, with_reasons=True, budget=None):
+        """The candidates of this category with each part's score, the fit score, reasons and sponsored flag.
+
+        budget: this category's budget when the caller already has it (the API request carries #1's), else from #1.
+        """
         s = self.settings
         v = vendors[vendors["category"] == category].copy()
         guests = plan["guest_count"]
-        budget = self.category_budget(plan, category)
+        budget = self.category_budget(plan, category) if budget is None else budget
 
         likely, source = self.likely_prices(plan, category, v)
         v["likely_pkr"], v["price_source"] = likely, source

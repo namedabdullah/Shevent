@@ -1,0 +1,409 @@
+{
+  "request": {
+    "plan": {
+      "event_type": "wedding_mehndi",
+      "guest_count": 300,
+      "area": "Gulberg",
+      "venue_type": "marquee",
+      "event_date": "2026-12-19",
+      "total_budget_pkr": 2500000
+    },
+    "categories": [
+      "venue",
+      "catering",
+      "decor",
+      "dj_sound",
+      "lighting",
+      "photography"
+    ],
+    "unavailable_vendor_ids": [
+      "00000000-0000-4000-8000-000000000101"
+    ]
+  },
+  "response": {
+    "budget_pkr": 2500000.0,
+    "packages": [
+      {
+        "kind": "cheapest",
+        "total_pkr": 1350000.0,
+        "items": [
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000102",
+              "slug": "demo-banquet-hall-model-town",
+              "name": "Demo Banquet Hall Model Town",
+              "category": "venue",
+              "base_area": "Model Town",
+              "price_tier": "budget",
+              "verified": true,
+              "rating": 4.1,
+              "review_count": 22
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.792
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000201",
+              "slug": "demo-caterers-johar-town",
+              "name": "Demo Caterers Johar Town",
+              "category": "catering",
+              "base_area": "Johar Town",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.3,
+              "review_count": 54
+            },
+            "price_pkr": 600000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              450000.0,
+              750000.0
+            ],
+            "score": 0.936
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000301",
+              "slug": "demo-stage-decor-dha",
+              "name": "Demo Stage Decor DHA",
+              "category": "decor",
+              "base_area": "DHA",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.2,
+              "review_count": 17
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.855
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000401",
+              "slug": "demo-dj-and-dhol-cantt",
+              "name": "Demo DJ & Dhol Cantt",
+              "category": "dj_sound",
+              "base_area": "Cantt",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.0,
+              "review_count": 15
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.825
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000501",
+              "slug": "demo-lights-model-town",
+              "name": "Demo Lights Model Town",
+              "category": "lighting",
+              "base_area": "Model Town",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.2,
+              "review_count": 9
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.855
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000602",
+              "slug": "demo-photo-and-film-johar-town",
+              "name": "Demo Photo & Film Johar Town",
+              "category": "photography",
+              "base_area": "Johar Town",
+              "price_tier": "budget",
+              "verified": false,
+              "rating": null,
+              "review_count": 0
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.785
+          }
+        ]
+      },
+      {
+        "kind": "balanced",
+        "total_pkr": 1500000.0,
+        "items": [
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000102",
+              "slug": "demo-banquet-hall-model-town",
+              "name": "Demo Banquet Hall Model Town",
+              "category": "venue",
+              "base_area": "Model Town",
+              "price_tier": "budget",
+              "verified": true,
+              "rating": 4.1,
+              "review_count": 22
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.792
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000201",
+              "slug": "demo-caterers-johar-town",
+              "name": "Demo Caterers Johar Town",
+              "category": "catering",
+              "base_area": "Johar Town",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.3,
+              "review_count": 54
+            },
+            "price_pkr": 600000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              450000.0,
+              750000.0
+            ],
+            "score": 0.936
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000302",
+              "slug": "demo-floral-studio-gulberg",
+              "name": "Demo Floral Studio Gulberg",
+              "category": "decor",
+              "base_area": "Gulberg",
+              "price_tier": "premium",
+              "verified": true,
+              "rating": 4.5,
+              "review_count": 29
+            },
+            "price_pkr": 300000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              200000.0,
+              400000.0
+            ],
+            "score": 0.87
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000401",
+              "slug": "demo-dj-and-dhol-cantt",
+              "name": "Demo DJ & Dhol Cantt",
+              "category": "dj_sound",
+              "base_area": "Cantt",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.0,
+              "review_count": 15
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.825
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000501",
+              "slug": "demo-lights-model-town",
+              "name": "Demo Lights Model Town",
+              "category": "lighting",
+              "base_area": "Model Town",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.2,
+              "review_count": 9
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.855
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000602",
+              "slug": "demo-photo-and-film-johar-town",
+              "name": "Demo Photo & Film Johar Town",
+              "category": "photography",
+              "base_area": "Johar Town",
+              "price_tier": "budget",
+              "verified": false,
+              "rating": null,
+              "review_count": 0
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.785
+          }
+        ]
+      },
+      {
+        "kind": "highest_quality",
+        "total_pkr": 2400000.0,
+        "items": [
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000102",
+              "slug": "demo-banquet-hall-model-town",
+              "name": "Demo Banquet Hall Model Town",
+              "category": "venue",
+              "base_area": "Model Town",
+              "price_tier": "budget",
+              "verified": true,
+              "rating": 4.1,
+              "review_count": 22
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.792
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000202",
+              "slug": "demo-catering-co-gulberg",
+              "name": "Demo Catering Co Gulberg",
+              "category": "catering",
+              "base_area": "Gulberg",
+              "price_tier": "premium",
+              "verified": true,
+              "rating": 4.7,
+              "review_count": 61
+            },
+            "price_pkr": 1200000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              900000.0,
+              1500000.0
+            ],
+            "score": 0.764
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000302",
+              "slug": "demo-floral-studio-gulberg",
+              "name": "Demo Floral Studio Gulberg",
+              "category": "decor",
+              "base_area": "Gulberg",
+              "price_tier": "premium",
+              "verified": true,
+              "rating": 4.5,
+              "review_count": 29
+            },
+            "price_pkr": 300000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              200000.0,
+              400000.0
+            ],
+            "score": 0.87
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000401",
+              "slug": "demo-dj-and-dhol-cantt",
+              "name": "Demo DJ & Dhol Cantt",
+              "category": "dj_sound",
+              "base_area": "Cantt",
+              "price_tier": "mid",
+              "verified": true,
+              "rating": 4.0,
+              "review_count": 15
+            },
+            "price_pkr": 150000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              100000.0,
+              200000.0
+            ],
+            "score": 0.825
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000502",
+              "slug": "demo-led-and-lighting-gulberg",
+              "name": "Demo LED & Lighting Gulberg",
+              "category": "lighting",
+              "base_area": "Gulberg",
+              "price_tier": "premium",
+              "verified": true,
+              "rating": 4.4,
+              "review_count": 20
+            },
+            "price_pkr": 300000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              200000.0,
+              400000.0
+            ],
+            "score": 0.562
+          },
+          {
+            "vendor": {
+              "vendor_id": "00000000-0000-4000-8000-000000000601",
+              "slug": "demo-lens-studio-gulberg",
+              "name": "Demo Lens Studio Gulberg",
+              "category": "photography",
+              "base_area": "Gulberg",
+              "price_tier": "premium",
+              "verified": true,
+              "rating": 4.7,
+              "review_count": 31
+            },
+            "price_pkr": 300000.0,
+            "price_is_estimate": true,
+            "price_range": [
+              200000.0,
+              400000.0
+            ],
+            "score": 0.728
+          }
+        ]
+      }
+    ],
+    "unfilled_categories": [],
+    "cheapest_total_pkr": null,
+    "model_version": "packages-v1/cost-test"
+  }
+}

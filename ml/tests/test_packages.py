@@ -222,3 +222,12 @@ def test_evaluate_reports_the_exit_gate_and_the_baseline(market):
     assert report["plans"] == 2 and report["with_package"] == 0.5
     assert report["packages_within_budget"] == 1.0 and report["packages_distinct"] == 1.0
     assert 0 <= report["greedy_within_budget"] <= 1 and report["seconds_max"] > 0
+
+
+def test_budgets_from_the_caller_set_the_price_fit(market):
+    """The server passes #1's split once per request; a smaller venue budget makes the dearer venues fit worse."""
+    vendors, prices = market
+    builder = PackageBuilder(prices, FakeEstimator(), settings=SETTINGS)
+    default = builder.pool(PLAN, "venue", vendors).set_index("vendor_id")["match"]
+    tight = builder.pool(PLAN, "venue", vendors, budget=300_000).set_index("vendor_id")["match"]
+    assert tight["VEN-2"] < default["VEN-2"] and tight["VEN-0"] == default["VEN-0"]

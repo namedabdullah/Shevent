@@ -1,0 +1,40 @@
+{
+  "request": {
+    "plan": {
+      "event_type": "wedding_mehndi",
+      "guest_count": 300,
+      "area": "Gulberg",
+      "venue_type": "marquee",
+      "event_date": "2026-12-19"
+    },
+    "category": "catering",
+    "quoted_pkr": 2000,
+    "unit": "per_head",
+    "inclusions": [
+      "Serving staff",
+      "Crockery and cutlery"
+    ],
+    "exclusions": [
+      "Service tax extra"
+    ],
+    "vendor_tier": "mid"
+  },
+  "response": {
+    "level": "green",
+    "typical_range": [
+      1500.0,
+      2500.0
+    ],
+    "unit": "per_head",
+    "percent_above_high": null,
+    "percent_below_low": null,
+    "ask_about": [
+      "Transport"
+    ],
+    "charged_extra": [
+      "Service tax"
+    ],
+    "compared_with": "same_tier",
+    "model_version": "quote-v1/cost-test"
+  }
+}

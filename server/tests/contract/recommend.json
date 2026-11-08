@@ -1,0 +1,117 @@
+{
+  "request": {
+    "plan": {
+      "event_type": "wedding_mehndi",
+      "guest_count": 120,
+      "area": "Gulberg",
+      "venue_type": "marquee",
+      "event_date": "2026-12-19",
+      "total_budget_pkr": 2500000
+    },
+    "category": "venue",
+    "budget_pkr": 675000,
+    "limit": 5
+  },
+  "response": {
+    "category": "venue",
+    "matches": [
+      {
+        "vendor_id": "00000000-0000-4000-8000-000000000101",
+        "slug": "demo-marquee-gulberg",
+        "name": "Demo Marquee Gulberg",
+        "category": "venue",
+        "base_area": "Gulberg",
+        "price_tier": "mid",
+        "verified": true,
+        "rating": 4.4,
+        "review_count": 38,
+        "score": 0.878,
+        "price_range": [
+          100000.0,
+          200000.0
+        ],
+        "reasons": [
+          "Typical price for its tier (about Rs 1.5 lakh) fits your Rs 6.8 lakh venue budget",
+          "Serves Gulberg",
+          "Handles 120 guests",
+          "Does mehndi events",
+          "Rated 4.4 from 38 reviews"
+        ],
+        "is_new": false
+      },
+      {
+        "vendor_id": "00000000-0000-4000-8000-000000000102",
+        "slug": "demo-banquet-hall-model-town",
+        "name": "Demo Banquet Hall Model Town",
+        "category": "venue",
+        "base_area": "Model Town",
+        "price_tier": "budget",
+        "verified": true,
+        "rating": 4.1,
+        "review_count": 22,
+        "score": 0.792,
+        "price_range": [
+          100000.0,
+          200000.0
+        ],
+        "reasons": [
+          "Typical price for its tier (about Rs 1.5 lakh) fits your Rs 6.8 lakh venue budget",
+          "Serves Gulberg",
+          "Handles 120 guests",
+          "Rated 4.1 from 22 reviews"
+        ],
+        "is_new": false
+      },
+      {
+        "vendor_id": "00000000-0000-4000-8000-000000000103",
+        "slug": "demo-farmhouse-raiwind-road",
+        "name": "Demo Farmhouse Raiwind Road",
+        "category": "venue",
+        "base_area": "Raiwind Road",
+        "price_tier": "premium",
+        "verified": false,
+        "rating": null,
+        "review_count": 0,
+        "score": 0.705,
+        "price_range": [
+          200000.0,
+          400000.0
+        ],
+        "reasons": [
+          "Typical price for its tier (about Rs 3.0 lakh) fits your Rs 6.8 lakh venue budget",
+          "Handles 120 guests",
+          "Does mehndi events",
+          "New on Shevent",
+          "Based in Raiwind Road, not listed for Gulberg"
+        ],
+        "is_new": true
+      }
+    ],
+    "sponsored": [
+      {
+        "vendor_id": "00000000-0000-4000-8000-000000000104",
+        "slug": "demo-rooftop-dha",
+        "name": "Demo Rooftop DHA",
+        "category": "venue",
+        "base_area": "DHA",
+        "price_tier": "premium",
+        "verified": true,
+        "rating": 4.6,
+        "review_count": 12,
+        "score": 0.649,
+        "price_range": [
+          200000.0,
+          400000.0
+        ],
+        "reasons": [
+          "Typical price for its tier (about Rs 3.0 lakh) fits your Rs 6.8 lakh venue budget",
+          "Handles 120 guests",
+          "Rated 4.6 from 12 reviews",
+          "Based in DHA, not listed for Gulberg"
+        ],
+        "is_new": false
+      }
+    ],
+    "model_version": "match-v1/cost-test"
+  }
+}
