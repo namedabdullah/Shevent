@@ -12,6 +12,11 @@ data/*.xlsx
 
 # Markdown docs, plans, slides and PDFs stay local
 *.md
+# ...except the submission docs: evaluation report, data card and model cards
+!docs/evaluation_report.md
+!docs/data_card.md
+!docs/model_cards/
+!docs/model_cards/*.md
 *.pdf
 *.ppt
 *.pptx
@@ -26,7 +31,7 @@ __pycache__/
 # Local MLflow file stores (the Docker server keeps its data in a volume)
 mlruns/
 mlartifacts/
-ml/artifacts/
+# ml/artifacts/ is tracked on purpose: the model server image needs the trained models (3 MB)
 
 # Node / web
 node_modules/
