@@ -1,0 +1,37 @@
+// The model server's saved sample requests and answers (server/tests/contract/, written by its tests from the real
+// endpoints) must pass these zod schemas, so the pydantic models in server/app/schemas.py can't drift from them.
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import type { z } from 'zod';
+import {
+  estimateRequestSchema,
+  estimateResponseSchema,
+  feedbackRequestSchema,
+  feedbackResponseSchema,
+  packagesRequestSchema,
+  packagesResponseSchema,
+  quoteCheckRequestSchema,
+  quoteCheckResponseSchema,
+  recommendRequestSchema,
+  recommendResponseSchema,
+} from './index';
+
+const ENDPOINTS: Record<string, [z.ZodType, z.ZodType]> = {
+  estimate: [estimateRequestSchema, estimateResponseSchema],
+  recommend: [recommendRequestSchema, recommendResponseSchema],
+  packages: [packagesRequestSchema, packagesResponseSchema],
+  'quote-check': [quoteCheckRequestSchema, quoteCheckResponseSchema],
+  feedback: [feedbackRequestSchema, feedbackResponseSchema],
+};
+
+describe('model server contract samples', () => {
+  it.each(Object.entries(ENDPOINTS))('%s request and answer match the schemas', (name, [requestSchema, responseSchema]) => {
+    const url = new URL(`../../../server/tests/contract/${name}.json`, import.meta.url);
+    const sample = JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as { request: unknown; response: unknown };
+    const request = requestSchema.safeParse(sample.request);
+    expect(request.error?.issues ?? []).toEqual([]);
+    const response = responseSchema.safeParse(sample.response);
+    expect(response.error?.issues ?? []).toEqual([]);
+  });
+});

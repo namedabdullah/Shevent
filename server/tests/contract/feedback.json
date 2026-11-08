@@ -1,0 +1,21 @@
+{
+  "request": {
+    "plan_id": "plan-1",
+    "plan": {
+      "event_type": "wedding_mehndi",
+      "guest_count": 300,
+      "area": "Gulberg",
+      "venue_type": "marquee",
+      "event_date": "2026-12-19",
+      "total_budget_pkr": 2500000
+    },
+    "actual_spend_pkr": {
+      "venue": 700000,
+      "catering": 950000
+    },
+    "rating": 4
+  },
+  "response": {
+    "accepted": true
+  }
+}

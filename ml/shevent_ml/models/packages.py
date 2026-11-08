@@ -36,7 +36,8 @@ class PlanEstimates:
 
     def __init__(self, price_estimator):
         self.price_estimator = price_estimator
-        self.key, self.by_tier = None, {}
+        # One (plan key, estimates) pair, swapped in one assignment so threads serving other plans never mix them.
+        self.cached = (None, {})
 
     @property
     def version(self):
@@ -44,9 +45,11 @@ class PlanEstimates:
 
     def estimate_plan(self, plan, tier=None):
         key = json.dumps(plan, sort_keys=True, default=str)
-        if key != self.key:
-            self.key, self.by_tier = key, self.price_estimator.estimate_plan_tiers(plan, self.TIERS)
-        return self.by_tier[tier if tier in TIER_RANK else None]
+        cached_key, by_tier = self.cached
+        if key != cached_key:
+            by_tier = self.price_estimator.estimate_plan_tiers(plan, self.TIERS)
+            self.cached = (key, by_tier)
+        return by_tier[tier if tier in TIER_RANK else None]
 
 
 class PackageBuilder:
@@ -61,9 +64,12 @@ class PackageBuilder:
     def version(self):
         return f"packages-v1/{self.estimates.version if self.estimates else 'listed-prices-only'}"
 
-    def pool(self, plan, category, vendors, unavailable=()):
-        """The vendors the solver may pick for one category, with price, range, match score and quality."""
-        v = self.matcher.score(plan, category, vendors, with_reasons=False)
+    def pool(self, plan, category, vendors, unavailable=(), budget=None):
+        """The vendors the solver may pick for one category, with price, range, match score and quality.
+
+        budget: the category's budget for #3's price fit, when the caller has #1's split; else #3 works it out.
+        """
+        v = self.matcher.score(plan, category, vendors, with_reasons=False, budget=budget)
         v = v[~v["sponsored"] & ~v["vendor_id"].isin(set(unavailable))]
         if self.settings["exclude_other_areas"]:
             v = v[v["location"] != self.matcher.settings["location"]["elsewhere"]]
@@ -96,8 +102,8 @@ class PackageBuilder:
         keep |= set(v.nlargest(n, "quality_part").index)
         return v.loc[sorted(keep, key=v.index.get_loc)].reset_index(drop=True)
 
-    def pools(self, plan, categories, vendors, unavailable=()):
-        return {c: self.pool(plan, c, vendors, unavailable) for c in categories}
+    def pools(self, plan, categories, vendors, unavailable=(), budgets=None):
+        return {c: self.pool(plan, c, vendors, unavailable, (budgets or {}).get(c)) for c in categories}
 
     def solve(self, pools, budget, kind, previous=()):
         """One package: {category: row index in its pool}, or None if no bundle fits the budget (and differs)."""
@@ -129,7 +135,7 @@ class PackageBuilder:
             "highest_quality": [(quality, "max"), (match, "max"), (cost, "min")],
         }[kind]
         solver = cp_model.CpSolver()
-        solver.parameters.max_time_in_seconds = s["max_seconds_per_solve"]
+        solver.parameters.max_deterministic_time = s["max_work_per_solve"]
         solver.parameters.num_workers = s["workers"]
         solver.parameters.random_seed = 0
         package = None
@@ -146,12 +152,12 @@ class PackageBuilder:
                     model.add_hint(x, i == package[c])
         return package
 
-    def build(self, plan, categories, vendors, unavailable=()):
+    def build(self, plan, categories, vendors, unavailable=(), budgets=None):
         """The #4 response: packages in PACKAGE_KINDS order, categories nobody can cover, and when no bundle fits the
         budget, what the cheapest one costs."""
         start = time.perf_counter()
         budget = float(plan["total_budget_pkr"])
-        pools = self.pools(plan, categories, vendors, unavailable)
+        pools = self.pools(plan, categories, vendors, unavailable, budgets)
         unfilled = [c for c in categories if pools[c].empty]
         pools = {c: pool for c, pool in pools.items() if not pool.empty}
         solved = {}
