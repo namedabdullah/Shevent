@@ -145,42 +145,55 @@ export function fixturePackages(request: PackagesRequest): PackagesResponse {
   return { budget_pkr: request.plan.total_budget_pkr, packages, model_version: FIXTURE_MODEL_VERSION };
 }
 
-const INCLUSION_CHECKLIST: Record<Category, { label: string; keywords: string[] }[]> = {
+/**
+ * #5's inclusion checklist, identical to data/reference/quote_checklist.csv (a test checks it). The model server
+ * also reads cue words ("not included", "extra") and wants a number for some items; the fixture only matches keywords.
+ */
+export const INCLUSION_CHECKLIST: Record<Category, { item: string; label: string; keywords: string[] }[]> = {
   venue: [
-    { label: 'Generator fuel', keywords: ['generator', 'fuel'] },
-    { label: 'Service tax', keywords: ['tax'] },
-    { label: 'Overtime charges', keywords: ['overtime', 'extra hour'] },
+    { item: 'generator_fuel', label: 'Generator fuel', keywords: ['generator', 'genset', 'fuel', 'diesel'] },
+    { item: 'service_tax', label: 'Service tax', keywords: ['tax', 'gst', 'pst'] },
+    { item: 'overtime', label: 'Overtime charges', keywords: ['overtime', 'extra hour', 'extra time'] },
   ],
   catering: [
-    { label: 'Serving staff', keywords: ['staff', 'waiter'] },
-    { label: 'Service tax', keywords: ['tax'] },
-    { label: 'Transport', keywords: ['transport', 'delivery'] },
+    { item: 'serving_staff', label: 'Serving staff', keywords: ['staff', 'waiter', 'bearer'] },
+    { item: 'crockery', label: 'Crockery and cutlery', keywords: ['crockery', 'cutlery', 'plates'] },
+    { item: 'service_tax', label: 'Service tax', keywords: ['tax', 'gst', 'pst'] },
+    { item: 'transport', label: 'Transport', keywords: ['transport', 'delivery', 'carriage'] },
   ],
   decor: [
-    { label: 'Setup and teardown', keywords: ['setup', 'set up', 'teardown'] },
-    { label: 'Transport', keywords: ['transport'] },
+    {
+      item: 'setup_teardown',
+      label: 'Setup and teardown',
+      keywords: ['setup', 'set up', 'set-up', 'teardown', 'dismantl', 'installation'],
+    },
+    { item: 'transport', label: 'Transport', keywords: ['transport', 'delivery', 'carriage'] },
   ],
   dj_sound: [
-    { label: 'Overtime charges', keywords: ['overtime', 'extra hour'] },
-    { label: 'Sound permit', keywords: ['permit', 'noc'] },
-    { label: 'Generator fuel', keywords: ['generator', 'fuel'] },
+    { item: 'overtime', label: 'Overtime charges', keywords: ['overtime', 'extra hour', 'extra time'] },
+    { item: 'sound_permit', label: 'Sound permit', keywords: ['permit', 'noc'] },
+    { item: 'generator_fuel', label: 'Generator fuel', keywords: ['generator', 'genset', 'fuel', 'diesel'] },
   ],
   lighting: [
-    { label: 'Generator fuel', keywords: ['generator', 'fuel'] },
-    { label: 'Setup and teardown', keywords: ['setup', 'set up', 'teardown'] },
-    { label: 'Transport', keywords: ['transport'] },
+    { item: 'generator_fuel', label: 'Generator fuel', keywords: ['generator', 'genset', 'fuel', 'diesel'] },
+    {
+      item: 'setup_teardown',
+      label: 'Setup and teardown',
+      keywords: ['setup', 'set up', 'set-up', 'teardown', 'dismantl', 'installation'],
+    },
+    { item: 'transport', label: 'Transport', keywords: ['transport', 'delivery', 'carriage'] },
   ],
   photography: [
-    { label: 'Number of edited photos', keywords: ['edited', 'photos'] },
-    { label: 'Delivery time', keywords: ['deliver', 'days', 'weeks'] },
-    { label: 'Album or prints', keywords: ['album', 'print'] },
-    { label: 'Overtime charges', keywords: ['overtime', 'extra hour'] },
+    { item: 'edited_photos', label: 'Number of edited photos', keywords: ['edited', 'photos', 'pictures', 'pics', 'images'] },
+    { item: 'delivery_time', label: 'Delivery time', keywords: ['deliver', 'turnaround', 'days', 'weeks'] },
+    { item: 'album_prints', label: 'Album or prints', keywords: ['album', 'print'] },
+    { item: 'overtime', label: 'Overtime charges', keywords: ['overtime', 'extra hour', 'extra time'] },
   ],
 };
 
 /**
  * #5: the 🟢 / 🟡 up to 25% above / 🔴 rule applied to the fixture's range, scaled by guest count
- * (the request carries no budget).
+ * (the request carries no budget). The fixture ignores the vendor's tier.
  */
 export function fixtureQuoteCheck(request: QuoteCheckRequest): QuoteCheckResponse {
   const base = estimateResponseFixture.allocation[request.category].range;
@@ -191,19 +204,29 @@ export function fixtureQuoteCheck(request: QuoteCheckRequest): QuoteCheckRespons
   const typical_range: PriceRange = [Math.round(low / divisor), Math.round(high / divisor)];
 
   const above = request.quoted_pkr > typical_range[1] ? (request.quoted_pkr / typical_range[1] - 1) * 100 : null;
+  const below = request.quoted_pkr < typical_range[0] ? (1 - request.quoted_pkr / typical_range[0]) * 100 : null;
   const level: FairnessLevel = above === null ? 'green' : above <= 25 ? 'yellow' : 'red';
 
-  const mentioned = [...request.inclusions, request.notes ?? ''].join(' ').toLowerCase();
-  const ask_about = INCLUSION_CHECKLIST[request.category]
-    .filter((item) => !item.keywords.some((keyword) => mentioned.includes(keyword)))
-    .map((item) => item.label);
+  const checklist = INCLUSION_CHECKLIST[request.category];
+  const exclusions = request.exclusions ?? [];
+  const mentions = (text: string, keywords: string[]) => keywords.some((keyword) => text.toLowerCase().includes(keyword));
+  const excluded = (keywords: string[]) => exclusions.some((text) => mentions(text, keywords));
+  const mentioned = [...request.inclusions, request.notes ?? ''].join(' ');
 
   return {
     level,
     typical_range,
     unit: request.unit,
     percent_above_high: above === null ? null : Math.round(above),
-    ask_about,
+    percent_below_low: below === null ? null : Math.round(below),
+    ask_about: checklist
+      .filter((item) => !excluded(item.keywords) && !mentions(mentioned, item.keywords))
+      .map((item) => item.label),
+    charged_extra: [
+      ...checklist.filter((item) => excluded(item.keywords)).map((item) => item.label),
+      ...exclusions.filter((text) => !checklist.some((item) => mentions(text, item.keywords))),
+    ],
+    compared_with: 'all_vendors',
     model_version: FIXTURE_MODEL_VERSION,
   };
 }

@@ -44,7 +44,7 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
 
   const { data: inquiry } = await supabase
     .from('inquiries')
-    .select('id, status, plan_id, host_id, vendors(name, category)')
+    .select('id, status, plan_id, host_id, vendors(name, category, price_tier)')
     .eq('id', id)
     .maybeSingle();
   if (!inquiry || !inquiry.vendors) notFound();
@@ -69,7 +69,9 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
         unit: quote.unit,
         hours: quote.hours ?? undefined,
         inclusions: quote.inclusions,
+        exclusions: quote.exclusions,
         notes: quote.notes ?? undefined,
+        vendor_tier: vendor.price_tier ?? undefined,
       });
     } catch (error) {
       console.error('Quote check failed', error);

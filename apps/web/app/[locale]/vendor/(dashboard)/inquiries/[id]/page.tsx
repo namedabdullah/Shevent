@@ -147,6 +147,7 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
                 category={vendor.category}
                 spec={spec}
                 today={todayInLahore()}
+                vendorTier={vendor.price_tier}
                 defaults={quote ?? undefined}
               />
             </div>

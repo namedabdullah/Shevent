@@ -1,0 +1,31 @@
+# #5 Quote Fairness Checker (python -m shevent_ml.models.quote_checker). Change values here, not in code.
+# The inclusion checklist itself is data/reference/quote_checklist.csv, shared with the apps.
+
+# A quote above #2's calibrated high price is yellow up to this much above it (0.25 = 25%), red beyond.
+yellow_up_to: 0.25
+
+# per_hour quotes without hours are checked for this many hours (same defaults as the cleaning pipeline).
+default_hours:
+  dj_sound: 4
+  lighting: 4
+  photography: 4
+
+# How the checklist reads a quote. A checklist item mentioned in the quote's exclusions is charged extra. Mentioned
+# in its inclusions or notes, the words around it decide:
+cues:
+  # ...these mean it is not in the price, whatever else the text says...
+  excluded: [not included, not include, excluded, exclusive of, not part of, nahi, alag]
+  # ...these mean it is in the price...
+  included: [included, inclusive, free, complimentary, no extra, without extra, shamil]
+  # ...and these that it costs extra. With none of the three, a mention counts as included.
+  extra: [extra, additional, separate, separately, on actual, chargeable, charged, plus]
+
+# Number words that count as a number for checklist items that need one ("delivery in two weeks").
+number_words: [one, two, three, four, five, six, seven, eight, nine, ten, twelve, fifteen, twenty, thirty, hundred]
+
+# The synthetic check: typical synthetic prices are raised by each markup to see which level each gets. It tests that
+# the rule behaves as designed (typical prices mostly green, doubled prices red); it says nothing about real quotes.
+planted:
+  events: 2000
+  seed: 7
+  markups: [1.0, 1.15, 1.5, 2.0]

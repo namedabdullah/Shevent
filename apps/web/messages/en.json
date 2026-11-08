@@ -366,8 +366,12 @@
   },
   "Quote": {
     "aboveBy": "({percent}% above)",
+    "belowBy": "({percent}% below)",
     "typical": "Typical for this event: {range} {unit}",
-    "askAbout": "Ask the vendor about:"
+    "typicalSameTier": "Typical for similar vendors at this event: {range} {unit}",
+    "belowNote": "A price well below the usual can leave things out, so confirm what is included.",
+    "askAbout": "Ask the vendor about:",
+    "chargedExtra": "The quote says these cost extra:"
   },
   "Inquiry": {
     "metaTitle": "Inquiry",
