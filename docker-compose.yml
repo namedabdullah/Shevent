@@ -54,6 +54,8 @@ services:
     environment:
       SUPABASE_URL: http://host.docker.internal:54321
       SUPABASE_KEY: ${SUPABASE_KEY:-}
+      # #8 uses Ollama running on the host (ollama pull qwen2.5:3b-instruct).
+      OLLAMA_URL: http://host.docker.internal:11434
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:

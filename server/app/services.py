@@ -23,6 +23,7 @@ from shevent_ml.models.packages import PackageBuilder
 from shevent_ml.models.price_features import TIER_RANK
 from shevent_ml.models.quote_checker import QuoteChecker
 
+from .assistant import Assistant, OllamaClient
 from .catalog import StaticCatalog, SupabaseCatalog, for_event, summary
 
 log = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ log = logging.getLogger(__name__)
 FIXTURE_VENDORS = REPO_ROOT / "packages" / "core" / "fixtures" / "vendors.json"
 MATCHES_DEFAULT = 10
 SPONSORED_SHOWN = 3
+DEFAULT_LLM = "qwen2.5:3b-instruct"
 
 
 class Unavailable(Exception):
@@ -47,6 +49,7 @@ class Services:
         self.allocator = allocator
         self.feedback_path = Path(feedback_path or DATA_DIR / "feedback" / "feedback.jsonl")
         self.feedback_lock = threading.Lock()
+        self.assistant = None  # #8, set by load_services (it calls back into estimate)
         if price_estimator is not None:
             # One #2 cache for the whole server: #3, #4 and #5 asking about the same plan share one prediction.
             self.builder = PackageBuilder(prices, price_estimator, settings=package_settings)
@@ -172,6 +175,11 @@ class Services:
             raise Unavailable("No price range for this event and category.")
         return result
 
+    def assistant_chat(self, messages):
+        """POST /v1/assistant/chat: #8's turn. It estimates through self.estimate, so it needs #1 and #2 too."""
+        self.require("assistant", "allocator", "price_estimator")
+        return self.assistant.chat(messages)
+
     def feedback(self, record):
         """POST /v1/feedback: one JSON line per finished event, for retraining #1-#3 (README §11). No contact
         details: the plan, what was spent, guests and the host's rating."""
@@ -210,10 +218,21 @@ def load_services(env=os.environ):
         prices = prices.assign(vendor_id=prices["vendor_id"].map(app_vendor_id))
     else:
         log.warning("No listed prices (%s): every vendor price is #2's estimate", prices_path)
-    return Services(
+    services = Services(
         catalog,
         prices=prices,
         price_estimator=load(PriceEstimator, ESTIMATOR_DIR, "price estimator (#2)"),
         allocator=load(BudgetAllocator, ALLOCATOR_DIR, "budget allocator (#1)"),
         feedback_path=env.get("FEEDBACK_PATH"),
     )
+    # #8 talks to a local Ollama; set OLLAMA_MODEL= (empty) to turn the assistant off.
+    model = env.get("OLLAMA_MODEL", DEFAULT_LLM)
+    if model:
+        llm = OllamaClient(
+            env.get("OLLAMA_URL", "http://127.0.0.1:11434"),
+            model,
+            float(env.get("OLLAMA_TIMEOUT_SECONDS", 90)),
+            keep_alive=env.get("OLLAMA_KEEP_ALIVE", "30m"),
+        )
+        services.assistant = Assistant(llm, services, llm_replies=env.get("ASSISTANT_LLM_REPLIES") == "1")
+    return services

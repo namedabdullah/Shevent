@@ -11,6 +11,7 @@ import shevent_ml  # noqa: F401, I001
 
 import logging
 import os
+import threading
 from contextlib import asynccontextmanager
 from typing import Annotated
 
@@ -18,7 +19,10 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .assistant import LLMUnavailable
 from .schemas import (
+    AssistantChatRequest,
+    AssistantChatResponse,
     EstimateRequest,
     EstimateResponse,
     FeedbackRequest,
@@ -34,11 +38,21 @@ from .schemas import (
 from .services import Services, Unavailable, load_services
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+log = logging.getLogger(__name__)
 
 
 def plan_of(model):
     """A request's plan as the models take it: plain JSON values, unset optional fields left out."""
     return model.model_dump(mode="json", exclude_none=True)
+
+
+def warm_up(llm):
+    """Loads #8's model in the background at startup; the server answers everything else meanwhile."""
+    try:
+        llm.warm_up()
+        log.info("Assistant model %s loaded", llm.version)
+    except Exception as error:  # noqa: BLE001 - the assistant then answers 503 until Ollama is up
+        log.warning("Couldn't load the assistant model %s: %s", llm.version, error)
 
 
 def get_services(request: Request) -> Services:
@@ -52,6 +66,8 @@ def create_app(services=None):
     @asynccontextmanager
     async def lifespan(app):
         app.state.services = services or load_services()
+        if app.state.services.assistant is not None:
+            threading.Thread(target=warm_up, args=(app.state.services.assistant.llm,), daemon=True).start()
         yield
 
     app = FastAPI(title="Shevent model server", version="1.0.0", lifespan=lifespan)
@@ -61,6 +77,7 @@ def create_app(services=None):
         app.add_middleware(CORSMiddleware, allow_origins=origins, allow_methods=["POST", "GET"], allow_headers=["*"])
 
     @app.exception_handler(Unavailable)
+    @app.exception_handler(LLMUnavailable)
     def unavailable(request, error):
         return JSONResponse(status_code=503, content={"detail": str(error)})
 
@@ -72,7 +89,8 @@ def create_app(services=None):
         except Exception:  # noqa: BLE001 - health reports the database being down instead of failing
             vendors = None
         ok = all(versions.values()) and vendors is not None
-        return {"status": "ok" if ok else "degraded", "models": versions, "vendors": vendors}
+        assistant = services.assistant.version if services.assistant else None
+        return {"status": "ok" if ok else "degraded", "models": versions, "vendors": vendors, "assistant": assistant}
 
     @app.post("/v1/estimate", response_model=EstimateResponse)
     def estimate(request: EstimateRequest, services: ServicesDep):
@@ -93,6 +111,11 @@ def create_app(services=None):
     def quote_check(request: QuoteCheckRequest, services: ServicesDep):
         """#5 fairness level and inclusion checklist for a quote."""
         return services.quote_check(plan_of(request))
+
+    @app.post("/v1/assistant/chat", response_model=AssistantChatResponse)
+    def assistant_chat(request: AssistantChatRequest, services: ServicesDep):
+        """#8 chat planner: extracts the plan, estimates with #1 and #2, and replies with their figures only."""
+        return services.assistant_chat([m.model_dump() for m in request.messages])
 
     @app.post("/v1/feedback", response_model=FeedbackResponse)
     def feedback(request: FeedbackRequest, services: ServicesDep):

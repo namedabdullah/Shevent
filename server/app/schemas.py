@@ -7,7 +7,7 @@ responses against its zod schemas (tests/contract/), so the two can't drift apar
 from datetime import date
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, StringConstraints, field_validator
+from pydantic import BaseModel, Field, StringConstraints, field_validator, model_serializer
 
 from shevent_ml.config import CATEGORIES
 from shevent_ml.models.price_features import AREAS, CATEGORICAL, EVENT_TYPES, TIER_RANK
@@ -20,6 +20,7 @@ PriceTier = Literal[tuple(TIER_RANK)]
 PriceUnit = Literal["per_head", "per_event", "per_hour", "per_package", "per_slot", "per_setup"]
 FairnessLevel = Literal["green", "yellow", "red"]
 PackageKind = Literal["cheapest", "balanced", "highest_quality"]
+ChatLanguage = Literal["en", "ur", "roman_ur", "mixed"]
 
 PriceRange = Annotated[list[float], Field(min_length=2, max_length=2, description="[low, high] in PKR")]
 ItemText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
@@ -158,7 +159,43 @@ class FeedbackResponse(BaseModel):
     accepted: bool
 
 
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]
+
+
+class AssistantChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(min_length=1, max_length=40)
+
+
+class ExtractedPlan(BaseModel):
+    """The plan understood so far: any EstimateRequest field, and only those the host gave (unset ones are left
+    out, not null, as the zod schema's .partial() expects)."""
+
+    event_type: EventType | None = None
+    guest_count: int | None = Field(default=None, ge=10, le=5000)
+    area: Area | None = None
+    venue_type: VenueType | None = None
+    event_date: date | None = None
+    total_budget_pkr: int | None = Field(default=None, ge=10_000, le=500_000_000)
+
+    @model_serializer(mode="wrap")
+    def without_unset(self, handler):
+        return {k: v for k, v in handler(self).items() if v is not None}
+
+
+class AssistantChatResponse(BaseModel):
+    reply: str
+    language: ChatLanguage
+    extracted: ExtractedPlan
+    missing: list[str]
+    estimate: EstimateResponse | None
+    fallback_to_form: bool
+    model_version: str
+
+
 class Health(BaseModel):
     status: Literal["ok", "degraded"]
     models: dict[str, str | None]
     vendors: int | None
+    assistant: str | None = None

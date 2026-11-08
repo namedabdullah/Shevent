@@ -95,6 +95,14 @@ def test_allocate_applies_guardrails_and_explains(trained):
     assert out["model_version"].startswith("alloc-v1-")
 
 
+def test_a_plan_without_optional_fields_is_split(trained):
+    """The API leaves out an unset venue type and preferences (the planner and the assistant don't require them)."""
+    model, _ = trained
+    plan = {k: v for k, v in PLAN.items() if k not in ("venue_type", "preferences")}
+    out = model.allocate(plan)
+    assert sum(v["share"] for v in out["allocation"].values()) == pytest.approx(1)
+
+
 def test_allocate_says_when_the_budget_is_too_low(trained):
     model, _ = trained
     out = model.allocate({**PLAN, "total_budget_pkr": 300_000}, {c: 100_000 for c in CATEGORIES})

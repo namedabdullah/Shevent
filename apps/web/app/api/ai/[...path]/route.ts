@@ -4,6 +4,8 @@ import type { NextRequest } from 'next/server';
 // Keeps the Cloudflare Tunnel URL out of the browser and avoids CORS setup.
 
 const TIMEOUT_MS = 30_000;
+// #8 makes two LLM calls per turn on a local model: about 5 s warm, longer if Ollama has to load it again.
+const ASSISTANT_TIMEOUT_MS = 90_000;
 // No leading dot, so "." and ".." are rejected too.
 const SAFE_SEGMENT = /^[A-Za-z0-9_-][A-Za-z0-9._-]*$/;
 
@@ -28,7 +30,7 @@ async function proxy(request: NextRequest, ctx: RouteContext<'/api/ai/[...path]'
       headers,
       // Buffered so JSON and multipart uploads (portfolio photos) both pass through unchanged.
       body: request.method === 'GET' ? undefined : await request.arrayBuffer(),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(path[1] === 'assistant' ? ASSISTANT_TIMEOUT_MS : TIMEOUT_MS),
     });
     return new Response(upstream.body, {
       status: upstream.status,
