@@ -1,0 +1,90 @@
+{
+  "version": "cost-v1-97907a1e",
+  "margin": 0.01989206021301726,
+  "calibrated_on": {
+    "source": "synthetic",
+    "rows": 6021
+  },
+  "settings": {
+    "quantiles": [
+      0.1,
+      0.5,
+      0.9
+    ],
+    "coverage": 0.8,
+    "tier_dropout": 0.5,
+    "real_weight": 5.0,
+    "lightgbm": {
+      "num_boost_round": 400,
+      "learning_rate": 0.05,
+      "num_leaves": 31,
+      "min_data_in_leaf": 20,
+      "feature_fraction": 0.9,
+      "bagging_fraction": 0.8,
+      "bagging_freq": 1,
+      "verbose": -1
+    },
+    "calibration": {
+      "real_fraction": 0.25,
+      "min_real_rows": 30
+    },
+    "synthetic_holdout": 0.1
+  },
+  "features": [
+    "category",
+    "price_basis",
+    "area",
+    "event_type",
+    "venue_type",
+    "season",
+    "tier_rank",
+    "log_guests",
+    "hours",
+    "month",
+    "is_weekend",
+    "pref_decor_heavy",
+    "pref_premium_food",
+    "pref_live_dhol"
+  ],
+  "report": {
+    "calibrated_on": {
+      "source": "synthetic",
+      "rows": 6021
+    },
+    "synthetic_check": {
+      "rows": 5979,
+      "scored": 5979,
+      "mape": 0.38603579966883034,
+      "pinball_low": 8405.97689185318,
+      "pinball_mid": 27123.722043953527,
+      "pinball_high": 16991.58240891089,
+      "coverage": 0.8056531192507108
+    },
+    "test_prices": {
+      "rows": 12,
+      "scored": 12,
+      "mape": 0.8261231205091368,
+      "pinball_low": 7137.853770286317,
+      "pinball_mid": 24693.222717220702,
+      "pinball_high": 35669.64798640429,
+      "coverage": 0.4166666666666667
+    },
+    "test_prices_baseline": {
+      "rows": 12,
+      "scored": 12,
+      "mape": 0.8747270548997629,
+      "pinball_low": 7655.225000000001,
+      "pinball_mid": 27034.625,
+      "pinball_high": 45582.668333333335,
+      "coverage": 0.3333333333333333
+    },
+    "dataset_hash": "b8264320b0bf",
+    "synthetic_hash": "9a2fd6c24dd6",
+    "synthetic_sources": {
+      "event_mix": "placeholder",
+      "base_prices": "placeholder",
+      "price_effects": "placeholder",
+      "demand": "placeholder"
+    }
+  }
+}
