@@ -62,6 +62,15 @@ describe('every fixture follows its contract', () => {
     expect(packagesResponseSchema.safeParse(response).success).toBe(true);
     expect(response.packages.map((p) => p.kind)).toEqual(['cheapest', 'balanced', 'highest_quality']);
     expect(response.packages[0]!.total_pkr).toBeLessThan(response.packages[2]!.total_pkr);
+    expect(response.unfilled_categories).toEqual([]);
+  });
+
+  it('packages leave out booked vendors, and a category nobody is free for', () => {
+    const venues = fixtureRecommend({ plan, category: 'venue', budget_pkr: 750_000 }).matches.map((m) => m.vendor_id);
+    const response = fixturePackages({ plan, categories: ['venue', 'catering'], unavailable_vendor_ids: venues });
+    expect(packagesResponseSchema.safeParse(response).success).toBe(true);
+    expect(response.unfilled_categories).toEqual(['venue']);
+    expect(response.packages.every((p) => p.items.every((item) => item.vendor.category === 'catering'))).toBe(true);
   });
 
   it('review insights, portfolio check and assistant', () => {

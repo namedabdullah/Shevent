@@ -49,11 +49,11 @@ def price_fit(ratio, settings):
     return np.where(ratio < p["much_cheaper_below"], p["much_cheaper_score"], score)
 
 
-def listed_prices(prices, category, guests=None):
+def listed_prices(prices, category, guests=None, value="mid_pkr_adj"):
     """Each vendor's median standalone listed price in this category, by price basis (from prices.parquet).
 
     With guests, a price whose guest range doesn't cover the event is left out (a hall charge for 100-199 guests
-    says nothing about a 500-guest walima).
+    says nothing about a 500-guest walima). value picks the column: mid_pkr_adj, or low_/high_pkr_adj for a range.
     """
     if prices is None or prices.empty:
         return pd.DataFrame(columns=["per_head", "flat"], dtype=float)
@@ -61,7 +61,14 @@ def listed_prices(prices, category, guests=None):
     if guests is not None:
         low, high = pd.to_numeric(rows["guest_min"], errors="coerce"), pd.to_numeric(rows["guest_max"], errors="coerce")
         rows = rows[(low.isna() | (low <= guests)) & (high.isna() | (high >= guests))]
-    return rows.pivot_table(index="vendor_id", columns="price_basis", values="mid_pkr_adj", aggfunc="median")
+    return rows.groupby(["vendor_id", "price_basis"])[value].median().unstack("price_basis")
+
+
+def listed_totals(prices, category, guests, vendor_ids, value="mid_pkr_adj"):
+    """Each vendor's listed price for the whole event: per head x guests, else its flat price; NaN if none."""
+    listed = listed_prices(prices, category, guests, value).reindex(vendor_ids).astype(float)
+    per_head = listed.get("per_head", pd.Series(np.nan, index=listed.index)) * guests
+    return per_head.fillna(listed.get("flat", pd.Series(np.nan, index=listed.index)))
 
 
 class VendorMatcher:
@@ -80,21 +87,18 @@ class VendorMatcher:
 
     def likely_prices(self, plan, category, vendors):
         """Each vendor's likely total for this event: its listed price (per head x guests), else #2 for its tier."""
-        guests = plan["guest_count"]
-        listed = listed_prices(self.prices, category, guests).reindex(vendors["vendor_id"]).astype(float)
-        per_head = listed.get("per_head", pd.Series(np.nan, index=listed.index)) * guests
-        total = per_head.fillna(listed.get("flat", pd.Series(np.nan, index=listed.index)))
+        total = listed_totals(self.prices, category, plan["guest_count"], vendors["vendor_id"])
         source = pd.Series(np.where(total.notna(), "listed", ""), index=total.index)
         if self.price_estimator is not None:
             for tier in ["budget", "mid", "premium"]:
                 needs = total.isna() & (vendors.set_index("vendor_id")["price_tier"] == tier).reindex(total.index)
                 if needs.any():
                     estimate = self.price_estimator.estimate_plan(plan, tier=tier).loc[category, "mid"]
-                    total[needs] = estimate
-                    source[needs] = "estimated"
+                    total.loc[needs] = estimate
+                    source.loc[needs] = "estimated"
         return total.to_numpy(dtype=float), source.to_numpy()
 
-    def score(self, plan, category, vendors):
+    def score(self, plan, category, vendors, with_reasons=True):
         """The candidates of this category with each part's score, the fit score, reasons and sponsored flag."""
         s = self.settings
         v = vendors[vendors["category"] == category].copy()
@@ -146,7 +150,8 @@ class VendorMatcher:
         v["new_vendor"] = new
         v["score"] = v["fit"] + np.where(new, s["new_vendor"]["boost"], 0.0)
         v["sponsored"] = v["sponsored"].eq(True) if "sponsored" in v else False
-        v["reasons"] = [self.reasons(plan, category, budget, row) for row in v.to_dict("records")]
+        if with_reasons:
+            v["reasons"] = [self.reasons(plan, category, budget, row) for row in v.to_dict("records")]
         exclude = v["over_capacity"] if s["capacity"]["exclude_over_capacity"] else False
         return v[~exclude]
 

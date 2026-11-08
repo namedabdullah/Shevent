@@ -83,6 +83,14 @@ def test_plan_estimate_scales_catering_by_guests(trained):
     assert (large > 0).all().all()
 
 
+def test_estimating_several_tiers_at_once_matches_one_at_a_time(trained):
+    model, _ = trained
+    tiers = [None, "budget", "mid", "premium"]
+    together = model.estimate_plan_tiers(PLAN, tiers)
+    for tier in tiers:
+        pd.testing.assert_frame_equal(together[tier], model.estimate_plan(PLAN, tier))
+
+
 def test_drivers_explain_the_event_not_the_category(trained):
     model, _ = trained
     drivers = model.drivers(plan_rows(PLAN), top=3)

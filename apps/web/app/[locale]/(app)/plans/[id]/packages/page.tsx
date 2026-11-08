@@ -1,5 +1,5 @@
 import { CATEGORIES, CATEGORY_LABELS } from '@shevent/core/enums';
-import { formatPkr, formatPkrCompact } from '@shevent/core/format';
+import { formatPkr, formatPkrCompact, formatPkrRange } from '@shevent/core/format';
 import { AI_ESTIMATE_LABEL } from '@shevent/core/labels';
 import { PACKAGE_KIND_LABELS, type PackagesResponse } from '@shevent/core/schemas';
 import type { Metadata } from 'next';
@@ -42,9 +42,21 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
 
       <SampleDataNotice response={result} />
 
+      {result && result.unfilled_categories.length > 0 && (
+        <Notice tone="info">
+          {t('unfilled', { categories: result.unfilled_categories.map((category) => CATEGORY_LABELS[category]).join(', ') })}
+        </Notice>
+      )}
+
       {!result ? (
         <Notice tone="error" role="alert">
           {t('unavailable')}
+        </Notice>
+      ) : result.packages.length === 0 ? (
+        <Notice tone="warning">
+          {result.cheapest_total_pkr === null
+            ? t('noVendors')
+            : t('noneFit', { budget: formatPkrCompact(result.budget_pkr), cheapest: formatPkrCompact(result.cheapest_total_pkr) })}
         </Notice>
       ) : (
         // Exactly one <article> per package (the e2e suite counts them).
@@ -75,6 +87,7 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
                           {formatPkr(item.price_pkr)}
                           {item.price_is_estimate && <span className="text-muted"> ({AI_ESTIMATE_LABEL})</span>}
                         </span>
+                        <span className="text-xs text-muted tabular-nums">{t('range', { range: formatPkrRange(item.price_range[0], item.price_range[1]) })}</span>
                         {inquiryId ? (
                           <Link href={`/inquiries/${inquiryId}`} className={`inline-flex min-h-11 items-center gap-1.5 self-start ${linkStyles}`}>
                             <Icon name="message" className="size-4" />

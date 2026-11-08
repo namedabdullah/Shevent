@@ -23,6 +23,8 @@ dependencies = [
     "torch>=2.3",
     # #2 price ranges: gradient-boosted quantile models (MIT).
     "lightgbm>=4.3",
+    # #4 packages: the CP-SAT solver (Apache 2.0). Below 9.13, which needs protobuf 6; MLflow 2.17 needs protobuf < 6.
+    "ortools>=9.10,<9.13",
     # Reading the vendor research workbook (MIT).
     "openpyxl>=3.1",
     # Must match the MLflow server image in docker-compose.yml.
