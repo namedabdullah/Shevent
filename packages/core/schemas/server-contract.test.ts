@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import type { z } from 'zod';
 import {
+  assistantChatRequestSchema,
+  assistantChatResponseSchema,
   estimateRequestSchema,
   estimateResponseSchema,
   feedbackRequestSchema,
@@ -23,6 +25,7 @@ const ENDPOINTS: Record<string, [z.ZodType, z.ZodType]> = {
   packages: [packagesRequestSchema, packagesResponseSchema],
   'quote-check': [quoteCheckRequestSchema, quoteCheckResponseSchema],
   feedback: [feedbackRequestSchema, feedbackResponseSchema],
+  'assistant-chat': [assistantChatRequestSchema, assistantChatResponseSchema],
 };
 
 describe('model server contract samples', () => {

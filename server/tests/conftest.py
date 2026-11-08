@@ -1,11 +1,15 @@
 # shevent_ml first: it loads the right C++ runtime before pandas or LightGBM (see shevent_ml/__init__.py).
 import shevent_ml  # noqa: F401, I001
 
+from datetime import date
+
 import numpy as np
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 
+from app.assistant import Assistant
+from app.assistant.extract import SCHEMA
 from app.catalog import StaticCatalog
 from app.main import create_app
 from app.services import FIXTURE_VENDORS, Services
@@ -20,6 +24,11 @@ PLAN = {
     "event_date": "2026-12-19",
     "total_budget_pkr": 2_500_000,
 }
+TODAY = date(2026, 11, 8)
+# What the host types, and how the model reads it.
+CHAT = "Mehndi in a marquee for 300 guests in Gulberg on 19 December, around 25 lakh"
+READING = {"event_type": "wedding_mehndi", "guest_count": 300, "area": "Gulberg", "venue_type": "marquee",
+           "date_text": "19 December", "event_date": "2026-12-19", "budget_text": "25 lakh"}  # fmt: skip
 SHARES = {"venue": 0.27, "catering": 0.38, "decor": 0.12, "dj_sound": 0.07, "lighting": 0.07, "photography": 0.09}
 
 
@@ -64,14 +73,37 @@ class FakeAllocator:
         }
 
 
+class FakeLLM:
+    """Stands in for Ollama. Extraction answers with `reading` (a dict, or a function of the prompt), replies with
+    `reply`; either may be an exception to raise."""
+
+    version = "llm-test"
+
+    def __init__(self, reading=READING, reply="Catering takes the biggest share. Open the plan to see vendors."):
+        self.reading, self.reply, self.calls = reading, reply, []
+
+    def warm_up(self):
+        pass
+
+    def chat(self, messages, schema=None, max_tokens=300):
+        self.calls.append((messages, schema))
+        answer = self.reply if schema is None else self.reading
+        answer = answer(messages) if callable(answer) else answer
+        if isinstance(answer, Exception):
+            raise answer
+        return answer if schema is None else {key: answer.get(key) for key in SCHEMA["required"]}
+
+
 @pytest.fixture
 def services(tmp_path):
-    return Services(
+    services = Services(
         StaticCatalog.from_fixture(FIXTURE_VENDORS),
         price_estimator=FakeEstimator(),
         allocator=FakeAllocator(),
         feedback_path=tmp_path / "feedback.jsonl",
     )
+    services.assistant = Assistant(FakeLLM(), services, llm_replies=True, today=lambda: TODAY)
+    return services
 
 
 @pytest.fixture

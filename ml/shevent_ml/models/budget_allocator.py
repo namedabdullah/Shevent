@@ -1,4 +1,4 @@
-"""#1 Budget Allocator: how to split an event budget across venue, catering, decor, DJ & sound and lighting.
+"""#1 Budget Allocator: how to split a budget across venue, catering, decor, DJ & sound, lighting and photography.
 
     python -m shevent_ml.models.budget_allocator            # train, score, save to ml/artifacts/budget_allocator/
     python -m shevent_ml.models.budget_allocator --mlflow   # also log the run to MLflow
@@ -125,7 +125,9 @@ class Encoder:
 
     def transform(self, plans):
         numbers, season = self._numbers(plans)
-        source = {**{name: plans[name] for name in ["event_type", "area", "venue_type"]}, "season": season}
+        # venue_type is optional: a plan without one (the API leaves it out) gets no venue column set.
+        missing = pd.Series(None, index=plans.index, dtype=object)
+        source = {**{name: plans.get(name, missing) for name in ["event_type", "area", "venue_type"]}, "season": season}
         blocks = [
             np.column_stack([(source[name] == v).to_numpy(dtype=np.float32) for v in values])
             for name, values in self.ONE_HOT.items()

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from conftest import PLAN, FakeAllocator, FakeEstimator
+from conftest import CHAT, PLAN, FakeAllocator, FakeEstimator
 from fastapi.testclient import TestClient
 
 from app.catalog import StaticCatalog
@@ -32,6 +32,7 @@ CONTRACT = {
     "recommend": {"plan": {**PLAN, "guest_count": 120}, "category": "venue", "budget_pkr": 675_000, "limit": 5},
     "packages": {"plan": PLAN, "categories": CATEGORIES, "unavailable_vendor_ids": [VENUES["101"]]},
     "quote-check": QUOTE,
+    "assistant/chat": {"messages": [{"role": "user", "content": CHAT}]},
     "feedback": {
         "plan_id": "plan-1",
         "plan": PLAN,
@@ -44,7 +45,7 @@ CONTRACT = {
 def test_health_names_the_models_and_counts_the_vendors(client):
     body = client.get("/health").json()
     assert body == {"status": "ok", "models": {"budget_allocator": "alloc-test", "price_estimator": "cost-test"},
-                    "vendors": 15}  # fmt: skip
+                    "vendors": 15, "assistant": "assistant-v1/llm-test"}  # fmt: skip
 
 
 def test_estimate_splits_the_budget_and_gives_every_category_a_range(client):
@@ -119,6 +120,7 @@ def test_endpoints_whose_model_is_missing_answer_503_and_health_says_so():
     with TestClient(create_app(services)) as client:
         assert client.post("/v1/estimate", json=PLAN).status_code == 503
         assert client.post("/v1/packages", json=CONTRACT["packages"]).status_code == 503
+        assert client.post("/v1/assistant/chat", json=CONTRACT["assistant/chat"]).status_code == 503
         assert client.get("/health").json()["status"] == "degraded"
 
 
@@ -129,7 +131,7 @@ def test_contract_samples_are_current(client):
         response = client.post(f"/v1/{name}", json=request)
         assert response.status_code == 200, response.text
         sample = {"request": request, "response": response.json()}
-        path = CONTRACT_DIR / f"{name}.json"
+        path = CONTRACT_DIR / f"{name.replace('/', '-')}.json"
         text = json.dumps(sample, indent=2, ensure_ascii=False) + "\n"
         if os.environ.get("UPDATE_CONTRACT") == "1":
             path.write_text(text, encoding="utf-8")

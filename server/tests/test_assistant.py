@@ -1,0 +1,206 @@
+import re
+from datetime import date
+
+import pytest
+from conftest import CHAT, READING, TODAY, FakeLLM
+
+from app.assistant import Assistant, LLMUnavailable
+from app.assistant.chat import CATEGORY_LABELS, EVENT_LABELS, check_reply, detect_language, format_pkr
+from app.assistant.extract import ground
+from app.assistant.figures import figures, parse_budget, parse_date
+from shevent_ml.config import REPO_ROOT
+from shevent_ml.data.load import load_reference
+
+ALIASES = load_reference()["area_aliases"]
+
+
+def say(*texts):
+    return {"messages": [{"role": "user", "content": text} for text in texts]}
+
+
+def use(services, **llm):
+    """Swap in a fake model with these answers; returns it."""
+    services.assistant = Assistant(FakeLLM(**llm), services, llm_replies=True, today=lambda: TODAY)
+    return services.assistant.llm
+
+
+def test_a_complete_plan_is_estimated_and_the_reply_kept(client):
+    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    assert body["extracted"] == {"event_type": "wedding_mehndi", "guest_count": 300, "area": "Gulberg",
+                                 "venue_type": "marquee", "event_date": "2026-12-19",
+                                 "total_budget_pkr": 2_500_000}  # fmt: skip
+    assert body["missing"] == [] and not body["fallback_to_form"] and body["language"] == "en"
+    assert body["estimate"]["allocation"]["catering"]["pkr"] == 950_000
+    assert body["reply"] == "Catering takes the biggest share. Open the plan to see vendors."
+    assert body["model_version"] == "assistant-v1/llm-test+alloc-test+cost-test"
+
+
+def test_missing_details_are_asked_for_and_nothing_is_estimated(client, services):
+    use(services, reading={"event_type": "wedding_mehndi", "guest_count": 300})
+    body = client.post("/v1/assistant/chat", json=say("mehndi for 300 guests")).json()
+    assert body["extracted"] == {"event_type": "wedding_mehndi", "guest_count": 300}
+    assert body["missing"] == ["area", "event_date", "total_budget_pkr"] and body["estimate"] is None
+    assert body["reply"].startswith("Got it: a mehndi / mayun / dholki for 300 guests.")
+    assert "the area in Lahore, the date and your total budget." in body["reply"]
+    assert not body["fallback_to_form"]
+
+
+def test_details_carry_across_messages_and_the_reply_quotes_the_host():
+    plan, dropped = ground(READING, "mehndi in Gulberg\n300 guests, 19 December\nbudget 25 lakh", TODAY, ALIASES)
+    assert plan["total_budget_pkr"] == 2_500_000 and plan["event_date"] == "2026-12-19"
+    assert dropped == ["venue_type"]  # the model's "marquee" isn't in these messages
+
+
+def test_values_the_host_did_not_write_are_dropped():
+    guessed = {**READING, "guest_count": 250, "area": "Gulberg", "budget_text": "30 lakh", "event_date": "2026-10-01",
+               "date_text": None}  # fmt: skip
+    plan, dropped = ground(guessed, "walima for 300 guests in Defence, 25 lakh", TODAY, ALIASES)
+    assert "guest_count" not in plan and "total_budget_pkr" not in plan and "event_date" not in plan
+    assert plan["area"] == "DHA" and plan["event_type"] == "wedding_walima"  # what the host named, not the guesses
+    assert sorted(dropped) == ["area", "event_date", "event_type", "guest_count", "total_budget_pkr", "venue_type"]
+
+
+def test_an_area_the_model_missed_is_taken_from_the_hosts_words():
+    plan, _ = ground({**READING, "area": None}, "300 guests, Johar Town, then actually Model Town", TODAY, ALIASES)
+    assert plan["area"] == "Model Town"
+    plan, _ = ground({**READING, "area": None}, "گلبرگ میں 300 مہمانوں کی مہندی", TODAY, ALIASES)
+    assert plan["area"] == "Gulberg"
+
+
+def test_a_reply_with_an_invented_figure_is_replaced_by_the_fixed_one(client, services):
+    use(services, reply="Catering gets Rs 12 lakh and the venue Rs 6.75 lakh.")
+    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    assert body["reply"].startswith("Here is a budget split for a mehndi / mayun / dholki for 300 guests in Gulberg")
+    assert ("Catering gets Rs 9.5 lakh (38%), more than this usually costs; Venue gets Rs 6.75 lakh (27%), more than "
+            "this usually costs." in body["reply"])  # fmt: skip
+    assert "It falls in peak wedding season, when prices run higher." in body["reply"]
+    assert services.assistant.rejected == 1
+
+
+def test_a_reply_quoting_the_tools_and_the_host_is_kept(client, services):
+    reply = "For 300 guests on 19 December, catering takes Rs 9.5 lakh (38%) of your 2,500,000. Open the plan."
+    use(services, reply=reply)
+    assert client.post("/v1/assistant/chat", json=say(CHAT)).json()["reply"] == reply
+    assert services.assistant.rejected == 0
+
+
+def test_after_four_messages_without_a_full_plan_the_host_goes_to_the_form(client, services):
+    use(services, reading={"event_type": "wedding_walima"})
+    body = client.post("/v1/assistant/chat", json=say("walima", "not sure", "hmm", "soon")).json()
+    assert body["fallback_to_form"] and body["extracted"] == {"event_type": "wedding_walima"}
+    assert "planner form" in body["reply"]
+
+
+def test_unreadable_model_output_sends_the_host_to_the_form(client, services):
+    use(services, reading=ValueError("not JSON"))
+    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    assert body["fallback_to_form"] and body["extracted"] == {} and len(body["missing"]) == 5
+
+
+def test_by_default_the_reply_is_the_fixed_one_and_the_model_only_reads(client, services):
+    services.assistant = Assistant(FakeLLM(reply="Not used"), services, today=lambda: TODAY)
+    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    assert body["reply"].startswith("Here is a budget split for") and body["estimate"]
+    assert [schema is not None for _, schema in services.assistant.llm.calls] == [True]  # one call: the reading
+
+
+def test_ollama_down_is_a_503_but_a_failed_reply_falls_back_to_the_fixed_one(client, services):
+    use(services, reading=LLMUnavailable("connection refused"))
+    assert client.post("/v1/assistant/chat", json=say(CHAT)).status_code == 503
+    use(services, reply=LLMUnavailable("timed out"))
+    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    assert body["reply"].startswith("Here is a budget split") and body["estimate"]
+
+
+def test_the_model_reads_the_chat_with_todays_date(client, services):
+    llm = use(services)
+    client.post("/v1/assistant/chat", json=say(CHAT))
+    (extraction, schema), (reply, _) = llm.calls
+    assert schema is not None and "Today is Sunday 08 November 2026." in extraction[0]["content"]
+    assert extraction[-1]["content"] == f"Host: {CHAT}"
+    # Rs 9.5 lakh against #2's Rs 4.5-7.5 lakh: the server makes the comparison, not the model.
+    assert "Catering: Rs 9.5 lakh (38%), more than this usually costs" in reply[1]["content"]
+
+
+@pytest.mark.parametrize(
+    "reply, problem",
+    [
+        ("Catering takes Rs 9.5 lakh (38%).", None),
+        ("Catering takes 950,000 rupees.", None),  # the same figure written out
+        ("Catering takes Rs 9.5 crore.", "figures not from a tool: [95000000]"),
+        ("About 40% goes to catering.", "figures not from a tool: [40]"),
+        ("See https://example.com for Rs 9.5 lakh.", "link or code"),
+        ("", "empty or too long"),
+        ("Catering takes Rs 9.5 lakh.\n\nFACTS: catering Rs 9.5 lakh", "prompt text or extra paragraph"),
+    ],
+)
+def test_the_checker_allows_only_figures_from_the_tools_or_the_host(reply, problem):
+    allowed = figures("- Catering: Rs 9.5 lakh (38%)") | figures(CHAT)
+    assert check_reply(reply, allowed) == problem
+
+
+@pytest.mark.parametrize(
+    "text, amount",
+    [("budget 40 lakh", 4_000_000), ("Rs 2,500,000", 2_500_000), ("1.2 crore", 12_000_000), ("85k", 85_000),
+     ("25 lac", 2_500_000), ("۲۵ لاکھ", 2_500_000), ("300 guests", None), ("2.5m", 2_500_000)],
+)  # fmt: skip
+def test_budgets_are_read_as_hosts_write_them(text, amount):
+    assert parse_budget(text) == amount
+
+
+@pytest.mark.parametrize(
+    "text, day",
+    [("19 December", date(2026, 12, 19)), ("march 3rd", date(2027, 3, 3)), ("19/12/26", date(2026, 12, 19)),
+     ("2027-01-15", date(2027, 1, 15)), ("Dec 5th, 2026", date(2026, 12, 5)), ("1 November", date(2027, 11, 1)),
+     ("15 mayun", None), ("5 decorators", None), ("31/02/2027", None)],
+)  # fmt: skip
+def test_dates_are_read_day_first_and_without_a_year_mean_the_next_one(text, day):
+    assert parse_date(text, TODAY) == day
+
+
+@pytest.mark.parametrize(
+    "value, text",
+    [(85_000, "Rs 85,000"), (2_500_000, "Rs 25 lakh"), (12_500_000, "Rs 1.25 crore"), (9_999_999, "Rs 1 crore"),
+     (99_999.6, "Rs 1 lakh"), (675_000, "Rs 6.75 lakh")],
+)  # fmt: skip
+def test_rupees_print_like_the_apps(value, text):
+    assert format_pkr(value) == text
+
+
+@pytest.mark.parametrize(
+    "text, language",
+    [(CHAT, "en"), ("walima karni hai, 500 log", "roman_ur"), ("گلبرگ میں مہندی", "ur"),
+     ("DHA میں mehndi party", "mixed")],
+)  # fmt: skip
+def test_the_hosts_language_is_noted(text, language):
+    assert detect_language(text) == language
+
+
+@pytest.mark.parametrize(
+    "labels, file, name",
+    [(EVENT_LABELS, "event-types.ts", "EVENT_TYPE_LABELS"), (CATEGORY_LABELS, "categories.ts", "CATEGORY_LABELS")],
+)
+def test_labels_match_the_apps(labels, file, name):
+    text = (REPO_ROOT / "packages" / "core" / "enums" / file).read_text(encoding="utf-8")
+    body = re.search(rf"export const {name}[^=]*= \{{(.*?)\}};", text, re.S).group(1)
+    assert labels == dict(re.findall(r"(\w+): '([^']+)'", body))
+
+
+@pytest.mark.parametrize(
+    "host, model_says, expected",
+    [
+        ("300 guests in Gulberg", "wedding_walima", None),  # copied from the prompt's example: dropped
+        ("Office event in Garden Town for 120 people", "corporate_dinner", "corporate_other"),  # the host's word wins
+        ("salgirah ki party, 70 log", "birthday", "birthday"),
+        ("Annual company gala in Cantt", None, "corporate_dinner"),  # the model missed it
+    ],
+)
+def test_an_event_type_counts_only_if_the_host_named_it(host, model_says, expected):
+    plan, _ = ground({"event_type": model_says}, host, TODAY, ALIASES)
+    assert plan.get("event_type") == expected
+
+
+def test_a_venue_type_counts_only_if_the_host_named_it():
+    assert "venue_type" not in ground({"venue_type": "marquee"}, "walima, 500 log", TODAY, ALIASES)[0]
+    assert "venue_type" not in ground({"venue_type": "lawn"}, "120 people in Garden Town", TODAY, ALIASES)[0]
+    assert ground({"venue_type": None}, "on a lawn in Valencia", TODAY, ALIASES)[0]["venue_type"] == "lawn"
