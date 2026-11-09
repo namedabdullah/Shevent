@@ -15,6 +15,8 @@ data/*.xlsx
 # ...except the submission docs: evaluation report, data card and model cards
 !docs/evaluation_report.md
 !docs/data_card.md
+!docs/demo_script.md
+!docs/setup.md
 !docs/model_cards/
 !docs/model_cards/*.md
 *.pdf
