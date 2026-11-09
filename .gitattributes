@@ -1,0 +1,2 @@
+# Trained models are read byte for byte (LightGBM text models break with CRLF line endings on Windows).
+ml/artifacts/** -text
