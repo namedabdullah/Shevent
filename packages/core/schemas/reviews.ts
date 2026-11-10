@@ -10,6 +10,7 @@ export const REVIEW_ASPECTS = [
   'staff_behaviour',
   'value_for_money',
   'hidden_charges',
+  'photo_video_quality',
 ] as const;
 export type ReviewAspect = (typeof REVIEW_ASPECTS)[number];
 
@@ -20,6 +21,7 @@ export const REVIEW_ASPECT_LABELS: Record<ReviewAspect, string> = {
   staff_behaviour: 'Staff behaviour',
   value_for_money: 'Value for money',
   hidden_charges: 'Hidden charges',
+  photo_video_quality: 'Photos and video',
 };
 
 export const reviewInsightsRequestSchema = z.object({

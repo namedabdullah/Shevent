@@ -1,0 +1,470 @@
+# Fragments for synthetic reviews (python -m shevent_ml.reviews.synthetic). Written by hand for training #6: the
+# collected reviews are almost all 5-star English, so the model would never see a complaint or much Roman Urdu or Urdu.
+# Synthetic reviews are training data only. They name no vendor or person, are never linked to a real vendor, and are
+# never shown in the apps. The model is scored on real reviews only.
+#
+# Each aspect fragment is one clause about that aspect, in English (en), Roman Urdu (roman_ur) and Urdu script (ur).
+# A review joins one to three of them, so its labels are known exactly: an aspect with a "mixed" fragment is mixed.
+
+# Which aspects a review of each category can talk about, and how often each category is drawn.
+categories:
+  venue: {weight: 0.30, aspects: [food_quality, sound_quality, staff_behaviour, punctuality, value_for_money, hidden_charges]}
+  catering: {weight: 0.25, aspects: [food_quality, staff_behaviour, punctuality, value_for_money, hidden_charges]}
+  photography: {weight: 0.20, aspects: [photo_video_quality, punctuality, staff_behaviour, value_for_money, hidden_charges]}
+  dj_sound: {weight: 0.10, aspects: [sound_quality, punctuality, staff_behaviour, value_for_money, hidden_charges]}
+  decor: {weight: 0.10, aspects: [punctuality, staff_behaviour, value_for_money, hidden_charges]}
+  lighting: {weight: 0.05, aspects: [punctuality, staff_behaviour, value_for_money, hidden_charges]}
+
+# How often each language is drawn. "mixed" joins English and Roman Urdu fragments in one review.
+languages: {en: 0.40, roman_ur: 0.30, ur: 0.12, mixed: 0.18}
+
+# The overall tone of a review decides which labels its aspects get.
+tones:
+  negative: {weight: 0.40, labels: {negative: 0.85, mixed: 0.15}}
+  mixed: {weight: 0.25, labels: {negative: 0.40, positive: 0.40, mixed: 0.20}}
+  positive: {weight: 0.35, labels: {positive: 0.90, mixed: 0.10}}
+
+# Messy writing, as in the real reviews: share of reviews written all in lower case, without final punctuation,
+# with one dropped letter, or ending in an emoji.
+noise: {lowercase: 0.30, no_punctuation: 0.25, typo: 0.15, emoji: 0.15}
+emoji:
+  negative: ["😡", "😞", "👎", "😕", "🤬"]
+  positive: ["👍", "❤️", "😊", "👌", "🌟"]
+
+connectors:
+  contrast:
+    en: ["but", "however,", "though", "on the other hand,"]
+    roman_ur: ["lekin", "magar", "par", "but"]
+    ur: ["لیکن", "مگر", "البتہ"]
+  and:
+    en: ["and", "also", "plus"]
+    roman_ur: ["aur", "or", "sath hi"]
+    ur: ["اور", "نیز"]
+
+# Openers say what the event was. Venue openers say "here", so only venue reviews use them.
+openers:
+  any:
+    en:
+      - "We booked them for my sister's mehndi."
+      - "Hired them for our walima last month."
+      - "Booked them for my brother's baraat."
+      - "Used them for a birthday party."
+      - "Booked them after seeing their page."
+      - "Had them for our nikah function."
+      - ""
+      - ""
+    roman_ur:
+      - "Hum ne apni behen ki mehndi ke liye book kiya tha."
+      - "Walima ke liye inko hire kiya tha."
+      - "Birthday party ke liye book kiya."
+      - "Shadi ke function ke liye inko bulaya tha."
+      - ""
+      - ""
+    ur:
+      - "ہم نے بہن کی مہندی کے لیے بک کیا تھا۔"
+      - "ولیمے کے لیے ان کی خدمات لی تھیں۔"
+      - "سالگرہ کی تقریب کے لیے بک کیا۔"
+      - ""
+      - ""
+  venue:
+    en: ["Our family event was here in December.", "We had our office dinner here.", "My brother's baraat was here."]
+    roman_ur: ["Bhai ki baraat yahan thi.", "Office ka dinner yahan rakha tha.", "Hamara walima yahan tha."]
+    ur: ["بھائی کی بارات یہاں تھی۔", "ہمارا ولیمہ یہاں تھا۔"]
+
+closers:
+  negative:
+    en: ["Would not recommend.", "Never again.", "Total waste of money.", "Think twice before booking.", "Very disappointed.", ""]
+    roman_ur: ["Bilkul recommend nahi karunga.", "Dobara kabhi nahi.", "Paise zaya ho gaye.", "Soch samajh kar book karein.", "Bohat mayoosi hui.", ""]
+    ur: ["بالکل تجویز نہیں کروں گا۔", "دوبارہ کبھی نہیں۔", "پیسے ضائع ہو گئے۔", "بہت مایوسی ہوئی۔", ""]
+  mixed:
+    en: ["Okay overall.", "Average experience.", "Could be better.", "Not bad, not great.", ""]
+    roman_ur: ["Overall theek tha.", "Guzara hai.", "Behtar ho sakta tha.", "Average experience tha.", ""]
+    ur: ["مجموعی طور پر ٹھیک تھا۔", "گزارا ہے۔", "بہتر ہو سکتا تھا۔", ""]
+  positive:
+    en: ["Highly recommended!", "Will book again.", "Thank you so much!", "Best in Lahore.", "Great experience.", ""]
+    roman_ur: ["Highly recommend karta hoon.", "Dobara zaroor book karenge.", "Bohat shukriya!", "Lahore mein best hain.", ""]
+    ur: ["ضرور تجویز کروں گا۔", "دوبارہ ضرور بک کریں گے۔", "بہت شکریہ!", "لاہور میں بہترین ہیں۔", ""]
+
+# Remarks about none of the aspects: the place, decor, parking, ambience, location, or plain praise and complaint.
+# About 40% of real reviews say only this ("Nice place", "Beautiful hall"), so the model has to learn that a clause can
+# be about no aspect. Some synthetic reviews are made of these alone (all aspects not mentioned).
+general:
+  positive:
+    en: ["beautiful place", "nice venue for events", "the decor was lovely", "great ambience", "ample parking",
+         "neat and clean", "excellent", "great experience", "good location", "spacious hall", "very grand venue",
+         "lovely atmosphere", "nice place for weddings", "the stage looked stunning", "well maintained"]
+    roman_ur: ["bohat khoobsurat jagah hai", "decor bohat acha tha", "mahaul bohat acha tha", "parking ki kaafi jagah hai",
+               "safai bohat achi thi", "achi jagah hai", "hall bohat bara aur khula hai", "zabardast experience tha",
+               "shadi ke liye behtareen jagah"]
+    ur: ["بہت خوبصورت جگہ ہے", "سجاوٹ بہت اچھی تھی", "ماحول بہت اچھا تھا", "پارکنگ کی کافی جگہ ہے", "صفائی بہت اچھی تھی",
+         "شادی کے لیے بہترین جگہ"]
+  negative:
+    en: ["parking was a nightmare", "the hall was too cold", "the entrance was overcrowded", "the place was dirty",
+         "the location is hard to reach", "the washrooms were filthy", "the hall looked old and run down",
+         "the lighting near the stage was poor"]
+    roman_ur: ["parking ki koi jagah nahi thi", "hall bohat thanda tha", "jagah gandi thi", "entrance pe bohat rush tha",
+               "hall purana aur khasta haal hai", "washroom bohat gande the"]
+    ur: ["پارکنگ کی کوئی جگہ نہیں تھی", "ہال بہت ٹھنڈا تھا", "جگہ گندی تھی", "داخلے پر بہت رش تھا"]
+
+aspects:
+  punctuality:
+    negative:
+      en:
+        - "they arrived two hours late"
+        - "setup was not ready when the guests came"
+        - "the team showed up an hour after the agreed time"
+        - "we waited forever for them to start"
+        - "they kept saying five minutes and came very late"
+        - "the stage was still being set when the baraat arrived"
+        - "they left before the event was over"
+        - "nothing started on time"
+      roman_ur:
+        - "do ghante late aaye"
+        - "mehmaan aa gaye lekin setup tayyar nahi tha"
+        - "time pe koi nahi pohancha"
+        - "bas paanch minute keh keh ke ghante laga diye"
+        - "baraat aa gayi aur stage abhi ban raha tha"
+        - "bohat dair se aaye"
+        - "function khatam hone se pehle hi chale gaye"
+      ur:
+        - "وہ دو گھنٹے دیر سے آئے"
+        - "مہمان آ گئے مگر سیٹ اپ تیار نہیں تھا"
+        - "کوئی بھی وقت پر نہیں پہنچا"
+        - "بارات آ گئی اور اسٹیج ابھی بن رہا تھا"
+        - "بہت دیر سے پہنچے"
+    positive:
+      en:
+        - "everything was ready on time"
+        - "they arrived before time and set up quickly"
+        - "the team was very punctual"
+        - "setup was done well before the guests arrived"
+        - "they started exactly on time"
+        - "never had to chase them, always on time"
+      roman_ur:
+        - "sab kuch time pe tayyar tha"
+        - "waqt se pehle aa gaye"
+        - "team bohat punctual thi"
+        - "mehmaanon se pehle setup mukammal tha"
+        - "bilkul time pe kaam shuru kiya"
+      ur:
+        - "سب کچھ وقت پر تیار تھا"
+        - "وقت سے پہلے پہنچ گئے"
+        - "ٹیم بہت وقت کی پابند تھی"
+        - "مہمانوں سے پہلے سیٹ اپ مکمل تھا"
+    mixed:
+      en:
+        - "they came on time but took ages to set up"
+        - "setup was on time, but dinner was served very late"
+        - "punctual on the main day, late for the mehndi"
+      roman_ur:
+        - "time pe aaye lekin setup mein bohat dair lagai"
+        - "setup time pe tha magar khana bohat late laga"
+        - "baraat wale din time pe the, mehndi pe late"
+      ur:
+        - "وقت پر آئے مگر سیٹ اپ میں بہت دیر لگائی"
+        - "سیٹ اپ وقت پر تھا لیکن کھانا بہت دیر سے لگا"
+
+  food_quality:
+    negative:
+      en:
+        - "the food was cold and tasteless"
+        - "biryani was undercooked"
+        - "the qorma was too salty"
+        - "food ran out before all the guests had eaten"
+        - "the meat was hard and the rice was stale"
+        - "half the menu items were missing"
+        - "several guests had stomach problems after the dinner"
+        - "the dessert tasted old"
+      roman_ur:
+        - "khana thanda aur be-maza tha"
+        - "biryani kachi thi"
+        - "qorme mein namak bohat zyada tha"
+        - "aadhe mehmaanon ke liye khana kam par gaya"
+        - "gosht sakht tha aur chawal baasi"
+        - "menu ki aadhi cheezein thi hi nahi"
+        - "khane ke baad kai logon ki tabiyat kharab hui"
+        - "meetha purana lag raha tha"
+      ur:
+        - "کھانا ٹھنڈا اور بے ذائقہ تھا"
+        - "بریانی کچی تھی"
+        - "قورمے میں نمک بہت زیادہ تھا"
+        - "کھانا مہمانوں کے لیے کم پڑ گیا"
+        - "گوشت سخت اور چاول باسی تھے"
+        - "کھانے کے بعد کئی مہمانوں کی طبیعت خراب ہوئی"
+    positive:
+      en:
+        - "the food was delicious"
+        - "biryani and qorma were excellent"
+        - "every guest praised the food"
+        - "food was fresh, hot and plenty for everyone"
+        - "the BBQ was the best we have had"
+        - "taste was amazing"
+        - "the dessert table was a hit"
+      roman_ur:
+        - "khana bohat mazedar tha"
+        - "biryani aur qorma zabardast the"
+        - "har mehmaan ne khane ki tareef ki"
+        - "khana garam, taaza aur sab ke liye kaafi tha"
+        - "BBQ kamaal ka tha"
+        - "taste bohat acha tha"
+        - "meetha sab ko pasand aya"
+      ur:
+        - "کھانا بہت مزیدار تھا"
+        - "بریانی اور قورمہ لاجواب تھے"
+        - "ہر مہمان نے کھانے کی تعریف کی"
+        - "کھانا گرم، تازہ اور سب کے لیے کافی تھا"
+        - "ذائقہ بہت اچھا تھا"
+    mixed:
+      en:
+        - "the biryani was great but the karahi was too oily"
+        - "food tasted good but there was not enough of it"
+        - "starters were nice, the main course was average"
+      roman_ur:
+        - "biryani achi thi lekin karahi mein tail bohat tha"
+        - "taste acha tha magar khana kam par gaya"
+        - "starters ache the, main course average tha"
+      ur:
+        - "بریانی اچھی تھی مگر کڑاہی میں تیل بہت تھا"
+        - "ذائقہ اچھا تھا لیکن کھانا کم پڑ گیا"
+
+  sound_quality:
+    negative:
+      en:
+        - "the sound system kept cutting out"
+        - "music was so loud nobody could talk"
+        - "the DJ played the wrong songs all night"
+        - "the mic was not working during the speeches"
+        - "speakers were crackling the whole time"
+        - "the DJ had no idea how to read the crowd"
+      roman_ur:
+        - "sound system baar baar band ho raha tha"
+        - "music itna loud tha ke koi baat nahi kar sakta tha"
+        - "DJ ne saari raat ghalat gaane lagaye"
+        - "mic kaam hi nahi kar raha tha"
+        - "speakers poori raat khar khar karte rahe"
+        - "DJ ko crowd ka koi andaza nahi tha"
+      ur:
+        - "ساؤنڈ سسٹم بار بار بند ہو رہا تھا"
+        - "موسیقی اتنی اونچی تھی کہ کوئی بات نہیں کر سکتا تھا"
+        - "مائیک کام ہی نہیں کر رہا تھا"
+        - "اسپیکر پوری رات خراب آواز دیتے رہے"
+    positive:
+      en:
+        - "the DJ kept everyone dancing"
+        - "sound quality was crystal clear"
+        - "great music selection for the dholki"
+        - "the DJ took all our requests"
+        - "speakers and mics worked perfectly"
+      roman_ur:
+        - "DJ ne sab ko nachaye rakha"
+        - "sound bilkul clear tha"
+        - "dholki ke gaane zabardast the"
+        - "DJ ne hamari saari requests chalayin"
+        - "speakers aur mic bilkul theek chale"
+      ur:
+        - "ڈی جے نے سب کو محظوظ رکھا"
+        - "آواز بالکل صاف تھی"
+        - "ڈھولکی کے گانے زبردست تھے"
+        - "اسپیکر اور مائیک بالکل ٹھیک چلے"
+    mixed:
+      en:
+        - "good song choice but the volume was too high"
+        - "the DJ was fun, though the mic kept failing"
+      roman_ur:
+        - "gaane ache the lekin awaz bohat tez thi"
+        - "DJ mazay ka tha magar mic baar baar band hota raha"
+      ur:
+        - "گانے اچھے تھے لیکن آواز بہت تیز تھی"
+        - "ڈی جے اچھا تھا مگر مائیک بار بار بند ہوتا رہا"
+
+  staff_behaviour:
+    negative:
+      en:
+        - "the staff was rude to our guests"
+        - "the manager stopped answering our calls"
+        - "waiters were nowhere to be found"
+        - "the owner was very arrogant"
+        - "they misbehaved with the elderly guests"
+        - "nobody listened to what we asked for"
+        - "the team was unprofessional"
+      roman_ur:
+        - "staff ka rawaiya bohat bura tha"
+        - "manager ne phone uthana band kar diya"
+        - "waiter kahin nazar nahi aa rahe the"
+        - "owner bohat badtameez tha"
+        - "buzurg mehmaanon ke sath badtameezi ki"
+        - "hamari koi baat nahi suni"
+        - "team bilkul professional nahi thi"
+      ur:
+        - "عملے کا رویہ بہت برا تھا"
+        - "مینیجر نے فون اٹھانا بند کر دیا"
+        - "ویٹر کہیں نظر نہیں آ رہے تھے"
+        - "مالک بہت بدتمیز تھا"
+        - "عملہ بدتمیزی سے پیش آیا"
+    positive:
+      en:
+        - "the staff was very polite and helpful"
+        - "the manager handled everything personally"
+        - "waiters were quick and courteous"
+        - "very cooperative team"
+        - "they treated our guests like family"
+        - "always answered our calls and messages"
+      roman_ur:
+        - "staff bohat tameez dar aur madadgar tha"
+        - "manager ne khud sab kuch dekha"
+        - "waiter bohat jaldi aur adab se serve kar rahe the"
+        - "team bohat cooperative thi"
+        - "mehmaanon ka bohat khayal rakha"
+        - "har call aur message ka jawab diya"
+      ur:
+        - "عملہ بہت مہذب اور مددگار تھا"
+        - "مینیجر نے خود سب کچھ سنبھالا"
+        - "ٹیم بہت تعاون کرنے والی تھی"
+        - "مہمانوں کا بہت خیال رکھا"
+    mixed:
+      en:
+        - "the manager was helpful but the waiters were rude"
+        - "polite at booking, careless on the day"
+      roman_ur:
+        - "manager acha tha lekin waiter badtameez the"
+        - "booking ke waqt bohat ache the, function wale din laparwah"
+      ur:
+        - "مینیجر اچھا تھا مگر ویٹر بدتمیز تھے"
+        - "بکنگ کے وقت اچھے تھے، تقریب کے دن لاپرواہ"
+
+  value_for_money:
+    negative:
+      en:
+        - "way overpriced for what we got"
+        - "not worth the money at all"
+        - "charged premium rates for average service"
+        - "you can get much better for half the price"
+        - "too expensive for this quality"
+      roman_ur:
+        - "jo mila uske hisaab se bohat mehnga tha"
+        - "paison ke qabil bilkul nahi"
+        - "average service ke premium rate liye"
+        - "is se aadhi qeemat mein behtar mil jata hai"
+        - "is quality ke liye bohat mehnga hai"
+      ur:
+        - "جو ملا اس کے حساب سے بہت مہنگا تھا"
+        - "پیسوں کے قابل بالکل نہیں"
+        - "اس معیار کے لیے بہت مہنگا ہے"
+    positive:
+      en:
+        - "very reasonable rates"
+        - "great value for money"
+        - "affordable packages for every budget"
+        - "worth every rupee"
+        - "much better than others at this price"
+      roman_ur:
+        - "rate bohat munasib the"
+        - "paison ke hisaab se zabardast"
+        - "har budget ke liye affordable package hain"
+        - "ek ek rupay wasool hua"
+        - "is qeemat mein baqi sab se behtar"
+      ur:
+        - "ریٹ بہت مناسب تھے"
+        - "پیسوں کے حساب سے زبردست"
+        - "ایک ایک روپیہ وصول ہوا"
+    mixed:
+      en:
+        - "a bit pricey, though the quality made up for some of it"
+        - "fair price for the hall, overpriced for the food"
+      roman_ur:
+        - "thora mehnga tha lekin quality achi thi"
+        - "hall ka rate theek tha, khana mehnga tha"
+      ur:
+        - "تھوڑا مہنگا تھا مگر معیار اچھا تھا"
+
+  hidden_charges:
+    negative:
+      en:
+        - "they added generator charges at the end"
+        - "the final bill was much higher than the quote"
+        - "extra charges for things that were supposed to be included"
+        - "they asked for more money for the stage on the day"
+        - "charged separately for AC that was in the package"
+        - "the bill had service charges nobody told us about"
+      roman_ur:
+        - "aakhir mein generator ke paise alag maange"
+        - "final bill quote se kahin zyada tha"
+        - "jo cheezein package mein thi unke bhi alag paise liye"
+        - "function wale din stage ke extra paise maange"
+        - "AC ke alag charges laga diye halanke package mein tha"
+        - "bill mein service charges daal diye jo pehle bataye nahi the"
+      ur:
+        - "آخر میں جنریٹر کے پیسے الگ مانگے"
+        - "آخری بل کوٹیشن سے کہیں زیادہ تھا"
+        - "جو چیزیں پیکج میں تھیں ان کے بھی الگ پیسے لیے"
+        - "بل میں ایسے چارجز ڈال دیے جو پہلے نہیں بتائے تھے"
+    positive:
+      en:
+        - "no hidden charges at all"
+        - "the final bill matched the quote exactly"
+        - "everything was clear and transparent from the start"
+        - "they did not charge a rupee extra"
+      roman_ur:
+        - "koi hidden charges nahi the"
+        - "final bill bilkul quote ke mutabiq tha"
+        - "shuru se sab kuch saaf saaf bata diya"
+        - "ek rupay bhi extra nahi liya"
+      ur:
+        - "کوئی پوشیدہ چارجز نہیں تھے"
+        - "آخری بل بالکل کوٹیشن کے مطابق تھا"
+        - "ایک روپیہ بھی اضافی نہیں لیا"
+    mixed:
+      en:
+        - "the bill was mostly as quoted, apart from a small transport charge"
+      roman_ur:
+        - "bill zyada tar quote ke mutabiq tha, bas transport ke thore paise alag the"
+      ur:
+        - "بل زیادہ تر کوٹیشن کے مطابق تھا، بس ٹرانسپورٹ کے تھوڑے پیسے الگ تھے"
+
+  photo_video_quality:
+    negative:
+      en:
+        - "the photos were blurry and dark"
+        - "we are still waiting for our album after four months"
+        - "the highlight video was poorly edited"
+        - "they missed the most important moments"
+        - "half the pictures were out of focus"
+        - "the album quality was very cheap"
+      roman_ur:
+        - "tasveerein dhundli aur andheri thi"
+        - "chaar mahine ho gaye album abhi tak nahi mila"
+        - "highlight video ki editing bohat buri thi"
+        - "sab se zaroori lamhe miss kar diye"
+        - "aadhi pictures out of focus thi"
+        - "album ki quality bohat ghatiya thi"
+      ur:
+        - "تصویریں دھندلی اور اندھیری تھیں"
+        - "چار مہینے ہو گئے البم ابھی تک نہیں ملا"
+        - "ویڈیو کی ایڈیٹنگ بہت بری تھی"
+        - "سب سے اہم لمحے چھوڑ دیے"
+    positive:
+      en:
+        - "the pictures came out stunning"
+        - "we got the album in two weeks"
+        - "the highlight video made everyone cry"
+        - "they captured every moment beautifully"
+        - "amazing candid shots"
+      roman_ur:
+        - "pictures kamaal ki aayi"
+        - "do hafton mein album mil gaya"
+        - "highlight video dekh ke sab ro pare"
+        - "har lamha bohat khoobsurti se capture kiya"
+        - "candid shots zabardast the"
+      ur:
+        - "تصویریں کمال کی آئیں"
+        - "دو ہفتوں میں البم مل گیا"
+        - "ہر لمحہ بہت خوبصورتی سے محفوظ کیا"
+    mixed:
+      en:
+        - "lovely photos but the album took three months"
+        - "the video was great, the pictures were just okay"
+      roman_ur:
+        - "photos achi thi lekin album teen mahine baad mila"
+        - "video zabardast thi, pictures bas theek thi"
+      ur:
+        - "تصویریں اچھی تھیں مگر البم تین مہینے بعد ملا"

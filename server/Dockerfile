@@ -19,7 +19,8 @@ RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.3"
 # ml's dependencies (MLflow, OpenCLIP, image and workbook tools) are for training and data work, and roughly double
 # the download; server/tests/test_api.py checks the server never imports them.
 RUN pip install "numpy>=1.26" "pandas>=2.2" "pyarrow>=15" "pydantic>=2.7" "pyyaml>=6.0" "hijridate>=2.5" \
-    "lightgbm>=4.3" "ortools>=9.10,<9.13" "fastapi>=0.115,<1" "uvicorn>=0.30" "httpx>=0.27" "python-dotenv>=1.0"
+    "lightgbm>=4.3" "ortools>=9.10,<9.13" "scikit-learn>=1.4" "fastapi>=0.115,<1" "uvicorn>=0.30" "httpx>=0.27" \
+    "python-dotenv>=1.0"
 
 # Editable installs: shevent_ml finds configs, reference data and artifacts relative to the repo layout.
 COPY ml/pyproject.toml ml/pyproject.toml

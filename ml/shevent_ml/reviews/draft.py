@@ -39,14 +39,22 @@ NON_ENGLISH = {"roman_ur", "ur", "mixed"}
 
 
 def choose_test_reviews(reviews, size, min_non_english, seed=SEED):
-    """size review IDs, at least min_non_english of them Roman Urdu, Urdu or mixed (or all such reviews if fewer)."""
+    """size review IDs, at least min_non_english of them Roman Urdu, Urdu or mixed (or all such reviews if fewer).
+
+    Every review of 3 stars or less goes in too (up to half the set): complaints are rare in the collected reviews, and
+    a test set without them couldn't show whether the model finds them.
+    """
     rng = np.random.default_rng(seed)
     ids = reviews["review_id"].sort_values()
-    non_english = ids[reviews.set_index("review_id").loc[ids, "language"].isin(NON_ENGLISH).to_numpy()]
+    by_id = reviews.set_index("review_id").loc[ids]
+    non_english = ids[by_id["language"].isin(NON_ENGLISH).to_numpy()]
     quota = min(len(non_english), math.ceil(size * min_non_english))
     chosen = set(rng.choice(non_english.to_numpy(), size=quota, replace=False))
+    if "rating" in by_id:
+        low = ids[(pd.to_numeric(by_id["rating"], errors="coerce") <= 3).to_numpy() & ~ids.isin(chosen).to_numpy()]
+        chosen |= set(rng.choice(low.to_numpy(), size=min(len(low), size // 2), replace=False))
     rest = ids[~ids.isin(chosen)].to_numpy()
-    chosen |= set(rng.choice(rest, size=min(len(rest), size - quota), replace=False))
+    chosen |= set(rng.choice(rest, size=min(len(rest), size - len(chosen)), replace=False))
     return sorted(chosen)
 
 

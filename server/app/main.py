@@ -34,6 +34,8 @@ from .schemas import (
     QuoteCheckResponse,
     RecommendRequest,
     RecommendResponse,
+    ReviewInsightsRequest,
+    ReviewInsightsResponse,
 )
 from .services import Services, Unavailable, load_services
 
@@ -116,6 +118,11 @@ def create_app(services=None):
     def assistant_chat(request: AssistantChatRequest, services: ServicesDep):
         """#8 chat planner: extracts the plan, estimates with #1 and #2, and replies with their figures only."""
         return services.assistant_chat([m.model_dump() for m in request.messages])
+
+    @app.post("/v1/reviews/insights", response_model=ReviewInsightsResponse)
+    def review_insights(request: ReviewInsightsRequest, services: ServicesDep):
+        """#6 praise and complaints per aspect in a vendor's reviews, with pros and cons."""
+        return services.review_insights(request.vendor_id)
 
     @app.post("/v1/feedback", response_model=FeedbackResponse)
     def feedback(request: FeedbackRequest, services: ServicesDep):

@@ -1,0 +1,33 @@
+{
+  "request": {
+    "vendor_id": "00000000-0000-4000-8000-000000000201"
+  },
+  "response": {
+    "vendor_id": "00000000-0000-4000-8000-000000000201",
+    "review_count": 3,
+    "aspects": [
+      {
+        "aspect": "food_quality",
+        "positive": 2,
+        "negative": 1
+      },
+      {
+        "aspect": "punctuality",
+        "positive": 0,
+        "negative": 2
+      },
+      {
+        "aspect": "staff_behaviour",
+        "positive": 1,
+        "negative": 0
+      }
+    ],
+    "pros": [
+      "Guests praise the food (2 of 3 reviews)"
+    ],
+    "cons": [
+      "Some reviews mention late arrival (2 of 3 reviews)"
+    ],
+    "model_version": "reviews-test"
+  }
+}
