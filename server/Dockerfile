@@ -15,12 +15,18 @@ WORKDIR /srv
 # CPU-only PyTorch for #1: the default wheel bundles CUDA and is several GB.
 RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.3"
 
+# Only the libraries the server loads (ml/pyproject.toml and server/pyproject.toml, same version limits). The rest of
+# ml's dependencies (MLflow, OpenCLIP, image and workbook tools) are for training and data work, and roughly double
+# the download; server/tests/test_api.py checks the server never imports them.
+RUN pip install "numpy>=1.26" "pandas>=2.2" "pyarrow>=15" "pydantic>=2.7" "pyyaml>=6.0" "hijridate>=2.5" \
+    "lightgbm>=4.3" "ortools>=9.10,<9.13" "fastapi>=0.115,<1" "uvicorn>=0.30" "httpx>=0.27" "python-dotenv>=1.0"
+
 # Editable installs: shevent_ml finds configs, reference data and artifacts relative to the repo layout.
 COPY ml/pyproject.toml ml/pyproject.toml
 COPY ml/shevent_ml ml/shevent_ml
 COPY server/pyproject.toml server/pyproject.toml
 COPY server/app server/app
-RUN pip install -e ./ml -e ./server
+RUN pip install --no-deps -e ./ml -e ./server
 
 COPY ml/configs ml/configs
 COPY ml/artifacts ml/artifacts

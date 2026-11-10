@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -160,3 +162,12 @@ def test_a_listed_price_is_used_and_not_marked_as_an_estimate(tmp_path):
         body = client.post("/v1/packages", json={"plan": PLAN, "categories": ["catering"]}).json()
         items = [i for p in body["packages"] for i in p["items"] if i["vendor"]["vendor_id"] == caterer]
         assert items and all(i["price_pkr"] == 540_000 and not i["price_is_estimate"] for i in items)
+
+
+def test_the_server_loads_only_what_its_docker_image_installs():
+    """server/Dockerfile installs a short list of libraries, not all of ml/'s: training-only ones must stay unused."""
+    code = "import sys, shevent_ml, app.main; print(' '.join(sorted({m.split('.')[0] for m in sys.modules})))"
+    server = Path(__file__).parents[1]
+    run = subprocess.run([sys.executable, "-c", code], cwd=server, capture_output=True, text=True, check=True)
+    loaded = run.stdout.split()
+    assert not {"mlflow", "open_clip", "imagehash", "PIL", "openpyxl"} & set(loaded)

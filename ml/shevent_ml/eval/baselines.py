@@ -11,7 +11,6 @@ import json
 import sys
 from pathlib import Path
 
-import mlflow
 import pandas as pd
 
 from shevent_ml.config import CATEGORIES, PROCESSED_DIR, load_config, mlflow_tracking_uri
@@ -135,6 +134,8 @@ def run(processed_dir=PROCESSED_DIR, split=None, settings=None, labels_file=LABE
 
 
 def log_to_mlflow(report):
+    import mlflow  # only for --mlflow: the model server doesn't install it
+
     mlflow.set_tracking_uri(mlflow_tracking_uri())
     mlflow.set_experiment("baselines")
     with mlflow.start_run(run_name="median_price_lookup"):

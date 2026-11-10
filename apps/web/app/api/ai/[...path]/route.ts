@@ -18,7 +18,13 @@ async function proxy(request: NextRequest, ctx: RouteContext<'/api/ai/[...path]'
   if (path[0] !== 'v1' || !path.every((segment) => SAFE_SEGMENT.test(segment))) {
     return Response.json({ detail: 'Not found' }, { status: 404 });
   }
-  const target = new URL(path.join('/') + request.nextUrl.search, base.endsWith('/') ? base : `${base}/`);
+  let target: URL;
+  try {
+    target = new URL(path.join('/') + request.nextUrl.search, base.endsWith('/') ? base : `${base}/`);
+  } catch {
+    // A pasted "MODEL_SERVER_URL=https://..." or a stray space in the Vercel variable lands here.
+    return Response.json({ detail: 'Model server address is not a valid URL' }, { status: 503 });
+  }
 
   const headers = new Headers({ accept: 'application/json' });
   const contentType = request.headers.get('content-type');
