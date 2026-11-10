@@ -1,9 +1,9 @@
 {
-  "version": "cost-v1-97907a1e",
-  "margin": 0.01989206021301726,
+  "version": "cost-v1-511086e1",
+  "margin": 0.243245560296927,
   "calibrated_on": {
-    "source": "synthetic",
-    "rows": 6021
+    "source": "real",
+    "rows": 44
   },
   "settings": {
     "quantiles": [
@@ -48,38 +48,38 @@
   ],
   "report": {
     "calibrated_on": {
-      "source": "synthetic",
-      "rows": 6021
+      "source": "real",
+      "rows": 44
     },
     "synthetic_check": {
       "rows": 5979,
       "scored": 5979,
-      "mape": 0.38603579966883034,
-      "pinball_low": 8405.97689185318,
-      "pinball_mid": 27123.722043953527,
-      "pinball_high": 16991.58240891089,
-      "coverage": 0.8056531192507108
+      "mape": 0.38462681555826095,
+      "pinball_low": 8073.023898702628,
+      "pinball_mid": 23754.83364647109,
+      "pinball_high": 17093.29744227886,
+      "coverage": 0.9473156046161565
     },
     "test_prices": {
-      "rows": 12,
-      "scored": 12,
-      "mape": 0.8261231205091368,
-      "pinball_low": 7137.853770286317,
-      "pinball_mid": 24693.222717220702,
-      "pinball_high": 35669.64798640429,
-      "coverage": 0.4166666666666667
+      "rows": 46,
+      "scored": 46,
+      "mape": 0.7233510252583378,
+      "pinball_low": 11374.181405764059,
+      "pinball_mid": 39901.657335751246,
+      "pinball_high": 47971.76102863695,
+      "coverage": 0.9130434782608695
     },
     "test_prices_baseline": {
-      "rows": 12,
-      "scored": 12,
-      "mape": 0.8747270548997629,
-      "pinball_low": 7655.225000000001,
-      "pinball_mid": 27034.625,
-      "pinball_high": 45582.668333333335,
-      "coverage": 0.3333333333333333
+      "rows": 46,
+      "scored": 46,
+      "mape": 0.9168823160886311,
+      "pinball_low": 13127.470869565215,
+      "pinball_mid": 43158.989130434784,
+      "pinball_high": 39914.27391304348,
+      "coverage": 0.7608695652173914
     },
-    "dataset_hash": "b8264320b0bf",
-    "synthetic_hash": "9a2fd6c24dd6",
+    "dataset_hash": "ba647660700b",
+    "synthetic_hash": "f52dafdf8047",
     "synthetic_sources": {
       "event_mix": "placeholder",
       "base_prices": "placeholder",

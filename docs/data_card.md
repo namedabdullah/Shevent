@@ -1,23 +1,35 @@
 # Shevent Data Card
 
-**Status (8 Nov 2026):** dataset v1 was built on 28 Oct (`dataset_hash b8264320b0bf`) from the vendor workbook: 156
-vendors and 34 cleaned prices, 12 of them held out for test. No scenario quotes, survey answers, planner interviews,
-reviews or portfolio images were collected, and every synthetic-data assumption is still a placeholder (see
-[Synthetic events](#synthetic-events)). What this means for each model is in the
-[evaluation report](evaluation_report.md).
+**Status (10 Nov 2026):** dataset v2 (`dataset_hash ba647660700b`) is built from the data lead's final folder
+(`shevent_dataset`, 10 Nov), which includes everything from the v1 workbook. The 156 v1 vendors keep their IDs, so the
+app database updates them in place. No scenario quotes, survey answers or planner interviews were collected, and most
+synthetic-data effects are still placeholders (see [Synthetic events](#synthetic-events)). What this means for each
+model is in the [evaluation report](evaluation_report.md).
 
-| Source | Target | Collected |
-|---|---|---|
-| Vendors | 120 | 156 |
-| Price observations | 300 | 34 after cleaning |
-| Scenario quotes | 25 | 0 |
-| Host survey answers | 40 | 0 |
-| Planner interviews | 3 | 0 |
-| Reviews | 300 | 0 |
-| Portfolio images | 500 | 0 |
+| Source | Target | v1 (28 Oct) | v2 (10 Nov) |
+|---|---|---|---|
+| Vendors | 120 | 156 | 327 (venue 168, catering 65, decor 40, photography 37, DJ & sound 14, lighting 3) |
+| Price observations | 300 | 34 | 402: 221 standalone, 181 hall menus with the hall included or bundles |
+| Scenario quotes | 25 | 0 | 0 |
+| Host survey answers | 40 | 0 | 0 |
+| Planner interviews | 3 | 0 | 0 |
+| Reviews | 300 | 0 | 308 (298 five-star; 10 Roman Urdu or mixed) |
+| Portfolio images | 500 | 0 | 542 links, not downloaded |
 
-`data/splits/test_split.json`, which names the held-out vendors, isn't in the repository: rebuild it with
-`python -m shevent_ml.data.split` (same seed, same dataset) and commit it.
+**Test split** (`data/splits/test_split.json`, made for v2 on 10 Nov): 36 vendors, about 20% of the priced vendors in
+each category, with all 82 of their prices; 46 of those are standalone prices the models are scored on. Commit it.
+
+**Import** (`python -m shevent_ml.data.import_dataset <folder>`): the folder follows the collection guide but names some
+columns and values differently, so the importer writes the template CSVs into `data/raw`
+(`ml/configs/dataset_import.yaml`):
+- categories, venue and DJ sub types, event types and source types are mapped to the app's values; a price for a plain
+  "wedding" gets no single event type;
+- a vendor the folder puts in "Other" gets back the area its notes name, when it's a reference area (23 vendors);
+- air conditioning and heating add-ons (7 rows) are left out of the prices.
+
+**Source and terms:** most v2 venues, 330 of the 409 prices, all reviews and all image links come from one directory
+site, shadiyana.pk; the folder's README says one batch was read through a logged-in account. Check the site's terms
+before publishing anything derived from it. Reviews and images are for internal testing only.
 
 ## Real data
 
@@ -58,7 +70,13 @@ split. Synthetic events let the #1 and #2 models see those effects.
 
 `python -m shevent_ml.synthetic.generate` writes `synthetic_events.parquet` (one row per event, with spend and share
 per category) and `synthetic_services.parquet` (each category's unit price). `synthetic_manifest.json` records the
-seed, the full settings, and which base prices were fitted from real data (`--fit-prices`).
+seed, the full settings, and which base prices were fitted from real data (`--fit-prices`, training prices only: the
+test vendors' prices never shape the training data).
+
+**v2 (10 Nov):** catering (24 prices), decor (70), DJ & sound (8) and photography (31) base prices are fitted from real
+training prices. Venue keeps its configured price (`fit_skip`): Lahore halls mostly sell a per-head menu that includes
+the hall, and the rents they list (median about Rs 50,000) are extras, often waived above a guest count. Lighting has
+no prices.
 
 **How an event is made:**
 
@@ -79,7 +97,8 @@ it's replaced with collected figures:
 |---|---|
 | `base_prices.catering` | Interview Q6 (per-head range by tier) · real prices via `--fit-prices` |
 | `base_prices.dj_sound`, `.lighting`, `.photography` | Interview Q7 · real prices |
-| `base_prices.venue`, `.decor` | Real prices (`--fit-prices`) |
+| `base_prices.decor` | Real prices (`--fit-prices`; fitted in v2) |
+| `base_prices.venue` | Full venue prices (hall-only rents, marquee and lawn rents), or interview figures; listed add-on rents don't count |
 | `season_price`, `wedding_demand` | Interview Q8 (peak months and %), Q9 (Ramadan, Muharram, after Eid) |
 | `weekend_price`, `weekend_demand` | Interview Q10 |
 | `area_price` | Interview Q12 |
@@ -155,7 +174,7 @@ The folder is git-ignored.
 
 `python -m shevent_ml.data.app_seed` turns `vendors.parquet` into `supabase/seeds/collected_vendors.sql` (git-ignored) for `public.vendors`.
 
-- **What's in it:** public listing facts only: business name, category, type, base area and areas served. No phone numbers, addresses or people's names.
+- **What's in it:** public listing facts only: business name, category, type, base area, areas served, and where the listing gives them, event types (197 of 327 in v2) and capacity (29). No phone numbers, addresses or people's names.
 - **IDs:** each id is a UUID derived from the research `vendor_id`, so reloading updates rows in place, and the model server can match `prices.parquet` to app vendors.
 - **Status:** listings start unverified, unclaimed and without consent to an indexable profile. Reloading never changes a listing its owner has claimed.
 

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | `alloc-v1-41889f86` (`ml/artifacts/budget_allocator/`) |
+| Version | `alloc-v1-52d3ae4d` (`ml/artifacts/budget_allocator/`), trained 10 Nov |
 | Code | `ml/shevent_ml/models/budget_allocator.py`, settings in `ml/configs/budget_allocator.yaml` |
 | Served by | `POST /v1/estimate` (with #2), and inside `/v1/assistant/chat` |
 | Owner | ML lead |
@@ -34,26 +34,31 @@ preferences); a group is mentioned only if it moves a share by at least 2 points
 
 ## Training data
 
-Synthetic events (`synthetic_hash 9a2fd6c24dd6`) plus the training half of the host survey. **No survey answers have
-been collected**, so the model is trained on synthetic events only, and every effect in the generator is still a
-placeholder. See the [data card](../data_card.md#synthetic-events).
+Synthetic events (`synthetic_hash f52dafdf8047`) plus the training half of the host survey. **No survey answers have
+been collected**, so the model is trained on synthetic events only. Since dataset v2, the events' base prices for
+catering, decor, DJ & sound and photography are the medians of real training prices; venue and lighting prices and all
+the effects (season, area, weekend, event type) are still placeholders. See the
+[data card](../data_card.md#synthetic-events).
 
 ## Evaluation
 
 | On 1,948 synthetic held-out events | Share MAE | KL |
 |---|---|---|
-| This model | 0.0254 | 0.0213 |
-| Per-category regressors, normalised | 0.0252 | 0.0212 |
-| Fixed planner split | 0.0505 | 0.0678 |
+| This model | 0.0244 | 0.0199 |
+| Per-category regressors, normalised | 0.0242 | 0.0198 |
+| Fixed planner split | 0.0573 | 0.0933 |
 
-The network halves the planner split's error and ties the per-category regressors. The real test (the survey's held-out
+The network more than halves the planner split's error and ties the per-category regressors. For a 300-guest, Rs 25
+lakh mehndi in Gulberg it gives catering 45%, venue 22%, decor 19%, lighting 6%, photography 5%, DJ & sound 2%. The real test (the survey's held-out
 half) hasn't run: there are no answers. Guardrails and the "budget too low" path are unit tested.
 
 ## Limitations
 
-- It learns the generator's placeholder effects, not how Lahore hosts actually split budgets.
+- It learns the generator's placeholder effects, not how Lahore hosts actually split budgets. Only the base prices of
+  four categories come from real data.
 - The planner split baseline is itself a placeholder until the planner interviews are in.
 - A plan's venue type is optional; a crash on plans without one was fixed on 8 Nov.
+- Most Lahore halls sell food and hall together; the split keeps them as two categories.
 - Splits are guidance, not quotes. The apps label every amount "AI estimate, not a vendor quote".
 
 ## Licences

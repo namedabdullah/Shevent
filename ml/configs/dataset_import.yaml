@@ -1,0 +1,43 @@
+# Settings for importing the data lead's dataset folder (python -m shevent_ml.data.import_dataset). Its CSVs follow the
+# collection guide but name some columns and values differently from data/templates and data/reference/vocab.csv.
+
+categories:
+  Venue: venue
+  Catering: catering
+  Decor: decor
+  DJ/Sound: dj_sound
+  Lighting: lighting
+  Photography: photography
+
+# Vendor sub_type -> the category's sub types (data/reference/categories.csv). Values not listed are left blank.
+sub_types:
+  banquet_hall: banquet
+  marriage_hall: banquet
+  event_complex: banquet
+  marquee: marquee
+  lawn: lawn
+  farmhouse: farmhouse
+  dj: dj
+  photo_video: photo_video
+
+# A vendor's broad event types -> the app's event types.
+vendor_event_types:
+  wedding: [wedding_mehndi, wedding_baraat, wedding_walima, engagement]
+  corporate: [corporate_dinner, corporate_other]
+  birthday: [birthday]
+
+# A price's event type. A plain "wedding" package fits every wedding function, so it gets no single type.
+price_event_types:
+  mehndi: wedding_mehndi
+  dholki: wedding_mehndi
+  nikah: engagement
+  engagement: engagement
+  walima: wedding_walima
+  birthday: birthday
+  any: any
+
+source_types:
+  listing_article: directory
+
+# Price rows that are add-ons, not a category price (matched on the package name, case-insensitive).
+skip_packages: '\b(?:air condition|a/c|ac add|heating)'

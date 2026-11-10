@@ -51,7 +51,7 @@ pnpm db:reset
 ```
 
 Docker must be running. `db:reset` applies the migrations and loads the fictional demo vendors from
-`supabase/seed.sql`. The 156 collected vendors are not in git; with the data folder from the team's drive, run
+`supabase/seed.sql`. The 327 collected vendors are not in git; after importing the data folder (section 7), run
 `ml\.venv\Scripts\python -m shevent_ml.data.app_seed` and `pnpm db:reset` again to load them too.
 
 `pnpm exec supabase status` prints the local API URL and the publishable key used below.
@@ -95,7 +95,6 @@ Open `http://localhost:3000`. Sign-in uses a magic link: locally, the email arri
 | Types and lint | `pnpm typecheck` and `pnpm lint` |
 | Database (RLS, functions) | `pnpm db:test` |
 | ML package | `ml\.venv\Scripts\python -m pytest ml` |
-| Model metric thresholds | `ml\.venv\Scripts\python -m pytest ml -m metrics` |
 | Model server, API contracts, assistant | `ml\.venv\Scripts\python -m pytest server/tests` |
 | Python lint | `ml\.venv\Scripts\python -m ruff check ml server` |
 | Browser journeys (5 browser profiles) | `pnpm --filter @shevent/web exec playwright install`, then `pnpm --filter @shevent/web test:e2e` with the database running and the web app built with `NEXT_PUBLIC_API_FIXTURES=true` |
@@ -103,15 +102,20 @@ Open `http://localhost:3000`. Sign-in uses a magic link: locally, the email arri
 
 ## 7. Retrain (optional)
 
-With `data/raw` from the team's drive:
+With the data lead's dataset folder (`shevent_dataset`, from the team's drive):
 
 ```
+ml\.venv\Scripts\python -m shevent_ml.data.import_dataset <path to shevent_dataset>
+ml\.venv\Scripts\python scripts\validate_data.py data\raw
 ml\.venv\Scripts\python -m shevent_ml.data.build
 ml\.venv\Scripts\python -m shevent_ml.data.split
 ml\.venv\Scripts\python -m shevent_ml.synthetic.generate --fit-prices
 ml\.venv\Scripts\python -m shevent_ml.models.price_estimator
 ml\.venv\Scripts\python -m shevent_ml.models.budget_allocator
 ```
+
+The import writes `data/raw` in the template format; `data/splits/test_split.json` is created once per dataset and
+then kept (`--force` only before any model has been scored on it).
 
 Add `--mlflow` to log the runs (`docker compose up -d mlflow`, UI at `http://127.0.0.1:5000`). Results go into
 `docs/evaluation_report.md` and the model cards.
