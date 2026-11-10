@@ -154,8 +154,8 @@ Hashes now trim a plain frame on all four sides and also hash the mirror image. 
   308 real reviews with the test set first and a blank column per aspect. Fill each with positive, negative or mixed
   (blank = not mentioned) and save it as `data/splits/review_labels.csv`. Labelled reviews outside the test set join the
   training data.
-- **Labelled (10 Nov):** all 308 real reviews, in `data/splits/review_labels.csv`, **by Claude, the AI assistant that
-  built the #6 model**, from the text alone and before seeing the model's predictions on them. 122 mention no aspect;
+- **Labelled (10 Nov):** all 308 real reviews, in `data/splits/review_labels.csv`, **by an AI assistant that
+  also built the #6 model**, from the text alone and before seeing the model's predictions on them. 122 mention no aspect;
   staff behaviour 115, food 100, photos and video 35, value for money 17, punctuality 2, sound 1, hidden charges 0.
   "Service" counts as staff behaviour unless it names the business ("catering service"); an album's delay counts as
   photo and video quality. A person re-labelling the test set would make the score independent.

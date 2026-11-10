@@ -49,9 +49,9 @@ reviews it would have learned only the synthetic fragments.
 ## Evaluation
 
 **Real test set:** 150 real reviews (`data/splits/review_test_ids.csv`): all 10 that aren't English, all 10 rated 3
-stars or less, and 130 more at random. All 308 real reviews were labelled on 10 Nov **by Claude, the AI assistant that
-built this model**, following the aspect definitions in `ml/configs/reviews.yaml`, from the text alone and without
-looking at the model's output. The 158 outside the test set train the model. Labels by the model's own author are less
+stars or less, and 130 more at random. All 308 real reviews were labelled on 10 Nov **by an AI assistant that
+also built this model**, following the aspect definitions in `ml/configs/reviews.yaml`, from the text alone and without
+looking at the model's output. The 158 outside the test set train the model. Labels by the assistant that built the model are less
 independent than labels by the data lead would be; re-labelling the test set by a person is the first thing to do.
 
 | On 150 real test reviews | Macro-F1 (4 labels, mean of 7 aspects) | Label right where mentioned | Complaints found | Aspects found (recall / precision) |
@@ -75,7 +75,7 @@ independent than labels by the data lead would be; re-labelling the test set by 
 
 ## Limitations
 
-- The real test labels are by the model's author and the test set was used to choose one change (see above).
+- The real test labels are by an AI assistant and the test set was used to choose one change (see above).
 - Tone is the weak part, especially negation ("no hidden charges" is praise) and sarcasm.
 - Long reviews pick up stray aspects; the aspect threshold (0.3) was tuned on the synthetic check, not on real text.
 - The synthetic fragments and the word lists were written by the same person, so the synthetic check flatters the

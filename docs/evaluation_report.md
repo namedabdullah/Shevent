@@ -12,7 +12,7 @@
 | 3 | Vendor Matching | Built, served | Not scored: the hand-rated matching set has no ratings yet | **Not tested** |
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
-| 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by the model's author, with the test set looked at twice |
+| 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by an AI assistant, with the test set looked at twice |
 | 7 | Verified Portfolios | Built (duplicates), not served | 900 planted copies of 100 real photos: recall 78% at 100% precision (MD5 exact match: 0%) | **Yes** for duplicates; style tags not built |
 | 8 | AI Planning Assistant | Built, served | Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 invented figures in replies | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
@@ -147,7 +147,7 @@ wording in the apps is guidance, never an accusation.
   - On 150 real test reviews: macro-F1 0.436 against 0.424 for the English-only keyword baseline; the label is right
     65% of the time where an aspect is mentioned (61%); it finds 13 of 17 complaints (7) but flags more aspects that
     aren't there (precision 71% against 90%).
-  - **Caveats:** all real reviews were labelled by Claude, the AI assistant that built the model (not the data lead),
+  - **Caveats:** all real reviews were labelled by an AI assistant that also built the model (not the data lead),
     and the test set was looked at twice: the first score (0.398) led to one change (aspect-free remarks in the
     synthetic data, aspect-free real reviews in training). Re-labelling the test set by a person would make this
     independent.
@@ -207,7 +207,7 @@ the extraction doesn't depend on the dataset, and only the reply's amounts chang
 3. **Venue and catering overlap in Lahore.** Most halls sell food and hall together; the app splits them into two
    categories, and prices halls that do this from #2 rather than from their listed rent.
 4. **#3 and #5 have no real-data score**, because their test labels or inputs were never collected. #6's real score
-   rests on labels by the model's author; #7's is on planted copies of real photos.
+   rests on labels by an AI assistant; #7's is on planted copies of real photos.
 5. **Lighting has 3 vendors and no prices**, so its matches are weak and its range is configured, not learned.
 6. **Free hosting and a laptop LLM:** cold starts are slow; the assistant needs the laptop with Ollama running and
    reachable.
