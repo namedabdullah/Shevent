@@ -3,7 +3,6 @@
 import random
 from contextlib import contextmanager
 
-import mlflow
 import numpy as np
 
 from shevent_ml.config import SEED, mlflow_tracking_uri
@@ -27,6 +26,8 @@ def training_run(experiment, dataset_version, params=None, seed=SEED):
         ...
         mlflow.log_metric("mape", mape)
     """
+    import mlflow  # only for training runs: the model server doesn't install it
+
     set_seed(seed)
     mlflow.set_tracking_uri(mlflow_tracking_uri())
     mlflow.set_experiment(experiment)

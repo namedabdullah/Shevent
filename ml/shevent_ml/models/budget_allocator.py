@@ -21,7 +21,6 @@ import sys
 from pathlib import Path
 
 import lightgbm as lgb
-import mlflow
 import numpy as np
 import pandas as pd
 import torch
@@ -471,6 +470,8 @@ def main():
     print(f"Budget allocator {model.version} saved to {args.out}")
     print_report(report)
     if args.mlflow:
+        import mlflow  # only for --mlflow: the model server doesn't install it
+
         with training_run("budget_allocator", report["dataset_hash"], {"model_version": model.version}):
             for subset in ["survey_test", "synthetic_check"]:
                 for name, scores in report.get(subset, {}).items():

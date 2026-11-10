@@ -43,22 +43,28 @@ try {
     if (-not $health) { throw "The model server did not answer in 2 minutes. See $logs\server.err.log" }
     Write-Host "Model server is up: $($health | ConvertTo-Json -Compress)"
 
-    Write-Host 'Opening the tunnel...'
+    # Asking trycloudflare.com for a tunnel sometimes times out on a slow connection, so try a few times.
     $tunnelLog = Join-Path $logs 'tunnel.err.log'
-    $tunnel = Start-Process -FilePath $cloudflared -NoNewWindow -PassThru `
-        -ArgumentList @('tunnel', '--no-autoupdate', '--url', "http://127.0.0.1:$Port") `
-        -RedirectStandardOutput (Join-Path $logs 'tunnel.out.log') -RedirectStandardError $tunnelLog
-
     $address = $null
-    for ($i = 0; $i -lt 30 -and -not $address; $i++) {
-        Start-Sleep -Seconds 2
-        if ($tunnel.HasExited) { throw "cloudflared stopped. See $tunnelLog" }
-        if (Test-Path $tunnelLog) {
-            $found = Select-String -Path $tunnelLog -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
-            if ($found) { $address = $found.Matches[0].Value }
+    for ($attempt = 1; $attempt -le 3 -and -not $address; $attempt++) {
+        Write-Host "Opening the tunnel (attempt $attempt of 3)..."
+        $tunnel = Start-Process -FilePath $cloudflared -NoNewWindow -PassThru `
+            -ArgumentList @('tunnel', '--no-autoupdate', '--url', "http://127.0.0.1:$Port") `
+            -RedirectStandardOutput (Join-Path $logs 'tunnel.out.log') -RedirectStandardError $tunnelLog
+        for ($i = 0; $i -lt 30 -and -not $address -and -not $tunnel.HasExited; $i++) {
+            Start-Sleep -Seconds 2
+            if (Test-Path $tunnelLog) {
+                $found = Select-String -Path $tunnelLog -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
+                if ($found) { $address = $found.Matches[0].Value }
+            }
+        }
+        if (-not $address) {
+            if (-not $tunnel.HasExited) { Stop-Process -Id $tunnel.Id -Force -ErrorAction SilentlyContinue }
+            Write-Host "No tunnel yet: $((Get-Content $tunnelLog -Tail 1) -join '')" -ForegroundColor Yellow
+            Start-Sleep -Seconds 5
         }
     }
-    if (-not $address) { throw "No tunnel address after a minute. See $tunnelLog" }
+    if (-not $address) { throw "cloudflared couldn't open a tunnel in 3 attempts (internet slow or down?). See $tunnelLog" }
 
     # The tunnel can take a few seconds to start routing.
     $reached = $false

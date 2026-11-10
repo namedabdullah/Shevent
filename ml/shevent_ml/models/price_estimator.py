@@ -19,7 +19,6 @@ import sys
 from pathlib import Path
 
 import lightgbm as lgb
-import mlflow
 import numpy as np
 import pandas as pd
 
@@ -212,8 +211,9 @@ def train(processed_dir=PROCESSED_DIR, settings=None, split=None, log=print):
         report["test_prices"] = score(model.predict(X_test), y_test, model.quantiles)
         report["test_prices_baseline"] = score_price_baseline(baseline, test_prices, "mid_pkr_adj")
         quotes_path = processed_dir / "quotes.parquet"
-        if quotes_path.exists():
-            quotes = pd.read_parquet(quotes_path)
+        quotes = pd.read_parquet(quotes_path) if quotes_path.exists() else None
+        # The build writes the table even when no quotes have been collected yet.
+        if quotes is not None and len(quotes):
             X_q, y_q = quote_rows(quotes)
             report["scenario_quotes"] = score(model.predict(X_q), y_q, model.quantiles)
             report["scenario_quotes_baseline"] = score_price_baseline(baseline, quotes, "price_pkr_adj")
@@ -256,6 +256,8 @@ def main():
     print(f"Price estimator {model.version} saved to {args.out} (range calibrated on {model.calibrated_on['source']})")
     print_report(report)
     if args.mlflow:
+        import mlflow  # only for --mlflow: the model server doesn't install it
+
         with training_run("price_estimator", report["dataset_hash"], {"model_version": model.version}):
             for subset in ["test_prices", "scenario_quotes", "synthetic_check"]:
                 if subset in report:
