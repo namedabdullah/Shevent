@@ -23,3 +23,57 @@ test_set:
   size: 150
   # Share that must be Roman Urdu, Urdu or mixed (README section 10: the test set is mixed-language).
   min_non_english: 0.30
+
+# The English-only baseline the trained model must beat (implementation plan, #6): an aspect is mentioned when one of
+# its English keywords appears, and its label comes from the English sentiment words in the whole review. It can't
+# read Roman Urdu or Urdu, which is the point of the comparison.
+baseline:
+  keywords:
+    punctuality: [late, on time, punctual, waited, delay, early, hours, ready]
+    food_quality: [food, taste, tasty, biryani, qorma, karahi, bbq, dessert, menu, delicious, meat, rice]
+    sound_quality: [sound, dj, music, speaker, speakers, mic, songs]
+    staff_behaviour: [staff, manager, waiter, waiters, owner, rude, polite, behaviour, behavior, team, service]
+    value_for_money: [price, prices, expensive, overpriced, worth, value, rates, affordable, money, cheap, pricey]
+    hidden_charges: [extra, charges, charged, bill, hidden]
+    photo_video_quality: [photo, photos, pictures, album, video, shots, photographer, images]
+  positive: [good, great, excellent, delicious, best, amazing, polite, helpful, recommended, nice, perfect, reasonable,
+             worth, clear, stunning, beautiful, punctual, affordable, tasty, fresh, professional, cooperative, love]
+  negative: [bad, late, rude, cold, worst, poor, disappointing, disappointed, overpriced, expensive, waste, never,
+             stale, salty, blurry, problem, pathetic, unprofessional, missing, avoid, arrogant, hidden, extra]
+
+# The trained model: TF-IDF features, one classifier for a clause's aspect and one for its tone.
+model:
+  word_ngrams: [1, 2]
+  char_ngrams: [2, 5]
+  min_df: 2
+  C: 4.0
+  # Hand-labelled real reviews count this many times a synthetic one when training.
+  real_weight: 5.0
+  # A clause counts as clear praise (or complaint) when the tone classifier is at least this sure. An aspect with clear
+  # praise and a clear complaint is mixed.
+  confident_tone: 0.65
+  # A clause is about an aspect only when the aspect classifier gives it at least this probability.
+  confident_aspect: 0.3
+  # Share of fragments kept out of training, and how many synthetic reviews are built from them to check the model on
+  # phrasings it hasn't seen (not a score that counts).
+  synthetic_holdout: 0.2
+  synthetic_check_reviews: 600
+
+# Words that praise or complain in general, in English, Roman Urdu and Urdu script. They are extra inputs to the tone
+# classifier (counts per clause), so it can tell praise from complaint in phrasings it hasn't seen. Not tied to an
+# aspect. "not" / "nahi" flip a clause's tone often enough that they're left to the learned features.
+lexicon:
+  positive:
+    en: [good, great, excellent, amazing, awesome, best, delicious, tasty, fresh, polite, helpful, friendly, professional,
+         cooperative, punctual, reasonable, affordable, worth, perfect, beautiful, stunning, lovely, clear, recommended,
+         recommend, satisfied, happy, smooth, quick, wonderful, fantastic, superb, nice, outstanding, impressive]
+    roman_ur: [acha, achi, ache, achay, achhi, zabardast, kamaal, behtareen, bohat acha, mazedar, mazay, lajawab,
+               shandar, munasib, tameez, khush, shukriya, umda, behtar, khoobsurat, perfect, wah, maza]
+    ur: [اچھا, اچھی, اچھے, بہترین, لاجواب, زبردست, مزیدار, کمال, مناسب, شاندار, خوبصورت, شکریہ, عمدہ, خوش, مہذب]
+  negative:
+    en: [bad, worst, poor, terrible, horrible, awful, rude, late, delay, delayed, cold, stale, tasteless, salty, blurry,
+         overpriced, expensive, waste, disappointing, disappointed, unprofessional, arrogant, careless, dirty, broken,
+         problem, issue, complaint, pathetic, cheated, missing, never, avoid, slow, hidden, extra, nightmare, useless]
+    roman_ur: [bura, buri, bure, ghatiya, bakwas, badtameez, badtameezi, dair, late, thanda, baasi, kacha, kachi,
+               mehnga, zaya, kharab, laparwah, mayoosi, dhoka, fazool, ganda, sakht, shikayat, takleef, be-maza]
+    ur: [برا, بری, خراب, گھٹیا, بدتمیز, بدتمیزی, دیر, ٹھنڈا, باسی, کچی, مہنگا, ضائع, لاپرواہ, مایوسی, دھوکہ, فضول, گندا, شکایت]

@@ -11,12 +11,14 @@ from pydantic import BaseModel, Field, StringConstraints, field_validator, model
 
 from shevent_ml.config import CATEGORIES
 from shevent_ml.models.price_features import AREAS, CATEGORICAL, EVENT_TYPES, TIER_RANK
+from shevent_ml.reviews.labels import settings as review_settings
 
 Category = Literal[tuple(CATEGORIES)]
 Area = Literal[tuple(AREAS)]
 EventType = Literal[tuple(EVENT_TYPES)]
 VenueType = Literal[tuple(CATEGORICAL["venue_type"])]
 PriceTier = Literal[tuple(TIER_RANK)]
+ReviewAspect = Literal[tuple(review_settings()["aspects"])]
 PriceUnit = Literal["per_head", "per_event", "per_hour", "per_package", "per_slot", "per_setup"]
 FairnessLevel = Literal["green", "yellow", "red"]
 PackageKind = Literal["cheapest", "balanced", "highest_quality"]
@@ -157,6 +159,25 @@ class FeedbackRequest(BaseModel):
 
 class FeedbackResponse(BaseModel):
     accepted: bool
+
+
+class ReviewInsightsRequest(BaseModel):
+    vendor_id: str = Field(min_length=1, max_length=64)
+
+
+class AspectSummary(BaseModel):
+    aspect: ReviewAspect
+    positive: int = Field(ge=0)
+    negative: int = Field(ge=0)
+
+
+class ReviewInsightsResponse(BaseModel):
+    vendor_id: str
+    review_count: int = Field(ge=0)
+    aspects: list[AspectSummary]
+    pros: list[str]
+    cons: list[str]
+    model_version: str
 
 
 class ChatMessage(BaseModel):

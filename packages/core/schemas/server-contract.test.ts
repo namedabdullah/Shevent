@@ -17,6 +17,8 @@ import {
   quoteCheckResponseSchema,
   recommendRequestSchema,
   recommendResponseSchema,
+  reviewInsightsRequestSchema,
+  reviewInsightsResponseSchema,
 } from './index';
 
 const ENDPOINTS: Record<string, [z.ZodType, z.ZodType]> = {
@@ -26,6 +28,7 @@ const ENDPOINTS: Record<string, [z.ZodType, z.ZodType]> = {
   'quote-check': [quoteCheckRequestSchema, quoteCheckResponseSchema],
   feedback: [feedbackRequestSchema, feedbackResponseSchema],
   'assistant-chat': [assistantChatRequestSchema, assistantChatResponseSchema],
+  'reviews-insights': [reviewInsightsRequestSchema, reviewInsightsResponseSchema],
 };
 
 describe('model server contract samples', () => {

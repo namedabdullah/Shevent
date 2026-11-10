@@ -138,16 +138,40 @@ The folder is git-ignored.
   - Other flagged pairs of collected photos, which may be real reposts, go to `duplicate_candidates.csv` for review
     against the pairs the team noted.
 
+**v2 (10 Nov):** `python -m shevent_ml.images.download` fetched 541 of the 542 collected photos (one link was broken).
+Hashes now trim a plain frame on all four sides and also hash the mirror image. The planted set's 100 originals are in
+`data/splits/planted_duplicates.csv` (commit it). Photos are for internal testing only and never redistributed.
+
 ## Review aspect labels (#6)
 
-- Each review is labelled on six aspects: punctuality, food quality, sound quality, staff behaviour, value for money
-  and hidden charges. Each label is positive, negative, mixed or not mentioned (`ml/configs/reviews.yaml`).
-- **Test set:** 150 reviews, at least 30% of them Roman Urdu, Urdu or mixed, fixed in
-  `data/splits/review_test_ids.csv`. They are labelled by hand from scratch, with no LLM draft shown, so the labeller
-  isn't anchored by the model.
+- Each review is labelled on seven aspects: punctuality, food quality, sound quality, staff behaviour, value for money,
+  hidden charges, and photo and video quality. Each label is positive, negative, mixed or not mentioned
+  (`ml/configs/reviews.yaml`).
+- **Test set:** 150 real reviews fixed in `data/splits/review_test_ids.csv`: every Roman Urdu, Urdu or mixed one (only
+  10 exist, so the 30% target can't be met), every one rated 3 stars or less (10), and the rest at random. They are
+  labelled by hand from scratch, with no model output shown, so the labeller isn't anchored by it.
+- **Labelling sheet:** `python -m shevent_ml.reviews.model --sheet` writes `data/processed/reviews_to_label.csv`, all
+  308 real reviews with the test set first and a blank column per aspect. Fill each with positive, negative or mixed
+  (blank = not mentioned) and save it as `data/splits/review_labels.csv`. Labelled reviews outside the test set join the
+  training data.
+- **Labelled (10 Nov):** all 308 real reviews, in `data/splits/review_labels.csv`, **by an AI assistant that
+  also built the #6 model**, from the text alone and before seeing the model's predictions on them. 122 mention no aspect;
+  staff behaviour 115, food 100, photos and video 35, value for money 17, punctuality 2, sound 1, hidden charges 0.
+  "Service" counts as staff behaviour unless it names the business ("catering service"); an album's delay counts as
+  photo and video quality. A person re-labelling the test set would make the score independent.
 - **Training labels:** first drafted by `qwen2.5:7b-instruct`, running locally in Ollama with temperature 0, a JSON
   schema and few-shot examples in English, Roman Urdu and Urdu. Then corrected in Label Studio. Each draft records
   the model and the prompt version.
+- **Collected (v2):** 308 real reviews from 32 vendors, all from public directories. 298 are 5 stars and 10 are 3 stars
+  or less; 10 are Roman Urdu or mixed. The 30% non-English rule for the test set can't be met with them alone.
+- **Synthetic reviews** (`python -m shevent_ml.reviews.synthetic`, `data/processed/synthetic_reviews.parquet`): 3,000
+  reviews built from hand-written fragments (`ml/configs/review_phrases.yaml`), because a model trained on the real
+  reviews alone would call every review positive. Each fragment is one clause about one aspect, positive, negative or
+  mixed, in English, Roman Urdu or Urdu script, so every label is exact. A review joins one to three fragments with
+  "but" / "lekin" where the tone turns, an optional opener and closer, and the real reviews' messiness (lower case, no
+  full stop, a dropped letter, an emoji). About 40% are complaints, 25% mixed and 35% positive; 59% are Roman Urdu,
+  Urdu or mixed. **Training only:** they name no vendor or person, aren't linked to any vendor, are never shown in the
+  apps, and the model is scored on real reviews only.
 
 ## Matching relevance set (#3)
 

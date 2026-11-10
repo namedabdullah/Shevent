@@ -15,6 +15,7 @@ from app.main import create_app
 from app.services import FIXTURE_VENDORS, Services
 from shevent_ml.config import CATEGORIES
 from shevent_ml.models.price_estimator import PriceEstimator
+from shevent_ml.reviews.labels import settings as review_settings
 
 PLAN = {
     "event_type": "wedding_mehndi",
@@ -51,6 +52,31 @@ class FakeEstimator:
             },
             index=X.index,
         )
+
+
+CATERER = "00000000-0000-4000-8000-000000000201"
+# Three reviews of one demo caterer and what the fake #6 reads in them.
+REVIEWS = pd.DataFrame(
+    {
+        "vendor_id": [CATERER] * 3,
+        "text": ["Delicious food, polite staff", "Tasty food but they came late", "Late again and the food was cold"],
+    }
+)
+READINGS = {
+    "Delicious food, polite staff": {"food_quality": "positive", "staff_behaviour": "positive"},
+    "Tasty food but they came late": {"food_quality": "positive", "punctuality": "negative"},
+    "Late again and the food was cold": {"food_quality": "negative", "punctuality": "negative"},
+}
+
+
+class FakeReviewModel:
+    """Fixed readings, shaped like ReviewModel.predict's answer."""
+
+    version = "reviews-test"
+    aspects = list(review_settings()["aspects"])
+
+    def predict(self, texts):
+        return pd.DataFrame([dict.fromkeys(self.aspects, "not_mentioned") | READINGS.get(t, {}) for t in texts])
 
 
 class FakeAllocator:
@@ -101,6 +127,8 @@ def services(tmp_path):
         price_estimator=FakeEstimator(),
         allocator=FakeAllocator(),
         feedback_path=tmp_path / "feedback.jsonl",
+        review_model=FakeReviewModel(),
+        reviews=REVIEWS,
     )
     services.assistant = Assistant(FakeLLM(), services, llm_replies=True, today=lambda: TODAY)
     return services

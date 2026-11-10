@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from conftest import CHAT, PLAN, FakeAllocator, FakeEstimator
+from conftest import CATERER, CHAT, PLAN, FakeAllocator, FakeEstimator
 from fastapi.testclient import TestClient
 
 from app.catalog import StaticCatalog
@@ -35,6 +35,7 @@ CONTRACT = {
     "packages": {"plan": PLAN, "categories": CATEGORIES, "unavailable_vendor_ids": [VENUES["101"]]},
     "quote-check": QUOTE,
     "assistant/chat": {"messages": [{"role": "user", "content": CHAT}]},
+    "reviews/insights": {"vendor_id": CATERER},
     "feedback": {
         "plan_id": "plan-1",
         "plan": PLAN,
@@ -46,8 +47,26 @@ CONTRACT = {
 
 def test_health_names_the_models_and_counts_the_vendors(client):
     body = client.get("/health").json()
-    assert body == {"status": "ok", "models": {"budget_allocator": "alloc-test", "price_estimator": "cost-test"},
+    assert body == {"status": "ok", "models": {"budget_allocator": "alloc-test", "price_estimator": "cost-test",
+                                               "review_insights": "reviews-test"},
                     "vendors": 15, "assistant": "assistant-v1/llm-test"}  # fmt: skip
+
+
+def test_review_insights_count_praise_and_complaints_and_keep_one_stray_reading_out(client):
+    body = client.post("/v1/reviews/insights", json={"vendor_id": CATERER}).json()
+    assert body["review_count"] == 3 and body["model_version"] == "reviews-test"
+    assert body["aspects"] == [
+        {"aspect": "food_quality", "positive": 2, "negative": 1},
+        {"aspect": "punctuality", "positive": 0, "negative": 2},
+        {"aspect": "staff_behaviour", "positive": 1, "negative": 0},
+    ]
+    assert body["pros"] == ["Guests praise the food (2 of 3 reviews)"]  # staff: only one review
+    assert body["cons"] == ["Some reviews mention late arrival (2 of 3 reviews)"]  # one cold dish isn't a con
+
+
+def test_a_vendor_without_reviews_gets_empty_insights(client):
+    body = client.post("/v1/reviews/insights", json={"vendor_id": "00000000-0000-4000-8000-000000000101"}).json()
+    assert body["review_count"] == 0 and body["aspects"] == body["pros"] == body["cons"] == []
 
 
 def test_estimate_splits_the_budget_and_gives_every_category_a_range(client):
@@ -123,6 +142,7 @@ def test_endpoints_whose_model_is_missing_answer_503_and_health_says_so():
         assert client.post("/v1/estimate", json=PLAN).status_code == 503
         assert client.post("/v1/packages", json=CONTRACT["packages"]).status_code == 503
         assert client.post("/v1/assistant/chat", json=CONTRACT["assistant/chat"]).status_code == 503
+        assert client.post("/v1/reviews/insights", json=CONTRACT["reviews/insights"]).status_code == 503
         assert client.get("/health").json()["status"] == "degraded"
 
 

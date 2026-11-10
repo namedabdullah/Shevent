@@ -17,6 +17,7 @@ data/*.xlsx
 !docs/data_card.md
 !docs/demo_script.md
 !docs/setup.md
+!.github/README.md
 !docs/model_cards/
 !docs/model_cards/*.md
 *.pdf

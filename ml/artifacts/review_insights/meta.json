@@ -1,0 +1,71 @@
+{
+  "version": "reviews-v1-778babc1",
+  "aspects": [
+    "punctuality",
+    "food_quality",
+    "sound_quality",
+    "staff_behaviour",
+    "value_for_money",
+    "hidden_charges",
+    "photo_video_quality"
+  ],
+  "report": {
+    "real_training_reviews": 158,
+    "synthetic_check": {
+      "rows": 600,
+      "macro_f1": 0.582728676616326,
+      "macro_f1_by_aspect": {
+        "punctuality": 0.6261352423852423,
+        "food_quality": 0.5559557790766163,
+        "sound_quality": 0.48485248714513884,
+        "staff_behaviour": 0.8145188631878265,
+        "value_for_money": 0.49324236668260635,
+        "hidden_charges": 0.4511438253286455,
+        "photo_video_quality": 0.6532521725082053
+      },
+      "label_accuracy_where_mentioned": 0.5345060893098782
+    },
+    "synthetic_check_baseline": {
+      "rows": 600,
+      "macro_f1": 0.5438116414997496,
+      "macro_f1_by_aspect": {
+        "punctuality": 0.6048022175225931,
+        "food_quality": 0.43599041207670336,
+        "sound_quality": 0.575697437393311,
+        "staff_behaviour": 0.6117854075650648,
+        "value_for_money": 0.535105658472052,
+        "hidden_charges": 0.4211018094887248,
+        "photo_video_quality": 0.622198547979798
+      },
+      "label_accuracy_where_mentioned": 0.39242219215155616
+    },
+    "real_test": {
+      "rows": 150,
+      "macro_f1": 0.43581338992595214,
+      "macro_f1_by_aspect": {
+        "punctuality": 0.35236985236985235,
+        "food_quality": 0.4722582415697575,
+        "sound_quality": 0.2474747474747475,
+        "staff_behaviour": 0.6735310725080546,
+        "value_for_money": 0.43229166666666663,
+        "hidden_charges": 0.2491638795986622,
+        "photo_video_quality": 0.6236042692939245
+      },
+      "label_accuracy_where_mentioned": 0.6518518518518519
+    },
+    "real_test_baseline": {
+      "rows": 150,
+      "macro_f1": 0.4237013509961781,
+      "macro_f1_by_aspect": {
+        "punctuality": 0.24744027303754265,
+        "food_quality": 0.6997190833912,
+        "sound_quality": 0.2483108108108108,
+        "staff_behaviour": 0.4835837438423646,
+        "value_for_money": 0.41231126596980255,
+        "hidden_charges": 0.2483221476510067,
+        "photo_video_quality": 0.6262221322705194
+      },
+      "label_accuracy_where_mentioned": 0.6074074074074074
+    }
+  }
+}

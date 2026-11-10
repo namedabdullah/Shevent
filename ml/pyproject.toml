@@ -25,6 +25,8 @@ dependencies = [
     "lightgbm>=4.3",
     # #4 packages: the CP-SAT solver (Apache 2.0). Below 9.13, which needs protobuf 6; MLflow 2.17 needs protobuf < 6.
     "ortools>=9.10,<9.13",
+    # #6 review insights: TF-IDF and logistic regression (BSD-3).
+    "scikit-learn>=1.4",
     # Reading the vendor research workbook (MIT).
     "openpyxl>=3.1",
     # Must match the MLflow server image in docker-compose.yml.
