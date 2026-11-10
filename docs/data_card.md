@@ -1,6 +1,6 @@
 # Shevent Data Card
 
-**Status (10 Nov 2026):** dataset v2 (`dataset_hash ba647660700b`) is built from the data lead's final folder
+**Status (10 Nov 2026):** dataset v2 (`dataset_hash 4c2131a11b22`) is built from the data lead's final folder
 (`shevent_dataset`, 10 Nov), which includes everything from the v1 workbook. The 156 v1 vendors keep their IDs, so the
 app database updates them in place. No scenario quotes, survey answers or planner interviews were collected, and most
 synthetic-data effects are still placeholders (see [Synthetic events](#synthetic-events)). What this means for each
@@ -25,11 +25,13 @@ columns and values differently, so the importer writes the template CSVs into `d
 - categories, venue and DJ sub types, event types and source types are mapped to the app's values; a price for a plain
   "wedding" gets no single event type;
 - a vendor the folder puts in "Other" gets back the area its notes name, when it's a reference area (23 vendors);
-- air conditioning and heating add-ons (7 rows) are left out of the prices.
+- air conditioning and heating add-ons (7 rows) are left out of the prices;
+- directory sites aren't named: their listing links are dropped and their names in notes and package names become
+  "directory". Image links are kept so the images can still be downloaded.
 
-**Source and terms:** most v2 venues, 330 of the 409 prices, all reviews and all image links come from one directory
-site, shadiyana.pk; the folder's README says one batch was read through a logged-in account. Check the site's terms
-before publishing anything derived from it. Reviews and images are for internal testing only.
+**Sources:** most v2 venues, prices, reviews and image links come from public event-vendor directories. The team read
+their terms: a directory claims no ownership of the venues and vendors it lists, so the listings' facts and prices are
+used here without naming the directory. Reviews and images are for internal testing only.
 
 ## Real data
 

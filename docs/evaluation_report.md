@@ -34,7 +34,7 @@ collected, so the app keeps labelling every amount "AI estimate, not a vendor qu
 | Reviews | 300 | 0 | **308** |
 | Portfolio images | 500 | 0 | **542** links |
 
-Dataset v2: `dataset_hash ba647660700b`, imported from the data lead's folder with
+Dataset v2: `dataset_hash 4c2131a11b22`, imported from the data lead's folder with
 `python -m shevent_ml.data.import_dataset`. Test split: 36 vendors (about 20% of the priced vendors in each category),
 all their prices held out, in `data/splits/test_split.json`. Synthetic events: `synthetic_hash f52dafdf8047`, with
 catering, decor, DJ & sound and photography base prices fitted from the real training prices. The other effects
@@ -78,9 +78,9 @@ DJ & sound 0.5 vs 4.7, lighting 1.4 vs 1.8, photography 1.3 vs 3.9.
 
 | Rows | Model | MAPE | Pinball loss 10% / 50% / 90% (PKR) | 80% range holds |
 |---|---|---|---|---|
-| 46 real test prices | `cost-v1-511086e1` | **72%** | **11,374 / 39,902** / 47,972 | 91% |
+| 46 real test prices | `cost-v1-800e791d` | **72%** | **11,374 / 39,902** / 47,972 | 91% |
 | 46 real test prices | Median lookup | 92% | 13,127 / 43,159 / **39,914** | 76% |
-| 5,979 synthetic held-out | `cost-v1-511086e1` | 39% | 8,073 / 23,755 / 17,093 | 95% |
+| 5,979 synthetic held-out | `cost-v1-800e791d` | 39% | 8,073 / 23,755 / 17,093 | 95% |
 
 By category on the real test prices:
 

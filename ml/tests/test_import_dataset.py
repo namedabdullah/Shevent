@@ -25,12 +25,15 @@ PRICES = pd.DataFrame(
         "price_min_pkr": ["60000", "40000", "2200"],
         "event_type": ["wedding", "any", "mehndi"],
         "source_type": ["directory", "directory", "listing_article"],
+        "source_ref": ["https://www.weddingdir.pk/venues/hall-one", "", "https://blog.example.com/menus"],
+        "notes": ["Weddingdir card; price_date not stated", "", ""],
     }
 )
 REVIEWS = pd.DataFrame({"review_id": ["R-1"], "vendor_id": ["CAT-001"], "source_type": ["directory"], "text": ["Good"]})
 MEDIA = pd.DataFrame(
-    {"media_id": ["M-1"], "vendor_id": ["PHO-001"], "file_name": ["a.jpg"], "date_collected": ["2026-11-09"]}
-)
+    {"media_id": ["M-1"], "vendor_id": ["PHO-001"], "file_name": ["a.jpg"], "date_collected": ["2026-11-09"],
+     "source_url": ["https://cdn.weddingdir.pk/g/a.jpg"], "notes": ["image from the WeddingDir.pk gallery"]}
+)  # fmt: skip
 QUOTES = pd.DataFrame(columns=["quote_id", "vendor_id", "scenario_id", "quoted_pkr"])
 
 
@@ -59,3 +62,19 @@ def test_the_dataset_folder_becomes_template_csvs_with_the_apps_values(tmp_path)
     assert pd.read_csv(out / "reviews.csv", dtype=str).loc[0, "source"] == "directory"
     assert pd.read_csv(out / "portfolio_media.csv", dtype=str).loc[0, "collected_date"] == "2026-11-09"
     assert summary["areas_from_notes"] == 1 and summary["add_ons_left_out"] == 1
+
+
+def test_directory_sites_are_not_named_but_image_links_still_work(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    for name, df in [("vendors", VENDORS), ("price_observations", PRICES), ("reviews", REVIEWS),
+                     ("portfolio_media", MEDIA), ("scenario_quotes", QUOTES)]:  # fmt: skip
+        df.to_csv(raw / f"{name}.csv", index=False)
+    import_dataset(raw, tmp_path / "out")
+
+    prices = pd.read_csv(tmp_path / "out" / "price_observations.csv", dtype=str, keep_default_na=False)
+    assert prices["source_ref"].tolist() == ["", ""]  # both directory listings (the article counts as one)
+    assert prices.loc[0, "notes"] == "directory card; price_date not stated"
+    media = pd.read_csv(tmp_path / "out" / "portfolio_media.csv", dtype=str)
+    assert media.loc[0, "notes"] == "image from the directory gallery"
+    assert media.loc[0, "source_url"] == "https://cdn.weddingdir.pk/g/a.jpg"
