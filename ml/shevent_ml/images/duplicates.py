@@ -32,8 +32,13 @@ def md5_pairs(ids, md5s):
     return pairs_from(ids, md5s[:, None] == md5s[None, :])
 
 
-def phash_pairs(ids, phashes, max_distance):
-    return pairs_from(ids, hamming_matrix(list(phashes)) <= max_distance)
+def phash_pairs(ids, phashes, max_distance, mirrors=None):
+    """Pairs within max_distance bits; with mirror hashes, a photo also matches the other one's mirror image."""
+    distance = hamming_matrix(list(phashes))
+    if mirrors is not None:
+        flipped = hamming_matrix(list(mirrors), list(phashes))
+        distance = np.minimum(distance, np.minimum(flipped, flipped.T))
+    return pairs_from(ids, distance <= max_distance)
 
 
 def clip_pairs(ids, embeddings, min_similarity):
@@ -56,6 +61,7 @@ def _photos(index, embeddings, planted, planted_embeddings):
                     "transform": "",
                     "md5": real["md5"],
                     "phash": real["phash"],
+                    "phash_mirror": real["phash_mirror"],
                     "embedding_row": real["embedding_row"],
                     "source": "real",
                 }
@@ -68,6 +74,7 @@ def _photos(index, embeddings, planted, planted_embeddings):
                     "transform": copies["transform"],
                     "md5": copies["md5"],
                     "phash": copies["phash"],
+                    "phash_mirror": copies["phash_mirror"],
                     "embedding_row": copies["embedding_row"],
                     "source": "planted",
                 }
@@ -108,7 +115,9 @@ def evaluate(index, embeddings, planted, planted_embeddings, settings=None):
     ids = photos["id"].tolist()
     finders = {
         "md5 (baseline)": md5_pairs(ids, photos["md5"]),
-        f"phash <= {settings['phash_max_distance']}": phash_pairs(ids, photos["phash"], settings["phash_max_distance"]),
+        f"phash <= {settings['phash_max_distance']}": phash_pairs(
+            ids, photos["phash"], settings["phash_max_distance"], photos["phash_mirror"]
+        ),
     }
     if vectors is not None:
         finders[f"clip >= {settings['clip_min_similarity']}"] = clip_pairs(

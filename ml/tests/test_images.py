@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageOps
 
 from shevent_ml.config import load_config
 from shevent_ml.images.build import image_path, index_images
@@ -147,6 +147,17 @@ def test_pair_finders():
     assert md5_pairs(ids, ["x", "y", "x"]) == {("a", "c")}
     same = perceptual_hashes(scene(5))["phash"]
     assert phash_pairs(ids, [same, perceptual_hashes(scene(6))["phash"], same], 0) == {("a", "c")}
+
+
+def test_a_framed_or_mirrored_copy_still_matches():
+    photo = scene(7)
+    framed = ImageOps.expand(photo, border=40, fill="white")
+    hashes = [perceptual_hashes(im) for im in (photo, framed, ImageOps.mirror(photo), scene(8))]
+    phashes, mirrors = [h["phash"] for h in hashes], [h["phash_mirror"] for h in hashes]
+    assert hamming_matrix(phashes)[0, 1] <= 4  # the white frame is trimmed before hashing
+    assert hamming_matrix(phashes)[0, 2] > 10  # a mirror image hashes differently...
+    found = phash_pairs(["photo", "framed", "mirrored", "other"], phashes, 10, mirrors)
+    assert found == {("photo", "framed"), ("photo", "mirrored"), ("framed", "mirrored")}  # ...but is matched both ways
 
 
 def test_open_image_applies_exif_rotation(tmp_path):

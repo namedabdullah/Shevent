@@ -12,8 +12,8 @@
 | 3 | Vendor Matching | Built, served | Not scored: the hand-rated matching set has no ratings yet | **Not tested** |
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
-| 6 | Review Insights | Labelling tools only | 308 reviews collected but unlabelled; 97% are 5 stars and 3% Roman Urdu or mixed | No model trained |
-| 7 | Verified Portfolios | Image pipeline only | 542 image links collected; the images aren't downloaded, so the duplicate test hasn't run | No model trained |
+| 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by the model's author, with the test set looked at twice |
+| 7 | Verified Portfolios | Built (duplicates), not served | 900 planted copies of 100 real photos: recall 78% at 100% precision (MD5 exact match: 0%) | **Yes** for duplicates; style tags not built |
 | 8 | AI Planning Assistant | Built, served | Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 invented figures in replies | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
 **The one-line verdict:** the path from event details to a priced plan, matched vendors, packages, quote checks and a
@@ -140,17 +140,27 @@ wording in the apps is guidance, never an accusation.
 
 ## #6 Review Insights and #7 Verified Portfolios
 
-Neither model was trained.
+- **#6 (built and served 10 Nov, see its [model card](model_cards/review_insights.md)):** the 308 collected reviews
+  are 97% five-star and 97% English, so the model trains on about 450 hand-written synthetic clauses in English, Roman
+  Urdu and Urdu script, plus the 158 labelled real reviews outside the test set. It reads reviews clause by clause: one
+  classifier picks the aspect (or none), another praise or complaint, helped by three-language word lists.
+  - On 150 real test reviews: macro-F1 0.436 against 0.424 for the English-only keyword baseline; the label is right
+    65% of the time where an aspect is mentioned (61%); it finds 13 of 17 complaints (7) but flags more aspects that
+    aren't there (precision 71% against 90%).
+  - **Caveats:** all real reviews were labelled by Claude, the AI assistant that built the model (not the data lead),
+    and the test set was looked at twice: the first score (0.398) led to one change (aspect-free remarks in the
+    synthetic data, aspect-free real reviews in training). Re-labelling the test set by a person would make this
+    independent.
+  - Served at `/v1/reviews/insights` from the collected reviews; the apps don't show it yet.
+- **#7 (built 10 Nov, see its [model card](model_cards/portfolio_duplicates.md)):** 541 of the 542 collected portfolio
+  photos are downloaded. Perceptual hashing (pHash), with plain frames trimmed and mirror images hashed too, finds 78%
+  of 900 planted copies of 100 real photos at 100% precision; MD5 exact matching (the baseline) finds none, and plain
+  pHash 56%. Crops and reposts (crop + filter + watermark) are still missed: they need CLIP embeddings, whose 600 MB
+  model didn't download here, so style tags aren't built either. On the real collection it flags 10 pairs for a
+  person to check, three across vendors: a caterer and a venue with three identical photos, and a photographer's photo
+  on a venue's gallery in a different file, which MD5 couldn't see.
 
-- **#6:** 308 reviews were collected, all from one directory, and none are labelled. 298 are 5 stars and 10 are 3 stars
-  or less; 10 are Roman Urdu or mixed (3%, against the 30% the test set needs). A sentiment model trained on this would
-  learn that every review is positive. Ready to use: the six-aspect label schema, Ollama label drafting (Qwen2.5 7B, JSON
-  schema, few-shot in three languages), the Label Studio setup and the 150-review test-set rule.
-- **#7:** 542 portfolio image links were collected, and the data lead marked file names that appear in more than one
-  vendor's gallery (possible reused photos). The images themselves aren't downloaded. Ready to use: MD5, pHash, dHash
-  and OpenCLIP ViT-B/32 embeddings per image, the planted-duplicate test set and the scoring against MD5 exact matching.
-
-Neither has an endpoint (`/v1/reviews/insights`, `/v1/portfolio/check`).
+Neither #7's duplicate check nor its style tags are served yet (`/v1/portfolio/check`).
 
 ## #8 AI Planning Assistant
 
@@ -182,9 +192,9 @@ the extraction doesn't depend on the dataset, and only the reply's amounts chang
 
 | Suite | Result |
 |---|---|
-| `ml/` pytest | 155 passed |
-| `server/` pytest (API, contracts, assistant) | 81 passed |
-| `packages/core` Vitest | 194 passed (8 Nov) |
+| `ml/` pytest | 175 passed |
+| `server/` pytest | 83 passed |
+| `packages/core` Vitest | 195 passed |
 | `apps/web` lint and typecheck | clean |
 | Playwright (5 browser profiles, fixtures) | Last full run: 340 tests passed, 10 by-design skips |
 
@@ -196,7 +206,8 @@ the extraction doesn't depend on the dataset, and only the reply's amounts chang
    estimate is often far off, because listings rarely say what a package includes.
 3. **Venue and catering overlap in Lahore.** Most halls sell food and hall together; the app splits them into two
    categories, and prices halls that do this from #2 rather than from their listed rent.
-4. **#3, #5, #6 and #7 have no real-data score**, because their test labels or inputs were never collected.
+4. **#3 and #5 have no real-data score**, because their test labels or inputs were never collected. #6's real score
+   rests on labels by the model's author; #7's is on planted copies of real photos.
 5. **Lighting has 3 vendors and no prices**, so its matches are weak and its range is configured, not learned.
 6. **Free hosting and a laptop LLM:** cold starts are slow; the assistant needs the laptop with Ollama running and
    reachable.

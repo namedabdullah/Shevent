@@ -3,9 +3,9 @@
     python -m shevent_ml.images.build              # data/processed/media.parquet + data/images -> image index
     python -m shevent_ml.images.build --no-clip    # hashes only (no torch needed)
 
-Writes data/processed/image_index.parquet (one row per media row: found, md5, phash, dhash, size, embedding_row)
-and image_embeddings.npy (row i is the CLIP embedding of the index row whose embedding_row is i). Images that are
-missing or unreadable stay in the index with found = False and the reason, so the collection can be fixed.
+Writes data/processed/image_index.parquet (one row per media row: found, md5, phash, phash_mirror, dhash, size,
+embedding_row) and image_embeddings.npy (row i is the CLIP embedding of the index row whose embedding_row is i). Images
+that are missing or unreadable stay in the index with found = False and the reason, so the collection can be fixed.
 """
 
 import argparse
@@ -20,7 +20,7 @@ import pandas as pd
 from shevent_ml.config import IMAGES_DIR, PROCESSED_DIR, load_config
 from shevent_ml.images.hashing import file_md5, open_image, perceptual_hashes
 
-INDEX_COLUMNS = ["found", "error", "md5", "phash", "dhash", "width", "height", "embedding_row"]
+INDEX_COLUMNS = ["found", "error", "md5", "phash", "phash_mirror", "dhash", "width", "height", "embedding_row"]
 
 
 def image_path(images_dir, vendor_id, file_name):
