@@ -160,6 +160,22 @@ def test_a_framed_or_mirrored_copy_still_matches():
     assert found == {("photo", "framed"), ("photo", "mirrored"), ("framed", "mirrored")}  # ...but is matched both ways
 
 
+def screenshot(photo, height=1100):
+    """A photo as a phone screenshot shows it: black bars above and below."""
+    canvas = Image.new("RGB", (photo.width, height), "black")
+    canvas.paste(photo, (0, (height - photo.height) // 2))
+    return canvas
+
+
+def test_screenshot_bars_are_trimmed_so_two_different_screenshots_dont_match():
+    # Lightened, so no edge of the photo itself is as dark as the bars (a photo whose edge is would lose a strip too).
+    a, b = (Image.blend(scene(s), Image.new("RGB", (480, 360), "white"), 0.3) for s in (11, 12))
+    phashes = [perceptual_hashes(im)["phash"] for im in (screenshot(a), screenshot(b), a)]
+    distance = hamming_matrix(phashes)
+    assert distance[0, 1] > 16  # different photos, whatever the bars
+    assert distance[0, 2] <= 4  # the same photo, with or without them
+
+
 def test_open_image_applies_exif_rotation(tmp_path):
     path = tmp_path / "rotated.jpg"
     exif = Image.Exif()

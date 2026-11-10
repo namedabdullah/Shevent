@@ -51,12 +51,35 @@ def test_details_carry_across_messages_and_the_reply_quotes_the_host():
     assert dropped == ["venue_type"]  # the model's "marquee" isn't in these messages
 
 
+@pytest.mark.parametrize(
+    "host, budget",
+    [
+        ("Concert for 2000 people in Gulberg on 18 December with Rs 1.5 crore", 15_000_000),  # en-18, model missed it
+        ("walima, 500 log, budget 30 lakh... actually make it 35 lakh", 3_500_000),  # the host's correction wins
+        ("mehndi for 300 guests, our budget is 2500000", 2_500_000),  # a bare number after "budget"
+        ("caterer at 2,500 per head, 300 guests in DHA", None),  # a per-head price isn't a budget
+        ("BBQ at 50k per head for 200 guests", None),
+        ("2000 people in Gulberg on 18 December", None),  # plain numbers aren't money
+    ],
+)
+def test_a_budget_the_model_missed_is_taken_from_the_hosts_words(host, budget):
+    plan, _ = ground({**READING, "budget_text": None}, host, TODAY, ALIASES)
+    assert plan.get("total_budget_pkr") == budget
+
+
+def test_a_budget_the_model_misread_is_replaced_by_the_hosts_own():
+    host = "Concert for 2000 people in Gulberg on 18 December with Rs 1.5 crore"
+    plan, dropped = ground({**READING, "budget_text": "Rs 1,500,000"}, host, TODAY, ALIASES)  # what the 3B model said
+    assert plan["total_budget_pkr"] == 15_000_000 and "total_budget_pkr" in dropped
+
+
 def test_values_the_host_did_not_write_are_dropped():
     guessed = {**READING, "guest_count": 250, "area": "Gulberg", "budget_text": "30 lakh", "event_date": "2026-10-01",
                "date_text": None}  # fmt: skip
     plan, dropped = ground(guessed, "walima for 300 guests in Defence, 25 lakh", TODAY, ALIASES)
-    assert "guest_count" not in plan and "total_budget_pkr" not in plan and "event_date" not in plan
-    assert plan["area"] == "DHA" and plan["event_type"] == "wedding_walima"  # what the host named, not the guesses
+    assert "guest_count" not in plan and "event_date" not in plan
+    # What the host named or wrote, not the guesses: Defence is DHA, the budget their 25 lakh, not the model's 30.
+    assert plan["area"] == "DHA" and plan["event_type"] == "wedding_walima" and plan["total_budget_pkr"] == 2_500_000
     assert sorted(dropped) == ["area", "event_date", "event_type", "guest_count", "total_budget_pkr", "venue_type"]
 
 

@@ -24,17 +24,18 @@ def open_image(path):
 
 
 def trim_frame(image, tolerance=24):
-    """The photo without a plain frame around it: a band of the corner colour on all four sides. A sky or a smooth
-    gradient touches one or two sides only, so the photo's own content stays; so does at least half the photo."""
+    """The photo without a plain frame around it: a band of the corner colour on two opposite sides at least, like a
+    white border or a phone screenshot's black bars above and below. A sky or a smooth gradient touches one side only,
+    so the photo's own content stays; so does at least a fifth of the picture."""
     background = Image.new(image.mode, image.size, image.getpixel((0, 0)))
     content = ImageChops.difference(image, background).convert("L").point(lambda v: 255 if v > tolerance else 0)
     box = content.getbbox()
     if not box:
         return image
     width, height = image.size
-    framed = box[0] > 0 and box[1] > 0 and box[2] < width and box[3] < height
+    framed = (box[1] > 0 and box[3] < height) or (box[0] > 0 and box[2] < width)
     kept = (box[2] - box[0]) * (box[3] - box[1])
-    return image.crop(box) if framed and kept >= 0.5 * width * height else image
+    return image.crop(box) if framed and kept >= 0.2 * width * height else image
 
 
 def perceptual_hashes(image):

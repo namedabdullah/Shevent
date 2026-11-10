@@ -45,10 +45,18 @@ code or echoed prompt text, and the fixed reply is sent instead.
 | Values the host never gave | 0 (model alone 14) | 0 (model alone 5) |
 | Estimate when the plan was complete | 100% | 100% |
 | Replies with a figure no tool gave | 0 | 0 |
-| Seconds per turn | 1.8 median, 2.5 max | |
+| Seconds per turn | 1.7 median, 3.1 max | 1.8 median, 2.4 max |
 
 With LLM-written replies, the checker kept 92-97% of them, but manual reading found false claims made with true
 figures (a share below the usual range called "60% more than usual"). That is why the server writes the replies.
+
+**Re-run on 11 Nov (final models):** the same results, after one fix. On the first re-run one tuning chat
+("Concert ... with Rs 1.5 crore") lost its budget: the model returned "Rs 1,500,000", converting the amount and getting
+it wrong by ten. The server rightly refused a figure the host never wrote, but then asked for a budget the host had
+given. It now takes the host's own amount in that case (one with a unit, or after Rs / PKR / budget; never a per-head
+price), and only when the model's figure is missing or refused. The holdout was scored again after this change:
+95%, the same one miss. GPU inference isn't perfectly repeatable even at temperature 0, so a borderline chat can flip
+between runs.
 
 ## Limitations
 

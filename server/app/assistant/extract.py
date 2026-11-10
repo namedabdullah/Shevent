@@ -12,9 +12,12 @@ from datetime import date, timedelta
 from shevent_ml.data.load import load_reference
 from shevent_ml.models.price_features import AREAS, CATEGORICAL, EVENT_TYPES
 
-from .figures import figures, normalize, parse_budget, parse_date
+from .figures import FIGURE, figures, normalize, parse_budget, parse_date
 
 REQUIRED = ["event_type", "guest_count", "area", "event_date", "total_budget_pkr"]
+# What marks a bare number as money, and a price as per head (see _stated_budget).
+MONEY_CUE = re.compile(r"\b(?:rs\.?|pkr|rupees?|budget(?: is| of)?)\s*$", re.I)
+PER_HEAD = re.compile(r"\s*(?:per|/|a|fi)\s*(?:head|person|guest|plate|banda)\b|\s*each\b", re.I)
 PLACES = [a for a in AREAS if a != "Other"]
 VENUE_TYPES = [v for v in CATEGORICAL["venue_type"] if v != "other"]
 MAX_DAYS_AHEAD = 3 * 365
@@ -191,11 +194,30 @@ def ground(raw, host, today, aliases):
 
     budget_text = raw.get("budget_text")
     budget = parse_budget(budget_text) if budget_text else None
-    if budget is not None:
-        keep("total_budget_pkr", budget, ("n", budget) in said)
-    elif budget_text:
-        dropped.append("total_budget_pkr")
+    if budget is not None and ("n", budget) in said:
+        plan["total_budget_pkr"] = budget
+    else:
+        if budget_text:  # the model's figure isn't the host's (it once turned "Rs 1.5 crore" into "Rs 1,500,000")
+            dropped.append("total_budget_pkr")
+        # The model missed or misread a budget the host wrote: take the host's own words.
+        if (stated := _stated_budget(host)) is not None:
+            plan["total_budget_pkr"] = stated
     return plan, dropped
+
+
+def _stated_budget(host):
+    """The host's last amount that reads as money: written with a unit (25 lakh, 1.5 crore, 85k) or after Rs, PKR or
+    "budget". The last, because hosts correct themselves; a per-head price ("2,500 per head") isn't a budget."""
+    text = normalize(host)
+    found = None
+    for match in FIGURE.finditer(text):
+        unit = (match[3] or "").lower()
+        if match[2] or unit in ("%", "percent"):
+            continue
+        cue = MONEY_CUE.search(text[max(0, match.start() - 12) : match.start()])
+        if (unit or cue) and not PER_HEAD.match(text[match.end() : match.end() + 16]):
+            found = parse_budget(match[0]) or found
+    return found
 
 
 def _named(text, words):
