@@ -3,9 +3,11 @@
 The product overview's §06 journey, run live on **https://shevent.vercel.app**: one host plans a 300-guest mehndi in
 Gulberg on Saturday 19 December with a budget of Rs 25 lakh, and a lighting vendor quotes for it. About 12 minutes.
 
-Every figure below is what the live system returned on 10 Nov 2026. The assistant runs at temperature 0 with a fixed
-seed, so the same messages give the same replies. If a figure differs on the day, the models or vendors changed; say
-what's on screen, not what's written here.
+Every figure below comes from the dataset v2 models (`alloc-v1-52d3ae4d`, `cost-v1-511086e1`) and the 327 collected
+vendors, as of 10 Nov 2026. The live site shows them once the model server has been restarted with those models and the
+vendor seed has been loaded. The assistant runs at temperature 0 with a fixed seed, so the same messages give the same
+replies. If a figure differs on the day, the models or vendors changed; say what's on screen, not what's written
+here.
 
 ## Setup
 
@@ -52,7 +54,7 @@ budget split I still need the date."
 **Do:** type `19 December, marquee mein` and press Enter.
 
 **Sees:** "Here is a budget split for a mehndi / mayun / dholki for 300 guests in Gulberg on Sat, 19 Dec 2026 with a
-budget of Rs 25 lakh. Catering gets Rs 11.08 lakh (44%), within what this usually costs; Venue gets Rs 4.91 lakh (20%),
+budget of Rs 25 lakh. Catering gets Rs 11.31 lakh (45%), within what this usually costs; Venue gets Rs 5.53 lakh (22%),
 within what this usually costs. It falls in peak wedding season, when prices run higher." and the split table.
 
 **Say:**
@@ -69,38 +71,43 @@ within what this usually costs. It falls in peak wedding season, when prices run
 
 **Sees:** "Mehndi / mayun / dholki in Gulberg", the six-way split, each category with the host's budget next to a
 typical low-high range and the label "AI estimate, not a vendor quote". Under **Why this split**: "Venue share is below a
-typical event's (20% vs 23%), mainly because of the event type" and "Decor share is above a typical event's (18% vs
+typical event's (22% vs 26%), mainly because of the event type" and "Decor share is above a typical event's (19% vs
 16%), mainly because of the event type".
 
 | Category | Budget | Typical range |
 |---|---|---|
-| Catering | Rs 11.08 lakh | Rs 5.99-18.35 lakh |
-| Venue | Rs 4.91 lakh | Rs 1.89-10.02 lakh |
-| Decor | Rs 4.56 lakh | Rs 1.21-9.44 lakh |
-| Photography | Rs 1.86 lakh | Rs 47,000-3.92 lakh |
-| DJ & sound | Rs 1.32 lakh | Rs 49,000-2.64 lakh |
-| Lighting | Rs 1.27 lakh | Rs 38,000-2.86 lakh |
+| Catering | Rs 11.31 lakh | Rs 4.51-22.32 lakh |
+| Venue | Rs 5.53 lakh | Rs 1.48-13.03 lakh |
+| Decor | Rs 4.83 lakh | Rs 91,000-11.35 lakh |
+| Lighting | Rs 1.46 lakh | Rs 30,000-3.6 lakh |
+| Photography | Rs 1.33 lakh | Rs 24,000-3.27 lakh |
+| DJ & sound | Rs 54,000 | Rs 14,000-1.27 lakh |
 
 **Say:**
 - #1 is a small neural network whose shares always add to 100%, with guardrails so no category drops below a
   realistic minimum. The explanations are exact Shapley values, not guesses.
 - #2 gives a range, not a single number: three LightGBM quantile models, calibrated to hold 80% of prices.
-- **Be honest here:** we collected 34 real prices, so these are demonstrations of the method, not market figures. On
-  the 12 real test prices the range held 42%, short of the 80% target; more real prices is the fix. The label on every
-  amount says so.
+- The ranges come from 402 real Lahore prices the team collected. On 46 prices held out from training, the range held
+  91% of them (the target is 80%), and the likely price beat a simple median lookup (72% error against 92%).
+- **Be honest here:** the ranges are wide, because decor and photography listings rarely say what a package includes,
+  and the split still learns from synthetic events: no host survey or planner interviews were collected. The label on
+  every amount says "AI estimate, not a vendor quote".
 
 ### 3. Packages (#4): about 1 minute
 
 **Do:** on the plan, click **Compare ready-made vendor packages**.
 
-**Sees:** Cheapest (about Rs 8.18 lakh), Balanced and Highest quality (about Rs 13.55 lakh each), all within Rs 25 lakh,
-each with a vendor per category and price ranges. A note that photography couldn't be filled.
+**Sees:** Cheapest (about Rs 5.28 lakh), Balanced and Highest quality (about Rs 15.56 lakh each), all within Rs 25
+lakh, each with a vendor in all six categories and price ranges. Items marked as estimates are vendors without a listed
+price, priced by #2.
 
 **Say:**
 - One tap gives three complete line-ups. Each is an exact constraint solve (Google OR-Tools): one vendor per category,
   total within budget, vendors that serve the area and can take 300 guests. Each solve takes under half a second.
 - Balanced and highest quality cost the same today because no vendor ratings have been collected yet, so "quality"
-  can't separate them. Photography is empty because none of the 156 collected vendors are photographers.
+  can't separate them.
+- A price the vendor listed is shown as theirs only when we trust it: a hall whose rent is an extra to its menu, or a
+  vague directory range, is priced by the model instead.
 
 ### 4. Matches (#3) and the inquiry: about 1.5 minutes
 
@@ -125,16 +132,16 @@ each with a vendor per category and price ranges. A note that photography couldn
 
 **Say:** the vendor never sees the host's budget, so it can't anchor the quote.
 
-**Do:** **Your price** `3 lakh`, **Price is** per event, **Included** `Fairy lights, Generator fuel`. Wait for the
+**Do:** **Your price** `4 lakh`, **Price is** per event, **Included** `Fairy lights, Generator fuel`. Wait for the
 preview.
 
-**Sees:** in **What the host will see**: "Above the typical range (5% above)", typical Rs 37,800-2.86 lakh, and "Ask the
-vendor about: Setup and teardown, Transport".
+**Sees:** in **What the host will see**: "Above the typical range (11% above)", typical Rs 30,200-3.6 lakh, and "Ask
+the vendor about: Setup and teardown, Transport".
 
 **Say:**
 - The vendor sees exactly what the host will see before sending. Wording is guidance, never an accusation.
-- To show it moving, change the price: `2.4 lakh` turns it green (within the range), `4 lakh` red (well above). Set it
-  back to `3 lakh`.
+- To show it moving, change the price: `3 lakh` turns it green (within the range), `5 lakh` red (well above). Set it
+  back to `4 lakh`.
 
 **Do:** **Send quote**.
 
@@ -142,18 +149,18 @@ vendor about: Setup and teardown, Transport".
 
 **Do:** host window, on the inquiry.
 
-**Sees:** the quote with "Above the typical range (5% above)", the range, "Ask the vendor about: Setup and teardown,
+**Sees:** the quote with "Above the typical range (11% above)", the range, "Ask the vendor about: Setup and teardown,
 Transport", "AI estimate, not a vendor quote" and "Payment is simulated: no money is charged."
 
 **Do:** host types `Is setup and teardown after midnight included?`. Vendor window: reply
-`Yes, setup and teardown are included.` (it appears live on the host side). Host clicks **Book for Rs 300,000**.
+`Yes, setup and teardown are included.` (it appears live on the host side). Host clicks **Book for Rs 400,000**.
 
 **Sees:** the booking page, "Simulated: no money was charged". The vendor's inquiry now says "The host booked this
 quote".
 
 ### 7. Feedback: about 1 minute
 
-**Do:** back to the plan → **Mark the event as completed** → **Tell us how it went**. Enter Lighting `3 lakh`,
+**Do:** back to the plan → **Mark the event as completed** → **Tell us how it went**. Enter Lighting `4 lakh`,
 Catering `11 lakh`, guests `280`, a rating, then **Send feedback**.
 
 **Sees:** "Thank you. Your feedback helps make the estimates more accurate."
@@ -171,7 +178,7 @@ open-weight model on this laptop.
 
 | Question | Answer |
 |---|---|
-| How good are the price ranges? | Honest answer: not good enough yet. 34 real prices; 42% coverage on 12 real test prices against an 80% target. The method is calibrated; it needs data. See `docs/evaluation_report.md` |
+| How good are the price ranges? | They hold real prices: 91% of 46 held-out real prices fall in the range (target 80%), and the likely price beats a median lookup (72% error against 92%). They're wide, especially for decor and photography, whose listings rarely say what's included. See `docs/evaluation_report.md` |
 | Can the assistant make up prices? | No. The model only reads; the server keeps only what the host wrote and writes the reply from the models' output. 0 invented values or figures on 71 test chats |
 | Why not let the LLM write the reply? | We tried. Every figure passed the check, but it still made false claims with true figures ("60% more than usual" for an amount below the usual range). So the server writes it |
 | What does it cost to run? | Nothing: Vercel Hobby, Supabase free, the model server and Ollama on a laptop through a free Cloudflare tunnel |

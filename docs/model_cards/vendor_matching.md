@@ -24,7 +24,7 @@ Not trained: a hand-weighted content score, chosen because there were no interac
 
 | Part | Weight | Scored by |
 |---|---|---|
-| Price fit | 0.30 | Likely price (listed, else #2 for the tier) against the category budget: full fit up to the budget, zero at 60% over, 0.8 when far cheaper |
+| Price fit | 0.30 | Likely price (listed, else #2 for the tier) against the category budget: full fit up to the budget, zero at 60% over, 0.8 when far cheaper. A hall that sells the hall with a per-head menu has no listed venue price (its listed rent is an extra), so #2 prices it |
 | Location | 0.25 | 1.0 serves the area, 0.5 unknown, 0.1 elsewhere |
 | Capacity | 0.15 | Over the vendor's maximum: excluded; under its minimum: 0.3 |
 | Experience | 0.10 | Has done this event type |
@@ -35,15 +35,15 @@ which is too small to lift a poor fit above a good one.
 
 ## Evaluation
 
-**Not scored yet.** The test set is built: 12 queries × 20 candidates (`data/splits/matching_candidates.csv`), to be
-rated 0-3 by the data lead. Then NDCG@10 and Precision@5 are compared with sort-by-rating. Unit tests cover capacity
+**Not scored yet.** The test set (12 queries × 20 candidates, `data/splits/matching_candidates.csv`) needs rebuilding
+on the 327 vendors of dataset v2 (`python -m shevent_ml.eval.matching_set`), then rating 0-3 by the data lead. Then NDCG@10 and Precision@5 are compared with sort-by-rating. Unit tests cover capacity
 exclusion, sponsored separation, reasons and the new-vendor boost.
 
 ## Limitations
 
 - The weights are judgement, not learned.
-- The 156 collected vendors have no ratings, capacities, tiers or event types, so ranking rests mostly on area and
-  price; photography has no vendors.
+- Of the 327 collected vendors, 197 list event types and 29 a capacity; none has a tier or a rating (the 308 collected
+  reviews aren't used: 97% are 5 stars). Ranking rests mostly on area, price and event type. Lighting has 3 vendors.
 - The next version (after the capstone) is a hybrid recommender trained on views, saves, inquiries and bookings.
 
 ## Licences

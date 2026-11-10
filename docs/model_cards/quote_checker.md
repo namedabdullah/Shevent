@@ -30,8 +30,9 @@ Tells a host how a vendor's quote compares with typical prices for the same even
 
 ## Evaluation
 
-**Synthetic only.** Within the tier, a doubled price is flagged 87% of the time (39% across all tiers, where the range
-is about 5× wide). Typical prices are green about 90% of the time.
+**Synthetic only, measured with #2 v1.** Within the tier, a doubled price is flagged 87% of the time (39% across all
+tiers, where the range is about 5× wide). Typical prices are green about 90% of the time. #2 v2's ranges are wider
+(they hold 91% of real prices), so fewer quotes will be flagged.
 
 **Real test not run:** no scenario quotes were collected. Ready to run: `--sheet` writes a blind labelling sheet; the
 data lead labels level and missing items; scoring reports level accuracy and quadratic weighted kappa against the
@@ -39,8 +40,7 @@ median-lookup rule and "always green", and checklist precision and recall agains
 
 ## Limitations
 
-- Inherits #2's too-narrow ranges on real prices, so it will show yellow or red more often than it should until #2 is
-  recalibrated on real prices.
+- Inherits #2's ranges, which since v2 are calibrated on real prices but wide, so it errs towards green.
 - Keyword rules miss phrasings they don't list, especially in Urdu script.
 - A green label means "within typical prices", not that the vendor is good.
 

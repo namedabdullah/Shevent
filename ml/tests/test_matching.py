@@ -80,6 +80,27 @@ def test_listed_prices_skip_bundles_and_prices_for_other_guest_counts():
     assert listed_prices(prices, "venue", guests=500).loc["C", "flat"] == 90000
 
 
+def test_a_halls_rent_is_not_its_price_when_it_sells_the_hall_with_a_menu():
+    prices = pd.DataFrame(
+        [
+            price("HALL", flat=50000, category="venue"),
+            price("HALL", per_head=2600, combo=True, category="venue"),
+            price("LAWN", flat=250000, category="venue"),
+        ]
+    )
+    listed = listed_prices(prices, "venue")
+    assert "HALL" not in listed.index and listed.loc["LAWN", "flat"] == 250000
+
+
+def test_a_low_confidence_price_is_not_shown_as_the_vendors_own():
+    prices = pd.DataFrame(
+        [price("DJ-A", flat=2000, category="dj_sound"), price("DJ-B", flat=40000, category="dj_sound")]
+    )
+    prices["confidence"] = ["low", "medium"]  # DJ-A: a directory range with no unit stated
+
+    assert listed_prices(prices, "dj_sound").index.tolist() == ["DJ-B"]
+
+
 def test_parts_and_reasons():
     vendors = pd.DataFrame(
         [

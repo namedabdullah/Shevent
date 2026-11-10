@@ -110,3 +110,40 @@ def test_prices_without_a_tier_set_the_mid_price_and_bundles_are_ignored():
     assert base["decor"]["premium"] == pytest.approx(30000 * configured["premium"] / configured["mid"])
     assert fitted == ["decor.mid (5 prices without a tier; budget and premium keep the config's ratio)"]
     assert base["catering"] == SETTINGS["base_prices"]["catering"]  # no catering prices: unchanged
+
+
+def test_venue_keeps_its_configured_price_because_listed_hall_rents_are_extras():
+    prices = pd.DataFrame(
+        {
+            "category": ["venue"] * 6,
+            "price_tier": [""] * 6,
+            "price_basis": ["flat"] * 6,
+            "area": ["Johar Town"] * 6,
+            "mid_pkr_adj": [40000, 45000, 50000, 55000, 60000, 65000],
+        }
+    )
+    base, fitted = fit_base_prices(prices, SETTINGS, min_prices=5)
+    assert base["venue"] == SETTINGS["base_prices"]["venue"] and fitted == []
+
+
+def test_fitting_uses_only_the_training_prices(tmp_path, monkeypatch):
+    import shevent_ml.synthetic.generate as generate_module
+
+    prices = pd.DataFrame(
+        {
+            "vendor_id": [f"DEC-{i}" for i in range(6)],
+            "category": ["decor"] * 6,
+            "price_tier": [""] * 6,
+            "price_basis": ["flat"] * 6,
+            "area": ["Johar Town"] * 6,
+            "mid_pkr_adj": [20000, 30000, 30000, 40000, 50000, 9_000_000],
+            "is_combo": [False] * 6,
+        }
+    )
+    prices.to_parquet(tmp_path / "prices.parquet")
+    split = tmp_path / "test_split.json"
+    split.write_text(json.dumps({"test_vendors": ["DEC-5"]}))
+    monkeypatch.setattr(generate_module, "SPLIT_FILE", split)
+    monkeypatch.setattr(generate_module, "load_split", lambda: json.loads(split.read_text()))
+    _, manifest = write(50, tmp_path, seed=1, fit_prices=True, settings=SETTINGS)
+    assert manifest["base_prices"]["decor"]["mid"] == 30000  # the held-out 9,000,000 never counts

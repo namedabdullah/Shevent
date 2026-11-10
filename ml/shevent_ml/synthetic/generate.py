@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 
 from shevent_ml.config import CATEGORIES, PROCESSED_DIR, SEED, load_config
+from shevent_ml.data.split import SPLIT_FILE, is_test, load_split
 from shevent_ml.features.calendar import calendar_features
 from shevent_ml.features.events import OUTDOOR_VENUES
 
@@ -60,7 +61,7 @@ def fit_base_prices(prices, settings, min_prices=5):
     Only the basis the generator uses is fitted (per head for catering, one price for the rest), and bundled
     packages are left out. A category x tier cell uses its tier's prices. A category with no fitted tier but enough
     prices without a tier gets their median as its mid price, and its budget and premium prices keep their ratio to
-    mid from the config. Returns the new table and the list of what was fitted.
+    mid from the config. Categories in fit_skip keep the config's prices. Returns the new table and what was fitted.
     """
     base = {cat: dict(tiers) for cat, tiers in settings["base_prices"].items()}
     standalone = prices[~prices["is_combo"].fillna(False).astype(bool)] if "is_combo" in prices else prices
@@ -68,13 +69,15 @@ def fit_base_prices(prices, settings, min_prices=5):
     rows = standalone.assign(reference_price=standalone["mid_pkr_adj"] / area_price)
     rows = rows[rows["price_basis"] == rows["category"].map(lambda c: "per_head" if c in PER_HEAD else "flat")]
     fitted = []
+    skip = set(settings.get("fit_skip", []))
     tier = rows["price_tier"].fillna("")
     for (category, cell_tier), group in rows[tier.isin(TIERS)].groupby(["category", "price_tier"]):
-        if category in base and len(group) >= min_prices:
+        if category in base and category not in skip and len(group) >= min_prices:
             base[category][cell_tier] = float(group["reference_price"].median())
             fitted.append(f"{category}.{cell_tier} ({len(group)} prices)")
     for category, group in rows[~tier.isin(TIERS)].groupby("category"):
-        if category not in base or any(f.startswith(f"{category}.") for f in fitted) or len(group) < min_prices:
+        already = any(f.startswith(f"{category}.") for f in fitted)
+        if category not in base or category in skip or already or len(group) < min_prices:
             continue
         configured = settings["base_prices"][category]
         mid = float(group["reference_price"].median())
@@ -206,6 +209,9 @@ def write(n, out_dir=PROCESSED_DIR, seed=SEED, fit_prices=False, settings=None):
     base_prices, fitted = settings["base_prices"], []
     if fit_prices:
         prices = pd.read_parquet(out_dir / "prices.parquet")
+        if SPLIT_FILE.exists():
+            # Training prices only: the models learn from this data, and they must never see the test prices.
+            prices = prices[~is_test(prices, load_split())]
         base_prices, fitted = fit_base_prices(prices, settings)
     events, services = generate(n, settings, seed, base_prices)
 
@@ -231,7 +237,7 @@ def main():
     parser.add_argument("--n", type=int, default=20_000, help="number of events")
     parser.add_argument("--out", type=Path, default=PROCESSED_DIR, help="where to write the parquet tables")
     parser.add_argument("--seed", type=int, default=SEED)
-    parser.add_argument("--fit-prices", action="store_true", help="fit base prices from <out>/prices.parquet")
+    parser.add_argument("--fit-prices", action="store_true", help="fit base prices from the training prices")
     args = parser.parse_args()
 
     sys.stdout.reconfigure(encoding="utf-8")

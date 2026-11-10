@@ -35,18 +35,21 @@ An optimiser, not a learned model: one OR-Tools CP-SAT solve per package.
 
 | Measure | CP-SAT | Greedy |
 |---|---|---|
-| A package within budget, at 70% of the budget | 69% of events | 64% |
-| Mean match score | 0.869 | 0.813 |
+| A package within budget, at 70% of the budget | 68% of events | 63% |
+| Mean match score, at 70% of the budget | 0.868 | 0.815 |
 | Over budget | Never | Possible |
-| Slowest solve | 0.46 s | |
+| Request time, 95th percentile | 0.37 s | |
+
+Measured 10 Nov with #2 v2. One synthetic request took 2.1 s to solve, over the 1 s target. On 9 events with the 327
+real vendors, every event got three distinct packages within budget and no category was left empty.
 
 The guarantees (within budget, distinct, available, serves the area, capacity) are unit tested.
 
 ## Limitations
 
 - Package quality is only as good as #3's scores and #2's estimated prices.
-- On the collected vendors, photography can't be filled, and with no ratings "highest quality" is close to
-  "balanced".
+- With no vendor ratings, "highest quality" is close to "balanced". Lighting has only 3 vendors.
+- Halls that sell the hall with a menu are priced by #2, not by their listed rent (an extra).
 - Availability is only what the app knows (bookings in Shevent), not vendors' real calendars.
 
 ## Licences

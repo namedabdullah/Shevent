@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | `cost-v1-97907a1e` (`ml/artifacts/price_estimator/`) |
+| Version | `cost-v1-511086e1` (`ml/artifacts/price_estimator/`), trained 10 Nov on dataset v2 |
 | Code | `ml/shevent_ml/models/price_estimator.py`, `price_features.py`, settings in `ml/configs/price_estimator.yaml` |
 | Served by | `POST /v1/estimate`; also used by #1's guardrails, #3's price fit, #4's missing prices and #5 |
 | Owner | ML lead |
@@ -27,27 +27,35 @@ log scale in this version) so it holds 80% of prices the models didn't train on.
 
 ## Training data
 
-Synthetic events (`synthetic_hash 9a2fd6c24dd6`, placeholder effects) plus the real training prices from dataset v1
-(`dataset_hash b8264320b0bf`: 34 cleaned prices, inflation-adjusted to October 2026). Real rows weigh 5× synthetic ones.
-**Calibration used 6,021 synthetic rows**, because there were fewer than the 30 real prices calibration needs.
+Synthetic events (`synthetic_hash f52dafdf8047`) plus the real training prices from dataset v2 (`dataset_hash
+ba647660700b`: 402 prices from 327 vendors, inflation-adjusted to October 2026). Hall menus and bundled packages are left
+out, which leaves 221 standalone prices: 175 for training and 46 held out with their 36 vendors. Real rows weigh 5×
+synthetic ones. The synthetic events' base prices for catering, decor, DJ & sound and photography are the medians of
+the real training prices; venue and lighting keep configured prices (venue because listed hall rents are extras to a
+per-head menu, lighting because there are no prices). **Calibration used 44 real prices** from a quarter of the training
+vendors, held out of the fit.
 
 ## Evaluation
 
 | Rows | Model | MAPE | Pinball 10/50/90% (PKR) | Range holds |
 |---|---|---|---|---|
-| 12 real test prices | This model | 0.83 | 7,138 / 24,693 / 35,670 | 42% |
-| 12 real test prices | Median lookup | 0.87 | 7,655 / 27,035 / 45,583 | 33% |
-| 5,979 synthetic held-out | This model | 0.39 | 8,406 / 27,124 / 16,992 | 81% |
+| 46 real test prices | This model | 72% | 11,374 / 39,902 / 47,972 | 91% |
+| 46 real test prices | Median lookup | 92% | 13,127 / 43,159 / 39,914 | 76% |
+| 5,979 synthetic held-out | This model | 39% | 8,073 / 23,755 / 17,093 | 95% |
 
-It beats the median lookup on every measure, but 12 prices is a small test. The scenario-quote test set is empty (no
-quotes collected).
+It beats the median lookup on MAPE and the low and middle quantiles; its range is wider than the 80% target (the
+lookup's has the right width but is centred badly). By category: catering 24% MAPE (5 prices), venue 37% (14), decor
+93% (17), photography 109% (7), DJ & sound 111% (3). The scenario-quote test set is empty (no quotes collected). v1, on
+34 prices, had MAPE 83% and a range that held only 42% of 12 real test prices.
 
 ## Limitations
 
-- **The range is too narrow on real prices** (42% against a target of 80%), because it was calibrated on synthetic
-  prices that vary less than real Lahore prices. This is the system's biggest weakness: every range in the app inherits
-  it.
-- 34 real prices across 6 categories and 30 areas leave most combinations with no real data.
+- **The range is wide**: it holds 91% of real prices against an 80% target. That's the safe side for a price guide,
+  but a host sees a broad low-high spread, especially for decor and photography.
+- Decor, photography and DJ & sound listings rarely say what a package includes, so one estimate can miss by the size of
+  the price itself.
+- Lighting has no real prices; venue's synthetic base price is configured, not fitted.
+- 221 standalone prices across 6 categories and 30 areas still leave many combinations with no real data.
 - Prices are adjusted with a fallback 5% yearly inflation rate where PBS CPI figures aren't in the config.
 - Outputs are estimates, labelled "AI estimate, not a vendor quote" with the range always shown.
 

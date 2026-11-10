@@ -23,6 +23,11 @@ tiers: {budget: 0.35, mid: 0.45, premium: 0.20}
 # Price of each category for reference_guests guests in an area with multiplier 1.0, on an off-peak weekday.
 # Catering is per head (PKR per guest); the others are one price for the event.
 reference_guests: 300
+# Categories --fit-prices leaves at the values below. Venue: Lahore halls mostly charge a per-head menu that includes
+# the hall, and the hall rents they list are "starting from" extras, often waived above a guest count (the 2026-11
+# dataset: rent median ~Rs 50,000, menus with the hall Rs ~400 a head above food-only catering). Fitting venue from
+# those rents would price a whole venue at a fraction of its cost.
+fit_skip: [venue]
 base_prices:
   catering: {budget: 1500, mid: 2400, premium: 4000}
   venue: {budget: 150000, mid: 300000, premium: 650000}

@@ -57,7 +57,16 @@ def listed_prices(prices, category, guests=None, value="mid_pkr_adj"):
     """
     if prices is None or prices.empty:
         return pd.DataFrame(columns=["per_head", "flat"], dtype=float)
-    rows = prices[(prices["category"] == category) & ~prices["is_combo"].fillna(False).astype(bool)]
+    combo = prices["is_combo"].fillna(False).astype(bool)
+    rows = prices[(prices["category"] == category) & ~combo]
+    if "confidence" in rows:
+        # Hosts see a listed price as the vendor's own. A low-confidence one (old, unit or scope unclear) isn't shown
+        # as that; the vendor is priced by #2 like any vendor without a listed price.
+        rows = rows[rows["confidence"] != "low"]
+    if category == "venue":
+        # A hall that sells a per-head menu with the hall included lists its rent as an extra (often waived for big
+        # events), not as what the venue costs, so it gets no listed price.
+        rows = rows[~rows["vendor_id"].isin(prices.loc[combo & (prices["category"] == "venue"), "vendor_id"])]
     if guests is not None:
         low, high = pd.to_numeric(rows["guest_min"], errors="coerce"), pd.to_numeric(rows["guest_max"], errors="coerce")
         rows = rows[(low.isna() | (low <= guests)) & (high.isna() | (high >= guests))]
