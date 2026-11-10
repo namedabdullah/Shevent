@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | Rules in `ml/shevent_ml/images/hashing.py` and `duplicates.py`, thresholds in `ml/configs/images.yaml` |
+| Version | Rules in `ml/shevent_ml/images/hashing.py` and `duplicates.py`, thresholds and the CLIP model in `ml/configs/images.yaml` |
 | Code | `ml/shevent_ml/images/` (`download.py`, `build.py`, `hashing.py`, `planted.py`, `duplicates.py`) |
 | Served by | Not yet (`/v1/portfolio/check` is in the API contract; the apps don't show it) |
 | Owner | ML lead |
@@ -10,19 +10,20 @@
 ## What it does
 
 Finds a vendor's portfolio photo that is a copy of another photo, even when it has been resized, recompressed,
-colour-filtered, turned grey, watermarked, framed or mirrored to hide that. The planned second half, style tags with
-CLIP ("floral stage", "fairy lights"), isn't built: its 600 MB model didn't download on the available connection.
+colour-filtered, turned grey, watermarked, framed, mirrored or cropped to hide that. The planned second half, style
+tags with CLIP ("floral stage", "fairy lights"), isn't built yet, though the CLIP model and embeddings now are.
 
 ## Method
 
-Not trained: perceptual hashing, tuned on known disguises.
+Not trained: two finders, each catching what the other misses. A pair is flagged when either matches.
 
 1. **MD5** (the baseline) matches byte-identical files only.
-2. **pHash:** a 64-bit fingerprint of what the photo looks like at low resolution. Two photos within 10 bits are a
-   likely copy.
-3. **Frames:** a plain band of one colour on all four sides is trimmed before hashing. Only all four sides count, so a
-   sky or a gradient along one edge isn't cut.
-4. **Mirror images:** each photo is also hashed mirrored, and a pair matches if either orientation does.
+2. **pHash:** a 64-bit fingerprint of what the photo looks like at low resolution; two photos within 10 bits are a
+   likely copy. Before hashing, a plain band of one colour on two opposite sides (a white border, a phone screenshot's
+   black bars) is trimmed; a band on one side only, like a sky, is left. Each photo is also hashed mirrored, and a
+   pair matches if either orientation does.
+3. **CLIP:** OpenCLIP ViT-B/32 image embeddings; a cosine similarity of 0.92 or more is a likely copy. It survives
+   crops, which change pHash's low-resolution picture.
 
 ## Data
 
@@ -38,26 +39,37 @@ and a "repost" that combines crop, filter and watermark. 900 copies in all.
 | Finder | Precision | Recall | Border | Colour | Crop | Grey | JPEG | Mirror | Repost | Resize | Watermark |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | MD5 (baseline) | n/a | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% | 0% |
-| pHash, plain | 100% | 56% | 0% | 100% | 2% | 100% | 100% | 0% | 1% | 100% | 100% |
-| **pHash + frame trim + mirror** | **100%** | **78%** | 99% | 100% | 2% | 100% | 100% | 100% | 1% | 100% | 99% |
+| pHash, plain (first run) | 100% | 56% | 0% | 100% | 2% | 100% | 100% | 0% | 1% | 100% | 100% |
+| pHash + trimming + mirror | 100% | 77% | 92% | 100% | 2% | 100% | 100% | 100% | 1% | 100% | 97% |
+| CLIP >= 0.92 | 100% | 56% | 14% | 90% | 61% | 2% | 94% | 90% | 5% | 89% | 59% |
+| **pHash or CLIP** | **100%** | **85%** | 94% | 100% | 62% | 100% | 100% | 100% | 6% | 100% | 100% |
 
 Recall is per planted copy (was it paired with the photo it came from); precision is over flagged pairs that involve a
-planted copy, the only ones with a known answer. The frame and mirror steps were added after seeing the plain pHash
-misses on this set; they target disguises named in the plan, not anything particular to these photos.
+planted copy, the only ones with a known answer. The trimming and mirror steps were added after seeing the plain pHash
+misses on this set; they target disguises named in the plan. The thresholds (10 bits, 0.92) are the configured
+starting values, not tuned on this set.
 
-**On the real collection** it flags 10 pairs for a person to check, three of them across vendors:
+**On the real collection** it flags 14 pairs for a person to check. Checked by eye where it mattered:
 
-- a caterer and a venue showing three byte-identical photos (the data lead had noted them);
-- a photographer and a venue showing the same photo in different files, which MD5 couldn't match: the venue may be
-  showing the photographer's work, credited or not.
+- **3 across vendors, all true:** a caterer and a venue showing the same three photos, byte for byte (the data lead
+  had noted them).
+- **5 within one vendor, true:** the same photo posted twice in one gallery.
+- **6 within one vendor, found by CLIP alone, not copies:** of the two looked at, one is two angles of the same hall
+  and the other two frames of the same moment. CLIP at 0.92 means "same scene", which a photographer's own burst or a
+  venue's several angles also are.
+
+So 8 of the 14 are real copies. An earlier version also flagged a bride's portrait and a stage as a cross-vendor match:
+both were phone screenshots, and pHash saw mostly the black bars. Trimming bars on two opposite sides removed that
+false alarm (the two now hash 32 bits apart). In the app, only cross-vendor matches would be worth showing.
 
 ## Limitations
 
-- **Crops and reposts are missed** (1-2%): a crop changes the low-resolution picture. CLIP embeddings would catch them.
+- **Reposts (crop + filter + watermark together) are still missed** (6%).
+- **CLIP's real precision is lower than on the planted set:** it also matches different photos of the same scene.
 - A match means "these look like the same photo", not "this vendor copied": a venue may legitimately show a
   photographer's photo of an event held there. Matches go to a person to check, never to an automatic penalty.
-- Two different photos of the same plain stage could hash close; precision on the planted set (100%) doesn't prove
-  that can't happen on real galleries.
+- A photo whose own edge is as dark as screenshot bars (or as light as a white frame) can lose a strip of itself when
+  trimmed.
 
 ## Licences
 
@@ -65,13 +77,14 @@ misses on this set; they target disguises named in the plan, not anything partic
 |---|---|
 | imagehash | BSD-2-Clause |
 | Pillow | HPND |
+| OpenCLIP code / ViT-B-32 `laion2b_s34b_b79k` weights | MIT / MIT (trained on LAION-2B) |
 | Portfolio photos | Public vendor galleries; internal testing only, never redistributed |
 
 ## Reproduce
 
 ```
 cd ml && python -m shevent_ml.images.download
-cd ml && python -m shevent_ml.images.build --no-clip
-cd ml && python -m shevent_ml.images.planted --no-clip
+cd ml && python -m shevent_ml.images.build       # --no-clip for hashes only
+cd ml && python -m shevent_ml.images.planted
 cd ml && python -m shevent_ml.images.duplicates
 ```

@@ -19,7 +19,7 @@ NETSOL AI/ML capstone, November 2026. Built entirely on free tools and open-weig
 | 4 | Package Builder | Three complete vendor line-ups within the budget (OR-Tools CP-SAT) | Never over budget; beats a greedy baseline at tight budgets |
 | 5 | Quote Fairness Checker | Green / amber / red against the typical range, plus what to ask about | Not scored (no real quotes collected) |
 | 6 | Review Insights | Praise and complaints per aspect in reviews, in three languages | 150 real reviews: macro-F1 0.436 vs 0.424; finds 13 of 17 complaints vs 7 |
-| 7 | Verified Portfolios | Finds reused portfolio photos, even resized, filtered, framed or mirrored | 900 planted copies: 78% found at 100% precision vs 0% for exact matching |
+| 7 | Verified Portfolios | Finds reused portfolio photos, even resized, filtered, framed, mirrored or cropped | 900 planted copies: 85% found at 100% precision vs 0% for exact matching |
 | 8 | Planning Assistant | Chat in English, Roman Urdu or Urdu; a local LLM reads, the server answers from #1 and #2 | 95% of holdout chats read right; 0 invented values or figures |
 
 Every number, baseline and caveat is in the [evaluation report](../docs/evaluation_report.md). The honest summary:

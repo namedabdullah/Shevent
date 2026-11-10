@@ -120,9 +120,13 @@ def evaluate(index, embeddings, planted, planted_embeddings, settings=None):
         ),
     }
     if vectors is not None:
-        finders[f"clip >= {settings['clip_min_similarity']}"] = clip_pairs(
-            ids, vectors, settings["clip_min_similarity"]
+        phash, clip = (
+            finders[f"phash <= {settings['phash_max_distance']}"],
+            clip_pairs(ids, vectors, settings["clip_min_similarity"]),
         )
+        finders[f"clip >= {settings['clip_min_similarity']}"] = clip
+        # Each catches what the other misses: pHash survives filters and frames, CLIP survives crops.
+        finders["phash or clip"] = phash | clip
     return {name: score(found, photos) for name, found in finders.items()}
 
 

@@ -137,7 +137,7 @@ def load_reference():
         },
         "areas": set(areas["area"]),
         "core_areas": list(dict.fromkeys(areas.loc[areas["core"] == "yes", "area"])),
-        "area_aliases": {a.lower(): c for a, c in zip(areas["alias"], areas["area"])},
+        "area_aliases": {a.lower(): c for a, c in zip(areas["alias"], areas["area"], strict=True)},
         "vocab": vocab.groupby("field")["value"].apply(set).to_dict(),
         "scenarios": set(scenarios["scenario_id"]),
     }
@@ -191,7 +191,8 @@ def check_common(table, df, spec, ref, issues):
         allowed = ref["vocab"].get(field, set())
         for index, value in df[col].items():
             if value and value not in allowed:
-                issues.error(table, sheet_row(index), col, f"'{value}' not allowed; use one of: {', '.join(sorted(allowed))}")
+                options = ", ".join(sorted(allowed))
+                issues.error(table, sheet_row(index), col, f"'{value}' not allowed; use one of: {options}")
 
     for col, field in spec["list_enums"].items():
         if col not in df.columns:
@@ -210,7 +211,8 @@ def check_common(table, df, spec, ref, issues):
                 continue
             number = pd.to_numeric(value, errors="coerce")
             if pd.isna(number):
-                issues.error(table, sheet_row(index), col, f"'{value}' is not a plain number (no commas, 'Rs', 'k' or 'lakh')")
+                message = f"'{value}' is not a plain number (no commas, 'Rs', 'k' or 'lakh')"
+                issues.error(table, sheet_row(index), col, message)
             elif number < low or (high is not None and number > high):
                 issues.error(table, sheet_row(index), col, f"{value} is outside the valid range")
 
@@ -230,12 +232,13 @@ def check_common(table, df, spec, ref, issues):
     for col in df.columns:
         for index, value in df[col].items():
             if value and PHONE_PATTERN.search(value):
-                issues.error(table, sheet_row(index), col, "looks like a phone number; move it to the private contacts sheet")
+                message = "looks like a phone number; move it to the private contacts sheet"
+                issues.error(table, sheet_row(index), col, message)
 
 
 def check_vendor_link(table, df, vendors, issues):
     """Every row must point at an existing vendor; returns that vendor's category per row."""
-    known = dict(zip(vendors["vendor_id"], vendors["category"])) if vendors is not None else {}
+    known = dict(zip(vendors["vendor_id"], vendors["category"], strict=True)) if vendors is not None else {}
     for index, vendor_id in df["vendor_id"].items():
         if vendor_id and vendor_id not in known:
             issues.error(table, sheet_row(index), "vendor_id", f"'{vendor_id}' not found in vendors")
@@ -263,7 +266,8 @@ def check_vendors(df, ref, issues):
         if category:
             info = ref["categories"][category]
             if row["vendor_id"] and not row["vendor_id"].startswith(info["prefix"] + "-"):
-                issues.error(table, sheet_row(index), "vendor_id", f"{category} vendors use the '{info['prefix']}-' prefix")
+                message = f"{category} vendors use the '{info['prefix']}-' prefix"
+                issues.error(table, sheet_row(index), "vendor_id", message)
             if row.get("sub_type") and row["sub_type"] not in info["sub_types"]:
                 issues.error(table, sheet_row(index), "sub_type", f"'{row['sub_type']}' isn't a {category} sub-type")
         if row.get("base_area"):
@@ -308,7 +312,8 @@ def check_quotes(df, vendors, ref, issues):
     check_vendor_link(table, df, vendors, issues)
     for index, row in df.iterrows():
         if row["scenario_id"] and row["scenario_id"] not in ref["scenarios"]:
-            issues.error(table, sheet_row(index), "scenario_id", f"'{row['scenario_id']}' must be one of {sorted(ref['scenarios'])}")
+            message = f"'{row['scenario_id']}' must be one of {sorted(ref['scenarios'])}"
+            issues.error(table, sheet_row(index), "scenario_id", message)
         check_unit_and_price(table, df, index, row["category"], row["unit"], row["quoted_pkr"], ref, issues)
     pairs = df["vendor_id"] + "|" + df["scenario_id"]
     for index in pairs.index[pairs.duplicated(keep="first")]:
@@ -384,7 +389,9 @@ def print_issues(issues):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("data_dir", type=Path, help="folder with the exported CSVs (e.g., data/raw)")
-    parser.add_argument("--issues-csv", type=Path, help="also write all issues to this CSV (to send back to the collector)")
+    parser.add_argument(
+        "--issues-csv", type=Path, help="also write all issues to this CSV (to send back to the collector)"
+    )
     args = parser.parse_args()
 
     sys.stdout.reconfigure(encoding="utf-8")

@@ -13,7 +13,7 @@
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
 | 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by an AI assistant, with the test set looked at twice |
-| 7 | Verified Portfolios | Built (duplicates), not served | 900 planted copies of 100 real photos: recall 78% at 100% precision (MD5 exact match: 0%) | **Yes** for duplicates; style tags not built |
+| 7 | Verified Portfolios | Built (duplicates), not served | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%) | **Yes** for duplicates; style tags not built |
 | 8 | AI Planning Assistant | Built, served | Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 invented figures in replies | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
 **The one-line verdict:** the path from event details to a priced plan, matched vendors, packages, quote checks and a
@@ -153,20 +153,20 @@ wording in the apps is guidance, never an accusation.
     independent.
   - Served at `/v1/reviews/insights` from the collected reviews; the apps don't show it yet.
 - **#7 (built 10 Nov, see its [model card](model_cards/portfolio_duplicates.md)):** 541 of the 542 collected portfolio
-  photos are downloaded. Perceptual hashing (pHash), with plain frames trimmed and mirror images hashed too, finds 78%
-  of 900 planted copies of 100 real photos at 100% precision; MD5 exact matching (the baseline) finds none, and plain
-  pHash 56%. Crops and reposts (crop + filter + watermark) are still missed: they need CLIP embeddings, whose 600 MB
-  model didn't download here, so style tags aren't built either. On the real collection it flags 10 pairs for a
-  person to check, three across vendors: a caterer and a venue with three identical photos, and a photographer's photo
-  on a venue's gallery in a different file, which MD5 couldn't see.
+  photos are downloaded. Two finders flag a pair when either matches: perceptual hashing (pHash), with plain bands on
+  two opposite sides trimmed and mirror images hashed too, and CLIP image embeddings. On 900 planted copies of 100 real
+  photos they find 85% at 100% precision; MD5 exact matching (the baseline) finds none, pHash alone 77% and CLIP alone
+  56%. CLIP adds crops (62%); reposts (crop + filter + watermark) are still missed (6%). On the real collection 14 pairs
+  are flagged, 8 of them true copies, including a caterer and a venue showing the same three photos; the other 6 are
+  different photos of the same scene that CLIP matches. Style tags aren't built yet.
 
 Neither #7's duplicate check nor its style tags are served yet (`/v1/portfolio/check`).
 
 ## #8 AI Planning Assistant
 
 Qwen2.5 3B Instruct (Q4_K_M) on Ollama, laptop GPU. The model reads the chat into a strict JSON schema; the server
-keeps only values the host actually wrote, runs #1 and #2 and writes the reply from their results. Measured on 8 Nov;
-the extraction doesn't depend on the dataset, and only the reply's amounts change with #1 and #2 v2.
+keeps only values the host actually wrote, runs #1 and #2 and writes the reply from their results. Measured on 8 Nov
+and re-run on 11 Nov with the final models.
 
 | Measure | Tuning set (51 chats) | Holdout (20 chats) |
 |---|---|---|
@@ -179,8 +179,12 @@ the extraction doesn't depend on the dataset, and only the reply's amounts chang
 | Seconds per turn, median / max | 1.8 / 2.5 | |
 
 - The chats are English, messy English, multi-message corrections, Roman Urdu, Urdu script and off-topic messages.
-- The grounding rules were tuned on the first set, so its 100% is optimistic. The holdout was written afterwards and
-  scored once; its one miss is "90 mehmaanon ke sath" (guests not read, so the assistant asks for them).
+- The grounding rules were tuned on the first set, so its 100% is optimistic. The holdout was written afterwards; its
+  one miss is "90 mehmaanon ke sath" (guests not read, so the assistant asks for them).
+- **Re-run 11 Nov:** one tuning chat lost its budget because the model turned "Rs 1.5 crore" into "Rs 1,500,000". The
+  server refused that figure (the host never wrote it) but then asked for a budget already given; it now uses the
+  host's own amount when the model's is missing or refused. After the fix: tuning 100% (model alone 82%), holdout 95%
+  (scored a second time, after this change), still 0 invented values.
 - **LLM-written replies are off.** With them on (`ASSISTANT_LLM_REPLIES=1`), the output checker kept 92-97% of replies,
   every one with only tool or host figures, but reading them showed false claims built from true figures ("Rs 11.92
   lakh, 60% more than usual" for a share *below* the usual range). A figure check can't catch that, so the server
@@ -188,15 +192,19 @@ the extraction doesn't depend on the dataset, and only the reply's amounts chang
 - Reproduce: `cd server && python -m eval.assistant_eval [--cases holdout] [--llm-replies]`; the reports go to
   `testing/reports/assistant-eval*.md`.
 
-## Software tests (10 Nov)
+## Software tests (11 Nov, final testing round)
 
 | Suite | Result |
 |---|---|
-| `ml/` pytest | 175 passed |
-| `server/` pytest | 83 passed |
-| `packages/core` Vitest | 195 passed |
-| `apps/web` lint and typecheck | clean |
-| Playwright (5 browser profiles, fixtures) | Last full run: 340 tests passed, 10 by-design skips |
+| `ml/` pytest, including the CLIP test | 180 passed |
+| `server/` pytest (API, contracts, assistant, review insights) | 90 passed |
+| `packages/core` and `apps/web` Vitest | 195 and 38 passed |
+| Lint, typecheck, production build | clean |
+| Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean |
+| Model server, live, real models (every endpoint but feedback) | 39 of 39 checks; `/v1/estimate` 48 ms median warm |
+| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key |
+| Retraining #1, #2, #6 from the committed data | Identical versions and results |
+| Lighthouse, landing page (mobile) | Accessibility, best practices, SEO 100; performance 77 locally, 62 on Vercel (target 90) |
 
 ## Limitations that matter for the demo
 

@@ -139,7 +139,7 @@ The folder is git-ignored.
     against the pairs the team noted.
 
 **v2 (10 Nov):** `python -m shevent_ml.images.download` fetched 541 of the 542 collected photos (one link was broken).
-Hashes now trim a plain frame on all four sides and also hash the mirror image. The planted set's 100 originals are in
+Hashes now trim a plain band on two opposite sides (a frame, a screenshot's bars) and also hash the mirror image. The planted set's 100 originals are in
 `data/splits/planted_duplicates.csv` (commit it). Photos are for internal testing only and never redistributed.
 
 ## Review aspect labels (#6)
