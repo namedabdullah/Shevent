@@ -12,6 +12,8 @@ tables in the template format (data/templates/), ready for scripts/validate_data
   is a reference area or one the workbook import already placed (configs/workbook_import.yaml).
 - Air conditioning and heating add-ons are left out of the prices: they aren't a category's price.
 - Reviews get the source and collection date the template asks for. Notes, addresses included, stay in data/raw only.
+- Directory sites aren't named: a directory doesn't own the vendors it lists. Their listing links are dropped and their
+  names in notes become "directory". Image links are kept, so the images can still be downloaded.
 """
 
 import argparse
@@ -41,6 +43,31 @@ def area_from_notes(row, localities, aliases):
         return row["base_area"]
     place = locality(row["notes"])
     return localities.get(place) or aliases.get(place.lower()) or "Other"
+
+
+def directory_sites(prices):
+    """The directory sites the prices were read from: 'example' for https://www.example.pk/vendors/..."""
+    links = prices.loc[prices["source_type"] == "directory", "source_ref"]
+    return sorted(set(links.str.extract(r"https?://(?:www\.)?([^./]+)", expand=False).dropna().str.lower()))
+
+
+def unnamed(df, sites):
+    """The table without the directories' names: their links go, and their names become 'directory'.
+
+    Only the collector's own text is changed (notes, package names, links). A site's name can be an ordinary word
+    ('taqreeb' is Roman Urdu for an event), so review text and business names are left as they are.
+    """
+    if not sites:
+        return df
+    names = "|".join(map(re.escape, sites))
+    link = re.compile(rf"https?://(?:www\.)?(?:{names})\S*", re.I)
+    name = re.compile(rf"\b(?:{names})(?:\.[a-z]{{2,3}})*\b", re.I)
+    out = df.copy()
+    if "source_ref" in out:
+        out.loc[out["source_type"] == "directory", "source_ref"] = ""
+    for col in out.columns.intersection(["notes", "package_name", "source_ref"]):
+        out[col] = out[col].astype(str).str.replace(link, "", regex=True).str.replace(name, "directory", regex=True)
+    return out
 
 
 def convert_vendors(df, settings, localities, aliases):
@@ -97,15 +124,17 @@ def import_dataset(folder, out_dir=RAW_DIR, settings=None):
         ),
     }  # fmt: skip
     placed = (tables["vendors"]["base_area"] == "Other") & (vendors["base_area"] != "Other")
+    sites = directory_sites(prices)
     out_dir.mkdir(parents=True, exist_ok=True)
     for name, df in converted.items():
-        df.to_csv(out_dir / f"{name}.csv", index=False, encoding="utf-8")
+        unnamed(df, sites).to_csv(out_dir / f"{name}.csv", index=False, encoding="utf-8")
     return {
         "rows": {name: len(df) for name, df in converted.items()},
         "vendors": vendors.groupby("category").size().to_dict(),
         "vendors_in_other_area": int((vendors["base_area"] == "Other").sum()),
         "areas_from_notes": int(placed.sum()),
         "add_ons_left_out": add_ons,
+        "directories_unnamed": len(sites),
         "unmapped_categories": int(vendors["category"].eq("").sum() + prices["category"].eq("").sum()),
     }
 
@@ -122,6 +151,7 @@ def main():
     print(f"  vendors: {summary['vendors']} ({summary['vendors_in_other_area']} outside the reference areas,")
     print(f"           {summary['areas_from_notes']} placed from the locality in their notes)")
     print(f"  {summary['add_ons_left_out']} air conditioning / heating add-ons left out of the prices")
+    print(f"  {summary['directories_unnamed']} directory sites' names and links left out")
     if summary["unmapped_categories"]:
         print(f"  {summary['unmapped_categories']} rows with a category not in configs/dataset_import.yaml")
     return 0
