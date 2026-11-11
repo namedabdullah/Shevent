@@ -1,5 +1,5 @@
 {
-  "version": "reviews-v1-778babc1",
+  "version": "reviews-v1-23cf2c5f",
   "aspects": [
     "punctuality",
     "food_quality",
@@ -41,31 +41,31 @@
     },
     "real_test": {
       "rows": 150,
-      "macro_f1": 0.43581338992595214,
+      "macro_f1": 0.4341721501892525,
       "macro_f1_by_aspect": {
         "punctuality": 0.35236985236985235,
         "food_quality": 0.4722582415697575,
         "sound_quality": 0.2474747474747475,
-        "staff_behaviour": 0.6735310725080546,
+        "staff_behaviour": 0.6688092513893429,
         "value_for_money": 0.43229166666666663,
         "hidden_charges": 0.2491638795986622,
-        "photo_video_quality": 0.6236042692939245
+        "photo_video_quality": 0.616837412255739
       },
-      "label_accuracy_where_mentioned": 0.6518518518518519
+      "label_accuracy_where_mentioned": 0.6330935251798561
     },
     "real_test_baseline": {
       "rows": 150,
-      "macro_f1": 0.4237013509961781,
+      "macro_f1": 0.4211893776870032,
       "macro_f1_by_aspect": {
         "punctuality": 0.24744027303754265,
         "food_quality": 0.6997190833912,
         "sound_quality": 0.2483108108108108,
-        "staff_behaviour": 0.4835837438423646,
+        "staff_behaviour": 0.47303601643703164,
         "value_for_money": 0.41231126596980255,
         "hidden_charges": 0.2483221476510067,
-        "photo_video_quality": 0.6262221322705194
+        "photo_video_quality": 0.6191860465116279
       },
-      "label_accuracy_where_mentioned": 0.6074074074074074
+      "label_accuracy_where_mentioned": 0.5899280575539568
     }
   }
 }

@@ -51,36 +51,54 @@ reviews it would have learned only the synthetic fragments.
 **Real test set:** 150 real reviews (`data/splits/review_test_ids.csv`): all 10 that aren't English, all 10 rated 3
 stars or less, and 130 more at random. All 308 real reviews were labelled on 10 Nov **by an AI assistant that
 also built this model**, following the aspect definitions in `ml/configs/reviews.yaml`, from the text alone and without
-looking at the model's output. The 158 outside the test set train the model. Labels by the assistant that built the model are less
-independent than labels by the data lead would be; re-labelling the test set by a person is the first thing to do.
+looking at the model's output. The 158 outside the test set train the model. Labels by the assistant that built the
+model are not independent, so a person labelled the test set a second time (below). Four mentions that the second
+labeller found and the first labels had missed were then added to them (staff behaviour in R-0037, R-0161 and
+R-0172, photos in R-0067); before that the scores were 0.436 and 0.424.
 
-| On 150 real test reviews | Macro-F1 (4 labels, mean of 7 aspects) | Label right where mentioned | Complaints found | Aspects found (recall / precision) |
+| On 150 real test reviews, first labels | Macro-F1 (4 labels, mean of 7 aspects) | Label right where mentioned | Complaints found | Aspects found (recall / precision) |
 |---|---|---|---|---|
-| This model | **0.436** | **65%** | **13 of 17** | **79%** / 71% |
-| English-only keyword baseline | 0.424 | 61% | 7 of 17 | 76% / **90%** |
+| This model | **0.434** | **63%** | **13 of 17** | **78%** / 72% |
+| English-only keyword baseline | 0.421 | 59% | 7 of 17 | 74% / **90%** |
 
 - The model finds nearly twice as many of the real complaints, which is what review insights are for. The baseline is
-  more precise: the model still flags aspects a review doesn't talk about (44 false alarms in 150 reviews).
+  more precise: the model still flags aspects a review doesn't talk about (42 false alarms in 150 reviews).
 - Real reviews hardly mention punctuality (2), sound (1) or hidden charges (0), so macro-F1 on those aspects mostly
-  measures false alarms; food (100 mentions), staff (115) and photos (35) carry the result.
+  measures false alarms; food (100 mentions), staff (118) and photos (36) carry the result.
 - **The test set was looked at twice.** The first score was macro-F1 0.398 against the baseline's 0.424, with 95 false
   aspects. The diagnosis: the synthetic data had no remarks about the place, decor or parking, which 40% of real reviews
   are made of. Adding such remarks to the synthetic fragments, and teaching the model from the labelled training reviews
   that mention no aspect, gave the scores above. A test set used to choose a change is less independent than one scored
   once.
-- Non-English: 7 of 15 mentioned labels right (baseline 6); 10 reviews are too few to say more.
+- Non-English: 8 of 15 mentioned labels right (baseline 6); 10 reviews are too few to say more.
 
 **Synthetic check:** 600 reviews built from a fifth of the fragments kept out of training: macro-F1 0.583 against
 0.544 for the baseline. It only shows the model handles phrasings it hasn't seen, and the same hand wrote both.
 
-**Second labeller (ready, not yet done):** `python -m shevent_ml.reviews.model --second-sheet` writes the 150 test
-reviews with no labels; a person fills them in without seeing the first labels and saves
-`data/splits/review_labels_second.csv`; `--second` then scores the model and the baseline on their labels and reports
-Cohen's kappa between the two labellers per aspect (`ml/artifacts/review_insights/second_labeller.json`).
+**Second labeller (11 Nov), the independent score:** the ML lead labelled the 150 test reviews again from a blank
+sheet (`python -m shevent_ml.reviews.model --second-sheet`), saved as `data/splits/review_labels_second.csv`. 11
+misspelt labels ("postive") were corrected, and one "good" under punctuality, on a review about the air conditioning,
+was cleared. `--second` scores the model and the baseline on these labels
+(`ml/artifacts/review_insights/second_labeller.json`).
+
+| On the second labeller's labels | Macro-F1 | Label right where mentioned | Complaints found | Aspects found (recall / precision) |
+|---|---|---|---|---|
+| This model | **0.398** | **58%** | **13 of 23** | **77%** / 65% |
+| English-only keyword baseline | 0.392 | 54% | 6 of 23 | 69% / **76%** |
+
+- On a person's labels the model is only level with the baseline on macro-F1. Its gain is the same as on the first
+  labels: twice as many complaints found, at the cost of more false alarms (53 against 28). The baseline stays much
+  better on food (macro-F1 0.70 against 0.47).
+- The two labellers agree on 95% of labels; Cohen's kappa is 0.97 for food, 0.77 for photos and
+  video, 0.60 for value for money, 0.59 for staff behaviour and 0.39 for punctuality (sound has one mention, hidden
+  charges none). Most disagreements are two readings of the rules: the second labeller didn't count a bare "good
+  service" as staff behaviour, and counted late albums and videos as punctuality (8 punctuality mentions against 2). The kappas are from before the four
+  corrections above.
 
 ## Limitations
 
-- The real test labels are by an AI assistant and the test set was used to choose one change (see above).
+- On a person's labels the model only matches the baseline on macro-F1; its gain is in finding complaints. The
+  test set was also used to choose one change (see above).
 - Tone is the weak part, especially negation ("no hidden charges" is praise) and sarcasm.
 - Long reviews pick up stray aspects; the aspect threshold (0.3) was tuned on the synthetic check, not on real text.
 - The synthetic fragments and the word lists were written by the same person, so the synthetic check flatters the

@@ -1,0 +1,44 @@
+{
+  "rows": 150,
+  "model": {
+    "rows": 150,
+    "macro_f1": 0.398382558029071,
+    "macro_f1_by_aspect": {
+      "punctuality": 0.3821428571428571,
+      "food_quality": 0.46734172596241563,
+      "sound_quality": 0.2474747474747475,
+      "staff_behaviour": 0.5527835678304672,
+      "value_for_money": 0.41061130334486734,
+      "hidden_charges": 0.2491638795986622,
+      "photo_video_quality": 0.47915982484948005
+    },
+    "label_accuracy_where_mentioned": 0.5826771653543307
+  },
+  "baseline": {
+    "rows": 150,
+    "macro_f1": 0.39221181622623363,
+    "macro_f1_by_aspect": {
+      "punctuality": 0.30640243902439024,
+      "food_quality": 0.7008527131782946,
+      "sound_quality": 0.2483108108108108,
+      "staff_behaviour": 0.4706263420315172,
+      "value_for_money": 0.24305555555555555,
+      "hidden_charges": 0.2483221476510067,
+      "photo_video_quality": 0.5279127053320601
+    },
+    "label_accuracy_where_mentioned": 0.5433070866141733
+  },
+  "agreement": {
+    "rows": 150,
+    "kappa_by_aspect": {
+      "punctuality": 0.388,
+      "food_quality": 0.969,
+      "sound_quality": 1.0,
+      "staff_behaviour": 0.593,
+      "value_for_money": 0.603,
+      "hidden_charges": null,
+      "photo_video_quality": 0.768
+    },
+    "identical_labels": 0.95
+  }
+}

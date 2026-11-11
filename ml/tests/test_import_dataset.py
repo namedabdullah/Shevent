@@ -78,3 +78,16 @@ def test_directory_sites_are_not_named_but_image_links_still_work(tmp_path):
     media = pd.read_csv(tmp_path / "out" / "portfolio_media.csv", dtype=str)
     assert media.loc[0, "notes"] == "image from the directory gallery"
     assert media.loc[0, "source_url"] == "https://cdn.weddingdir.pk/g/a.jpg"
+
+
+def test_collection_batches_keep_only_their_number(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    vendors = VENDORS.assign(collected_by=["SHV-research", "toolname-b1", "toolname-b4"])
+    for name, df in [("vendors", vendors), ("price_observations", PRICES), ("reviews", REVIEWS),
+                     ("portfolio_media", MEDIA), ("scenario_quotes", QUOTES)]:  # fmt: skip
+        df.to_csv(raw / f"{name}.csv", index=False)
+    import_dataset(raw, tmp_path / "out")
+
+    out = pd.read_csv(tmp_path / "out" / "vendors.csv", dtype=str, keep_default_na=False)
+    assert out["collected_by"].tolist() == ["SHV-research", "batch-1", "batch-4"]

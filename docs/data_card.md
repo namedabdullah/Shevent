@@ -1,6 +1,6 @@
 # Shevent Data Card
 
-**Status (10 Nov 2026):** dataset v2 (`dataset_hash 4c2131a11b22`) is built from the data lead's final folder
+**Status (10 Nov 2026):** dataset v2 (`dataset_hash a2d4e5518db3`) is built from the data lead's final folder
 (`shevent_dataset`, 10 Nov), which includes everything from the v1 workbook. The 156 v1 vendors keep their IDs, so the
 app database updates them in place. No scenario quotes, survey answers or planner interviews were collected, and most
 synthetic-data effects are still placeholders (see [Synthetic events](#synthetic-events)). What this means for each
@@ -155,10 +155,18 @@ Hashes now trim a plain band on two opposite sides (a frame, a screenshot's bars
   (blank = not mentioned) and save it as `data/splits/review_labels.csv`. Labelled reviews outside the test set join the
   training data.
 - **Labelled (10 Nov):** all 308 real reviews, in `data/splits/review_labels.csv`, **by an AI assistant that
-  also built the #6 model**, from the text alone and before seeing the model's predictions on them. 122 mention no aspect;
-  staff behaviour 115, food 100, photos and video 35, value for money 17, punctuality 2, sound 1, hidden charges 0.
+  also built the #6 model**, from the text alone and before seeing the model's predictions on them. 121 mention no aspect;
+  staff behaviour 118, food 100, photos and video 36, value for money 17, punctuality 2, sound 1, hidden charges 0.
   "Service" counts as staff behaviour unless it names the business ("catering service"); an album's delay counts as
-  photo and video quality. A person re-labelling the test set would make the score independent.
+  photo and video quality.
+- **Second labeller (11 Nov):** the ML lead labelled the 150 test reviews again from a blank sheet
+  (`data/splits/review_labels_second.csv`). 11 misspelt labels ("postive") were corrected, and one "good" under
+  punctuality, on a review about the air conditioning, was cleared. The two labellers agree on 95% of labels; Cohen's kappa is 0.97 for food, 0.77 for photos and
+  video, 0.60 for value for money, 0.59 for staff behaviour and 0.39 for punctuality (sound has one mention, hidden
+  charges none). Most disagreements are two readings of the rules: the second labeller didn't count a bare "good
+  service" as staff behaviour, and counted late albums and videos as punctuality (8 punctuality mentions against 2).
+  Four mentions the second labeller found and the first labels had missed (staff behaviour in R-0037, R-0161 and
+  R-0172, photos in R-0067) were added to the first labels; the agreement is from before that.
 - **Training labels:** first drafted by `qwen2.5:7b-instruct`, running locally in Ollama with temperature 0, a JSON
   schema and few-shot examples in English, Roman Urdu and Urdu. Then corrected in Label Studio. Each draft records
   the model and the prompt version.
