@@ -35,11 +35,27 @@ which is too small to lift a poor fit above a good one.
 
 ## Evaluation
 
-**Not scored yet.** The test set is rebuilt on the 327 vendors of dataset v2 (14 events, 234 candidates,
-`data/splits/matching_candidates.csv`) and waits for the data lead's 0-3 ratings
-(`data/processed/matching_to_label.csv`, saved as `data/splits/matching_labels.csv`). Then NDCG@10 and Precision@5
-are compared with sort-by-rating, which, with no vendor ratings collected, is close to an arbitrary order. Unit tests
-cover capacity exclusion, sponsored separation, reasons and the new-vendor boost.
+On 14 test events (234 candidate vendors) rated 0-3 on 11 Nov **by an AI assistant**, not the data lead:
+
+| Ranker | NDCG@10 | Precision@5 |
+|---|---|---|
+| This matcher | **0.815** | **0.81** |
+| Sort by rating (the planned baseline) | 0.725 | 0.73 |
+| Random order (mean of 2,000 shuffles; 95% range) | 0.713 (0.663-0.764) | 0.745 (0.69-0.80) |
+
+- The matcher ranks clearly better than chance on NDCG@10 (above every 97.5th-percentile shuffle); on Precision@5 the
+  gain is marginal, because 185 of the 234 candidates were rated 2 or 3, so almost any top five is mostly usable.
+- Sort by rating scores like a random order: none of the collected vendors has a rating.
+- **How the ratings were made:** from the sheet's facts plus each vendor's listed services, locality, collected
+  reviews and listed prices, without looking at the matcher's scores. Caterers, decorators, DJs, lighting and
+  photographers were treated as travelling across Lahore, and neighbouring areas (DHA and Cantt, Model Town and Garden
+  Town) as near; the matcher instead penalises any area a vendor doesn't list. Venues were judged on area, capacity
+  and type. Ratings: 10 × 0, 39 × 1, 140 × 2, 45 × 3.
+- **Caveat:** the ratings share some of the matcher's signals (area, capacity, price) and were made by an AI assistant
+  that also worked on the matcher. Ratings by the data lead, with local knowledge of which vendors are good, would make
+  this independent; `data/processed/matching_to_label.csv` is ready for them (save as `data/splits/matching_labels.csv`).
+
+Unit tests cover capacity exclusion, sponsored separation, reasons and the new-vendor boost.
 
 ## Limitations
 

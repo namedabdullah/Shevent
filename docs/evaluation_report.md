@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | 1 | Budget Allocator | Built, served | Share MAE 2.4 points on synthetic held-out events (fixed planner split 5.7) | **Not tested:** no host has reported a real split yet |
 | 2 | Price Range Estimator | Built, served | 46 real test prices: MAPE 72% (median lookup 92%); the 80% range holds 91% (median lookup 76%) | **Yes** on error; its range is wider than it needs to be |
-| 3 | Vendor Matching | Built, served | Not scored yet: the test set is rebuilt on the 327 vendors (14 events, 234 candidates) and waits for the data lead's 0-3 ratings | **Not tested** |
+| 3 | Vendor Matching | Built, served | 14 events, 234 rated candidates: NDCG@10 0.815 vs 0.725 for sort-by-rating and 0.713 for a random order | **Yes**, on ratings by an AI assistant |
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
 | 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by an AI assistant, with the test set looked at twice |
@@ -102,12 +102,30 @@ By category on the real test prices:
 
 ## #3 Vendor Matching
 
-Not scored. The matching set is rebuilt on the 327 vendors (11 Nov): 14 events with 234 candidate vendors
-(`data/splits/matching_candidates.csv`; the two lighting events have only 3, all there are). The data lead rates each
-0-3 in `data/processed/matching_to_label.csv` and saves it as `data/splits/matching_labels.csv`; then
-`python -m shevent_ml.models.matching` reports NDCG@10 and Precision@5 next to sort-by-rating. With no vendor ratings
-collected, sort-by-rating is close to an arbitrary order, so beating it will say little; the ratings themselves are
-the useful part.
+The matching set is rebuilt on the 327 vendors (11 Nov): 14 events with 234 candidate vendors
+(`data/splits/matching_candidates.csv`; the two lighting events have only 3, all there are), scored with
+`python -m shevent_ml.models.matching`.
+
+On 14 test events (234 candidate vendors) rated 0-3 on 11 Nov **by an AI assistant**, not the data lead:
+
+| Ranker | NDCG@10 | Precision@5 |
+|---|---|---|
+| This matcher | **0.815** | **0.81** |
+| Sort by rating (the planned baseline) | 0.725 | 0.73 |
+| Random order (mean of 2,000 shuffles; 95% range) | 0.713 (0.663-0.764) | 0.745 (0.69-0.80) |
+
+- The matcher ranks clearly better than chance on NDCG@10 (above every 97.5th-percentile shuffle); on Precision@5 the
+  gain is marginal, because 185 of the 234 candidates were rated 2 or 3, so almost any top five is mostly usable.
+- Sort by rating scores like a random order: none of the collected vendors has a rating.
+- **How the ratings were made:** from the sheet's facts plus each vendor's listed services, locality, collected
+  reviews and listed prices, without looking at the matcher's scores. Caterers, decorators, DJs, lighting and
+  photographers were treated as travelling across Lahore, and neighbouring areas (DHA and Cantt, Model Town and Garden
+  Town) as near; the matcher instead penalises any area a vendor doesn't list. Venues were judged on area, capacity
+  and type. Ratings: 10 × 0, 39 × 1, 140 × 2, 45 × 3.
+- **Caveat:** the ratings share some of the matcher's signals (area, capacity, price) and were made by an AI assistant
+  that also worked on the matcher. Ratings by the data lead, with local knowledge of which vendors are good, would make
+  this independent; `data/processed/matching_to_label.csv` is ready for them (save as `data/splits/matching_labels.csv`).
+
 
 What is tested: vendors over capacity are excluded, sponsored vendors never enter the ranking, every match has factual
 reasons, the new-vendor boost is bounded, and a hall's add-on rent isn't treated as its price. Dataset v2 adds event
@@ -220,8 +238,8 @@ and re-run on 11 Nov with the final models.
    estimate is often far off, because listings rarely say what a package includes.
 3. **Venue and catering overlap in Lahore.** Most halls sell food and hall together; the app splits them into two
    categories, and prices halls that do this from #2 rather than from their listed rent.
-4. **#3 and #5 have no real-data score**, because their test labels or inputs were never collected. #6's real score
-   rests on labels by an AI assistant; #7's is on planted copies of real photos.
+4. **#5 has no real-data score** (no quotes were collected). #3's and #6's real scores rest on ratings and labels
+   by an AI assistant, not the data lead; #7's is on planted copies of real photos.
 5. **Lighting has 3 vendors and no prices**, so its matches are weak and its range is configured, not learned.
 6. **Free hosting and a laptop LLM:** cold starts are slow; the assistant needs the laptop with Ollama running and
    reachable.

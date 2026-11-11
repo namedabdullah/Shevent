@@ -180,8 +180,12 @@ Hashes now trim a plain band on two opposite sides (a frame, a screenshot's bars
 - Each query has up to 20 candidate vendors: up to 60% from vendors serving the event's area, the rest from
   anywhere. Rebuilt on the 327 vendors on 11 Nov (234 candidates; the lighting events have only 3) and fixed in
   `data/splits/matching_candidates.csv`.
-- The data lead rates each candidate 0–3 in `data/splits/matching_labels.csv`. Rankers re-rank the same candidates
-  and are scored with NDCG@10 and Precision@5. The baseline is sort by rating.
+- Each candidate is rated 0–3 in `data/splits/matching_labels.csv`. Rankers re-rank the same candidates and are
+  scored with NDCG@10 and Precision@5, next to sort by rating and a random order.
+- **Rated (11 Nov) by an AI assistant**, not the data lead: from the sheet plus each vendor's listed services,
+  locality, collected reviews and listed prices, without the matcher's scores; mobile services (catering, decor, DJ,
+  lighting, photography) treated as covering all of Lahore, venues judged on area, capacity and type. 10 × 0, 39 × 1,
+  140 × 2, 45 × 3. Ratings by the data lead would replace these.
 
 ## Quote fairness labels (#5)
 

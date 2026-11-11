@@ -15,7 +15,7 @@ NETSOL AI/ML capstone, November 2026. Built entirely on free tools and open-weig
 |---|---|---|---|
 | 1 | Budget Allocator | Splits the budget across venue, catering, decor, DJ & sound, lighting and photography | Share error 2.4 points vs 5.7 for a fixed split (synthetic events; no host survey collected) |
 | 2 | Price Range Estimator | Low / likely / high price per category for the event | 46 real test prices: 72% MAPE vs 92% for a median lookup; the 80% range holds 91% |
-| 3 | Vendor Matching | Ranks vendors with a reason for every match; sponsored listings kept separate | Not scored (the rated test set isn't rated yet) |
+| 3 | Vendor Matching | Ranks vendors with a reason for every match; sponsored listings kept separate | 234 rated candidates: NDCG@10 0.815 vs 0.713 for a random order (ratings by an AI assistant) |
 | 4 | Package Builder | Three complete vendor line-ups within the budget (OR-Tools CP-SAT) | Never over budget; beats a greedy baseline at tight budgets |
 | 5 | Quote Fairness Checker | Green / amber / red against the typical range, plus what to ask about | Not scored (no real quotes collected) |
 | 6 | Review Insights | Praise and complaints per aspect in reviews, in three languages | 150 real reviews: macro-F1 0.436 vs 0.424; finds 13 of 17 complaints vs 7 |
