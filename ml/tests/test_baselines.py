@@ -115,6 +115,7 @@ def test_split_is_frozen_and_baselines_score_on_test_vendors_only(processed):
         processed,
         split,
         {"median_lookup": {"min_prices": 3, "interval": [0.1, 0.9]}, "planner_split": {"default": {"venue": 1.0}}},
+        labels_file=processed / "no_matching_labels.csv",  # not the real labels: this fixture has no vendors table
     )
     scores = report["price_estimator"]["test_prices"]
     assert scores["scored"] == 4

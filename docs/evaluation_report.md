@@ -12,7 +12,7 @@
 | 3 | Vendor Matching | Built, served | 14 events, 234 rated candidates: NDCG@10 0.815 vs 0.725 for sort-by-rating and 0.713 for a random order | **Yes**, on ratings by an AI assistant |
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
-| 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by an AI assistant, with the test set looked at twice |
+| 6 | Review Insights | Built, served | 150 real test reviews labelled by a person: macro-F1 0.398 (English-only baseline 0.392); finds 13 of 23 complaints (baseline 6). On the AI assistant's labels: 0.434 vs 0.421 | **Level** on macro-F1, **yes** on finding complaints; the test set was looked at twice |
 | 7 | Verified Portfolios | Built, served | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%); style tags 23 of 29 right on 12 photos | **Yes** for duplicates |
 | 8 | AI Planning Assistant | Built, served | Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 invented figures in replies | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
@@ -34,7 +34,7 @@ collected, so the app keeps labelling every amount "AI estimate, not a vendor qu
 | Reviews | 300 | 0 | **308** |
 | Portfolio images | 500 | 0 | **542** links |
 
-Dataset v2: `dataset_hash 4c2131a11b22`, imported from the data lead's folder with
+Dataset v2: `dataset_hash a2d4e5518db3`, imported from the data lead's folder with
 `python -m shevent_ml.data.import_dataset`. Test split: 36 vendors (about 20% of the priced vendors in each category),
 all their prices held out, in `data/splits/test_split.json`. Synthetic events: `synthetic_hash f52dafdf8047`, with
 catering, decor, DJ & sound and photography base prices fitted from the real training prices. The other effects
@@ -78,9 +78,9 @@ DJ & sound 0.5 vs 4.7, lighting 1.4 vs 1.8, photography 1.3 vs 3.9.
 
 | Rows | Model | MAPE | Pinball loss 10% / 50% / 90% (PKR) | 80% range holds |
 |---|---|---|---|---|
-| 46 real test prices | `cost-v1-800e791d` | **72%** | **11,374 / 39,902** / 47,972 | 91% |
+| 46 real test prices | `cost-v1-3c697b36` | **72%** | **11,374 / 39,902** / 47,972 | 91% |
 | 46 real test prices | Median lookup | 92% | 13,127 / 43,159 / **39,914** | 76% |
-| 5,979 synthetic held-out | `cost-v1-800e791d` | 39% | 8,073 / 23,755 / 17,093 | 95% |
+| 5,979 synthetic held-out | `cost-v1-3c697b36` | 39% | 8,073 / 23,755 / 17,093 | 95% |
 
 By category on the real test prices:
 
@@ -165,13 +165,18 @@ wording in the apps is guidance, never an accusation.
   are 97% five-star and 97% English, so the model trains on about 450 hand-written synthetic clauses in English, Roman
   Urdu and Urdu script, plus the 158 labelled real reviews outside the test set. It reads reviews clause by clause: one
   classifier picks the aspect (or none), another praise or complaint, helped by three-language word lists.
-  - On 150 real test reviews: macro-F1 0.436 against 0.424 for the English-only keyword baseline; the label is right
-    65% of the time where an aspect is mentioned (61%); it finds 13 of 17 complaints (7) but flags more aspects that
-    aren't there (precision 71% against 90%).
-  - **Caveats:** all real reviews were labelled by an AI assistant that also built the model (not the data lead),
-    and the test set was looked at twice: the first score (0.398) led to one change (aspect-free remarks in the
-    synthetic data, aspect-free real reviews in training). Re-labelling the test set by a person would make this
-    independent.
+  - All 308 real reviews were labelled by an AI assistant that also built the model. On the 150 test reviews: macro-F1
+    0.434 against 0.421 for the English-only keyword baseline; the label is right 63% of the time where an aspect is
+    mentioned (59%); it finds 13 of 17 complaints (7) but flags more aspects that aren't there (precision 72% against
+    90%).
+  - **Independent score (11 Nov):** the ML lead labelled the 150 test reviews again from a blank sheet. On those labels
+    the model is level with the baseline on macro-F1 (0.398 against 0.392) and still finds twice as many complaints
+    (13 of 23 against 6), with more false alarms (precision 65% against 76%). The labellers agree on 95% of labels
+    (kappa 0.97 food, 0.77 photos, 0.60 value, 0.59 staff, 0.39 punctuality); most disagreements are whether a bare
+    "good service" is staff behaviour and whether a late album is punctuality. Four mentions the first labels had
+    missed were added to them, which moved their score from 0.436 / 0.424 to 0.434 / 0.421.
+  - **Caveat:** the test set was looked at twice: the first score (0.398) led to one change (aspect-free remarks in
+    the synthetic data, aspect-free real reviews in training).
   - Served at `/v1/reviews/insights` from the collected reviews; the apps don't show it yet.
 - **#7 (built 10 Nov, see its [model card](model_cards/portfolio_duplicates.md)):** 541 of the 542 collected portfolio
   photos are downloaded. Two finders flag a pair when either matches: perceptual hashing (pHash), with plain bands on
@@ -182,9 +187,9 @@ wording in the apps is guidance, never an accusation.
   different photos of the same scene that CLIP matches. Style tags (CLIP zero-shot, scene and style groups) were
   right for 23 of 29 tags on 12 real photos checked by eye. Served at `/v1/portfolio/check` since 11 Nov.
 
-#6 also has a second-labeller check: `python -m shevent_ml.reviews.model --second-sheet` writes the 150 test
-reviews unlabelled; once a person labels them (`data/splits/review_labels_second.csv`), `--second` scores the
-model on their labels (an independent score) and reports the two labellers' agreement (Cohen's kappa).
+#6's second-labeller check: `python -m shevent_ml.reviews.model --second-sheet` writes the 150 test reviews
+unlabelled; the person's labels are in `data/splits/review_labels_second.csv`, and `--second` scores the model on them
+and reports the two labellers' agreement (Cohen's kappa).
 
 ## #8 AI Planning Assistant
 
@@ -238,8 +243,9 @@ and re-run on 11 Nov with the final models.
    estimate is often far off, because listings rarely say what a package includes.
 3. **Venue and catering overlap in Lahore.** Most halls sell food and hall together; the app splits them into two
    categories, and prices halls that do this from #2 rather than from their listed rent.
-4. **#5 has no real-data score** (no quotes were collected). #3's and #6's real scores rest on ratings and labels
-   by an AI assistant, not the data lead; #7's is on planted copies of real photos.
+4. **#5 has no real-data score** (no quotes were collected). #3's real score rests on ratings by an AI assistant,
+   not the data lead; #6 has a second score on a person's labels, where it only matches the baseline on macro-F1;
+   #7's is on planted copies of real photos.
 5. **Lighting has 3 vendors and no prices**, so its matches are weak and its range is configured, not learned.
 6. **Free hosting and a laptop LLM:** cold starts are slow; the assistant needs the laptop with Ollama running and
    reachable.

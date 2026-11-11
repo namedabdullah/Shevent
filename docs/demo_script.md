@@ -3,7 +3,7 @@
 The product overview's §06 journey, run live on **https://shevent.vercel.app**: one host plans a 300-guest mehndi in
 Gulberg on Saturday 19 December with a budget of Rs 25 lakh, and a lighting vendor quotes for it. About 12 minutes.
 
-Every figure below comes from the dataset v2 models (`alloc-v1-52d3ae4d`, `cost-v1-800e791d`) and the 327 collected
+Every figure below comes from the dataset v2 models (`alloc-v1-52d3ae4d`, `cost-v1-3c697b36`) and the 327 collected
 vendors, as of 10 Nov 2026. The live site shows them once the model server has been restarted with those models and the
 vendor seed has been loaded. The assistant runs at temperature 0 with a fixed seed, so the same messages give the same
 replies. If a figure differs on the day, the models or vendors changed; say what's on screen, not what's written

@@ -1,5 +1,5 @@
 {
-  "version": "cost-v1-800e791d",
+  "version": "cost-v1-3c697b36",
   "margin": 0.243245560296927,
   "calibrated_on": {
     "source": "real",
@@ -78,7 +78,7 @@
       "pinball_high": 39914.27391304348,
       "coverage": 0.7608695652173914
     },
-    "dataset_hash": "4c2131a11b22",
+    "dataset_hash": "a2d4e5518db3",
     "synthetic_hash": "f52dafdf8047",
     "synthetic_sources": {
       "event_mix": "placeholder",

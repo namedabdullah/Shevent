@@ -14,6 +14,7 @@ tables in the template format (data/templates/), ready for scripts/validate_data
 - Reviews get the source and collection date the template asks for. Notes, addresses included, stay in data/raw only.
 - Directory sites aren't named: a directory doesn't own the vendors it lists. Their listing links are dropped and their
   names in notes become "directory". Image links are kept, so the images can still be downloaded.
+- Collection batches keep only their number: a collected_by of "<tool>-b2" becomes "batch-2".
 """
 
 import argparse
@@ -68,6 +69,14 @@ def unnamed(df, sites):
     for col in out.columns.intersection(["notes", "package_name", "source_ref"]):
         out[col] = out[col].astype(str).str.replace(link, "", regex=True).str.replace(name, "directory", regex=True)
     return out
+
+
+def batch_numbers(df):
+    """collected_by without the name of the tool a batch was collected with: 'tool-b2' becomes 'batch-2'."""
+    if "collected_by" not in df:
+        return df
+    batch = df["collected_by"].astype(str).str.replace(r"^\s*[A-Za-z]+-b(\d+)\s*$", r"batch-\1", regex=True)
+    return df.assign(collected_by=batch)
 
 
 def convert_vendors(df, settings, localities, aliases):
@@ -127,7 +136,7 @@ def import_dataset(folder, out_dir=RAW_DIR, settings=None):
     sites = directory_sites(prices)
     out_dir.mkdir(parents=True, exist_ok=True)
     for name, df in converted.items():
-        unnamed(df, sites).to_csv(out_dir / f"{name}.csv", index=False, encoding="utf-8")
+        batch_numbers(unnamed(df, sites)).to_csv(out_dir / f"{name}.csv", index=False, encoding="utf-8")
     return {
         "rows": {name: len(df) for name, df in converted.items()},
         "vendors": vendors.groupby("category").size().to_dict(),

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| Version | `cost-v1-800e791d` (`ml/artifacts/price_estimator/`), trained 10 Nov on dataset v2 |
+| Version | `cost-v1-3c697b36` (`ml/artifacts/price_estimator/`), trained 10 Nov on dataset v2 |
 | Code | `ml/shevent_ml/models/price_estimator.py`, `price_features.py`, settings in `ml/configs/price_estimator.yaml` |
 | Served by | `POST /v1/estimate`; also used by #1's guardrails, #3's price fit, #4's missing prices and #5 |
 | Owner | ML lead |
@@ -28,7 +28,7 @@ log scale in this version) so it holds 80% of prices the models didn't train on.
 ## Training data
 
 Synthetic events (`synthetic_hash f52dafdf8047`) plus the real training prices from dataset v2 (`dataset_hash
-4c2131a11b22`: 402 prices from 327 vendors, inflation-adjusted to October 2026). Hall menus and bundled packages are left
+a2d4e5518db3`: 402 prices from 327 vendors, inflation-adjusted to October 2026). Hall menus and bundled packages are left
 out, which leaves 221 standalone prices: 175 for training and 46 held out with their 36 vendors. Real rows weigh 5×
 synthetic ones. The synthetic events' base prices for catering, decor, DJ & sound and photography are the medians of
 the real training prices; venue and lighting keep configured prices (venue because listed hall rents are extras to a
