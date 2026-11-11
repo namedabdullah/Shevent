@@ -73,6 +73,11 @@ independent than labels by the data lead would be; re-labelling the test set by 
 **Synthetic check:** 600 reviews built from a fifth of the fragments kept out of training: macro-F1 0.583 against
 0.544 for the baseline. It only shows the model handles phrasings it hasn't seen, and the same hand wrote both.
 
+**Second labeller (ready, not yet done):** `python -m shevent_ml.reviews.model --second-sheet` writes the 150 test
+reviews with no labels; a person fills them in without seeing the first labels and saves
+`data/splits/review_labels_second.csv`; `--second` then scores the model and the baseline on their labels and reports
+Cohen's kappa between the two labellers per aspect (`ml/artifacts/review_insights/second_labeller.json`).
+
 ## Limitations
 
 - The real test labels are by an AI assistant and the test set was used to choose one change (see above).

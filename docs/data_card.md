@@ -175,10 +175,11 @@ Hashes now trim a plain band on two opposite sides (a frame, a screenshot's bars
 
 ## Matching relevance set (#3)
 
-- 12 test queries, each an event plus a vendor category: the three standard scenarios for two categories each, and
-  six more events (`ml/configs/matching_set.yaml`).
-- Each query has 20 candidate vendors: up to 60% from vendors serving the event's area, the rest from anywhere.
-  They are fixed in `data/splits/matching_candidates.csv`.
+- 14 test queries, each an event plus a vendor category: the three standard scenarios for two categories each, six
+  more events, and two photography events (`ml/configs/matching_set.yaml`).
+- Each query has up to 20 candidate vendors: up to 60% from vendors serving the event's area, the rest from
+  anywhere. Rebuilt on the 327 vendors on 11 Nov (234 candidates; the lighting events have only 3) and fixed in
+  `data/splits/matching_candidates.csv`.
 - The data lead rates each candidate 0–3 in `data/splits/matching_labels.csv`. Rankers re-rank the same candidates
   and are scored with NDCG@10 and Precision@5. The baseline is sort by rating.
 

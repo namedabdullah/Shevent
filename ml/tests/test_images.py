@@ -1,3 +1,5 @@
+import io
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -199,3 +201,41 @@ def test_clip_embeddings_and_text():
     assert similarity[0, 1] > similarity[0, 2]
     texts = embedder.embed_texts(["a photo of a wedding stage", "a photo of food on a buffet"])
     assert texts.shape == (2, vectors.shape[1])
+
+
+class FakeTextEmbedder(FakeEmbedder):
+    """FakeEmbedder that also embeds tag prompts: one fixed unit vector per prompt."""
+
+    def embed_texts(self, texts):
+        vectors = np.random.default_rng(len(texts)).normal(size=(len(texts), 3)).astype(np.float32)
+        return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
+
+
+def test_an_uploaded_photo_is_checked_against_other_vendors_only(collection):
+    from shevent_ml.images.check import PortfolioChecker
+
+    images, media = collection
+    index, embeddings = index_images(media, FakeEmbedder())
+    checker = PortfolioChecker(index, embeddings, FakeTextEmbedder(), load_config("images"))
+    photo = (images / "DEC-000" / "DEC-000_01.jpg").read_bytes()  # DEC-005 posted this exact file too
+
+    copied = checker.check(photo, "DEC-003")
+    assert copied["duplicate"]["status"] == "duplicate"
+    assert {m["vendor_id"] for m in copied["duplicate"]["matches"][:2]} == {"DEC-000", "DEC-005"}
+    assert copied["duplicate"]["matches"][0]["phash_distance"] == 0
+    # The owner re-uploading it still matches DEC-005's copy, but never their own photo.
+    assert {m["vendor_id"] for m in checker.check(photo, "DEC-000")["duplicate"]["matches"]} >= {"DEC-005"}
+    assert "DEC-000" not in {m["vendor_id"] for m in checker.check(photo, "DEC-000")["duplicate"]["matches"]}
+
+    # A new photo the size of all the others: the fake CLIP calls it alike (same size), pHash doesn't.
+    buffer = io.BytesIO()
+    scene(99).save(buffer, "JPEG")
+    alike = checker.check(buffer.getvalue(), "DEC-003")["duplicate"]
+    assert alike["status"] == "possible_duplicate" and all(m["phash_distance"] > 10 for m in alike["matches"])
+    assert len(alike["matches"]) <= 5
+
+    tags = copied["tags"]
+    assert len(tags) <= 4 and all(0.3 <= t["score"] <= 1 for t in tags)
+    assert [t["score"] for t in tags] == sorted((t["score"] for t in tags), reverse=True)
+    with pytest.raises(ValueError, match="not a readable image"):
+        checker.check(b"plain text", "DEC-003")

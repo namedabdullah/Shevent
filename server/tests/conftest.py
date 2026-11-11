@@ -79,6 +79,24 @@ class FakeReviewModel:
         return pd.DataFrame([dict.fromkeys(self.aspects, "not_mentioned") | READINGS.get(t, {}) for t in texts])
 
 
+class FakePortfolioChecker:
+    """A fixed answer, shaped like PortfolioChecker.check's; anything but JPEG bytes isn't an image."""
+
+    version = "portfolio-test"
+
+    def check(self, data, vendor_id):
+        if not data.startswith(bytes.fromhex("ffd8ff")):
+            raise ValueError("not a readable image")
+        match = {"media_id": "M-0495", "vendor_id": "venue-1", "phash_distance": 0, "clip_similarity": 1.0}
+        return {
+            "tags": [{"label": "stage", "score": 0.81}, {"label": "floral", "score": 0.64}],
+            "duplicate": {"status": "duplicate" if vendor_id != "venue-1" else "unique",
+                          "matches": [match] if vendor_id != "venue-1" else []},
+            "phash": "81ce79598e117cb3",
+            "model_version": self.version,
+        }  # fmt: skip
+
+
 class FakeAllocator:
     """A fixed split, shaped like BudgetAllocator.allocate's answer."""
 
@@ -129,6 +147,7 @@ def services(tmp_path):
         feedback_path=tmp_path / "feedback.jsonl",
         review_model=FakeReviewModel(),
         reviews=REVIEWS,
+        portfolio=FakePortfolioChecker(),
     )
     services.assistant = Assistant(FakeLLM(), services, llm_replies=True, today=lambda: TODAY)
     return services

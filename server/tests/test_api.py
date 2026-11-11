@@ -15,6 +15,7 @@ from app.services import FIXTURE_VENDORS, Services
 from shevent_ml.config import CATEGORIES
 
 CONTRACT_DIR = Path(__file__).parent / "contract"
+PHOTO = {"image": ("stage.jpg", bytes.fromhex("ffd8ffe0") + b"jpeg bytes", "image/jpeg")}
 VENUES = {"101": "00000000-0000-4000-8000-000000000101", "104": "00000000-0000-4000-8000-000000000104"}
 PHOTOGRAPHERS = ["00000000-0000-4000-8000-000000000601", "00000000-0000-4000-8000-000000000602"]
 QUOTE = {
@@ -48,7 +49,7 @@ CONTRACT = {
 def test_health_names_the_models_and_counts_the_vendors(client):
     body = client.get("/health").json()
     assert body == {"status": "ok", "models": {"budget_allocator": "alloc-test", "price_estimator": "cost-test",
-                                               "review_insights": "reviews-test"},
+                                               "review_insights": "reviews-test", "portfolio_check": "portfolio-test"},
                     "vendors": 15, "assistant": "assistant-v1/llm-test"}  # fmt: skip
 
 
@@ -62,6 +63,32 @@ def test_review_insights_count_praise_and_complaints_and_keep_one_stray_reading_
     ]
     assert body["pros"] == ["Guests praise the food (2 of 3 reviews)"]  # staff: only one review
     assert body["cons"] == ["Some reviews mention late arrival (2 of 3 reviews)"]  # one cold dish isn't a con
+
+
+def test_a_portfolio_photo_is_tagged_and_checked_against_other_vendors(client):
+    body = client.post("/v1/portfolio/check", data={"vendor_id": "caterer-1"}, files=PHOTO).json()
+    assert body["duplicate"]["status"] == "duplicate" and body["duplicate"]["matches"][0]["vendor_id"] == "venue-1"
+    assert [t["label"] for t in body["tags"]] == ["stage", "floral"] and body["model_version"] == "portfolio-test"
+    own = client.post("/v1/portfolio/check", data={"vendor_id": "venue-1"}, files=PHOTO).json()
+    assert own["duplicate"] == {"status": "unique", "matches": []}  # a vendor's own photo copies nobody
+
+
+def test_a_portfolio_upload_must_be_a_photo_of_a_sensible_size(client):
+    not_photo = {"image": ("notes.txt", b"hello", "text/plain")}
+    assert client.post("/v1/portfolio/check", data={"vendor_id": "v"}, files=not_photo).status_code == 422
+    huge = {"image": ("big.jpg", bytes.fromhex("ffd8ff") + b"0" * 10_000_000, "image/jpeg")}
+    assert client.post("/v1/portfolio/check", data={"vendor_id": "v"}, files=huge).status_code == 413
+    assert client.post("/v1/portfolio/check", files=PHOTO).status_code == 422  # no vendor_id
+
+
+def test_the_portfolio_contract_sample_is_current(client):
+    """Like test_contract_samples_are_current, for the one endpoint that takes an upload instead of JSON."""
+    request = {"vendor_id": "caterer-1"}
+    sample = {"request": request, "response": client.post("/v1/portfolio/check", data=request, files=PHOTO).json()}
+    path = CONTRACT_DIR / "portfolio-check.json"
+    if os.environ.get("UPDATE_CONTRACT") == "1":
+        path.write_text(json.dumps(sample, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    assert json.loads(path.read_text(encoding="utf-8")) == sample, f"{path.name} is stale: UPDATE_CONTRACT=1"
 
 
 def test_a_vendor_without_reviews_gets_empty_insights(client):
@@ -143,6 +170,7 @@ def test_endpoints_whose_model_is_missing_answer_503_and_health_says_so():
         assert client.post("/v1/packages", json=CONTRACT["packages"]).status_code == 503
         assert client.post("/v1/assistant/chat", json=CONTRACT["assistant/chat"]).status_code == 503
         assert client.post("/v1/reviews/insights", json=CONTRACT["reviews/insights"]).status_code == 503
+        assert client.post("/v1/portfolio/check", data={"vendor_id": "v"}, files=PHOTO).status_code == 503
         assert client.get("/health").json()["status"] == "degraded"
 
 

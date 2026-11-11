@@ -60,7 +60,7 @@ class Unavailable(Exception):
 class Services:
     def __init__(
         self, catalog, price_estimator=None, allocator=None, feedback_path=None, package_settings=None, prices=None,
-        review_model=None, reviews=None,
+        review_model=None, reviews=None, portfolio=None,
     ):  # fmt: skip
         """prices: vendors' listed prices (prices.parquet rows, vendor_id being the app's id); without them every
         price is #2's estimate. reviews: the collected reviews (vendor_id being the app's id), read once by #6."""
@@ -79,6 +79,7 @@ class Services:
         else:
             self.builder = self.estimates = self.matcher = self.quote_checker = None
         self.review_model = review_model
+        self.portfolio = portfolio  # #7, a PortfolioChecker
         self.review_labels = None
         if review_model is not None and reviews is not None and len(reviews):
             labels = review_model.predict(reviews["text"].tolist())
@@ -89,6 +90,7 @@ class Services:
             "budget_allocator": getattr(self.allocator, "version", None),
             "price_estimator": getattr(self.price_estimator, "version", None),
             "review_insights": getattr(self.review_model, "version", None),
+            "portfolio_check": getattr(self.portfolio, "version", None),
         }
 
     def require(self, *names):
@@ -229,6 +231,12 @@ class Services:
             "model_version": self.review_model.version,
         }
 
+    def portfolio_check(self, data, vendor_id):
+        """POST /v1/portfolio/check: #7's tags for an uploaded photo, and whether it copies another vendor's.
+        Raises ValueError for a file that isn't a readable image."""
+        self.require("portfolio")
+        return self.portfolio.check(data, vendor_id)
+
     def assistant_chat(self, messages):
         """POST /v1/assistant/chat: #8's turn. It estimates through self.estimate, so it needs #1 and #2 too."""
         self.require("assistant", "allocator", "price_estimator")
@@ -243,6 +251,34 @@ class Services:
             with self.feedback_path.open("a", encoding="utf-8") as f:
                 f.write(line + "\n")
         return {"accepted": True}
+
+
+def load_portfolio(env=os.environ):
+    """#7's checker: the collected photos' index and CLIP embeddings (python -m shevent_ml.images.build) and the CLIP
+    model. Without any of them, /v1/portfolio/check answers 503. PORTFOLIO_CHECK=0 skips it (CLIP takes ~15 s and
+    ~600 MB to load)."""
+    index_path = Path(env.get("IMAGE_INDEX_PATH") or PROCESSED_DIR / "image_index.parquet")
+    embeddings_path = index_path.with_name("image_embeddings.npy")
+    if env.get("PORTFOLIO_CHECK") == "0":
+        return None
+    if not (index_path.exists() and embeddings_path.exists()):
+        log.warning("No image index (%s): /v1/portfolio/check will answer 503", index_path)
+        return None
+    embeddings = np.load(embeddings_path)
+    if not len(embeddings):
+        log.warning("The image index was built without CLIP (--no-clip): /v1/portfolio/check will answer 503")
+        return None
+    # The CLIP weights come from the local Hugging Face cache, so starting the server needs no internet.
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    try:
+        from shevent_ml.images.check import PortfolioChecker
+        from shevent_ml.images.embed import ClipEmbedder
+
+        embedder = ClipEmbedder()
+    except Exception as error:  # open_clip missing, or the weights not cached
+        log.warning("CLIP couldn't load (%s): /v1/portfolio/check will answer 503", error)
+        return None
+    return PortfolioChecker(pd.read_parquet(index_path), embeddings, embedder, vendor_ids=app_vendor_id)
 
 
 def load_services(env=os.environ):
@@ -290,6 +326,7 @@ def load_services(env=os.environ):
         feedback_path=env.get("FEEDBACK_PATH"),
         review_model=load(ReviewModel, REVIEWS_DIR, "review insights (#6)"),
         reviews=reviews,
+        portfolio=load_portfolio(env),
     )
     # #8 talks to a local Ollama; set OLLAMA_MODEL= (empty) to turn the assistant off.
     model = env.get("OLLAMA_MODEL", DEFAULT_LLM)

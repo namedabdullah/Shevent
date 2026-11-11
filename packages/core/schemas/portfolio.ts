@@ -4,6 +4,9 @@
 import { z } from 'zod';
 import { modelVersionSchema } from './common';
 
+/** The form's text field; the photo itself is the `image` file field. */
+export const portfolioCheckRequestSchema = z.object({ vendor_id: z.string().min(1).max(64) });
+
 export const DUPLICATE_STATUSES = ['unique', 'possible_duplicate', 'duplicate'] as const;
 export type DuplicateStatus = (typeof DUPLICATE_STATUSES)[number];
 
