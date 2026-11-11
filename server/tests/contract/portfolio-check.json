@@ -1,0 +1,30 @@
+{
+  "request": {
+    "vendor_id": "caterer-1"
+  },
+  "response": {
+    "tags": [
+      {
+        "label": "stage",
+        "score": 0.81
+      },
+      {
+        "label": "floral",
+        "score": 0.64
+      }
+    ],
+    "duplicate": {
+      "status": "duplicate",
+      "matches": [
+        {
+          "media_id": "M-0495",
+          "vendor_id": "venue-1",
+          "phash_distance": 0,
+          "clip_similarity": 1.0
+        }
+      ]
+    },
+    "phash": "81ce79598e117cb3",
+    "model_version": "portfolio-test"
+  }
+}

@@ -9,11 +9,11 @@
 |---|---|---|---|---|
 | 1 | Budget Allocator | Built, served | Share MAE 2.4 points on synthetic held-out events (fixed planner split 5.7) | **Not tested:** no host has reported a real split yet |
 | 2 | Price Range Estimator | Built, served | 46 real test prices: MAPE 72% (median lookup 92%); the 80% range holds 91% (median lookup 76%) | **Yes** on error; its range is wider than it needs to be |
-| 3 | Vendor Matching | Built, served | Not scored: the hand-rated matching set has no ratings yet | **Not tested** |
+| 3 | Vendor Matching | Built, served | Not scored yet: the test set is rebuilt on the 327 vendors (14 events, 234 candidates) and waits for the data lead's 0-3 ratings | **Not tested** |
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
 | 6 | Review Insights | Built, served | 150 real test reviews: macro-F1 0.436 (English-only baseline 0.424); finds 13 of 17 complaints (baseline 7) | **Yes, narrowly**, on labels by an AI assistant, with the test set looked at twice |
-| 7 | Verified Portfolios | Built (duplicates), not served | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%) | **Yes** for duplicates; style tags not built |
+| 7 | Verified Portfolios | Built, served | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%); style tags 23 of 29 right on 12 photos | **Yes** for duplicates |
 | 8 | AI Planning Assistant | Built, served | Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 invented figures in replies | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
 **The one-line verdict:** the path from event details to a priced plan, matched vendors, packages, quote checks and a
@@ -102,9 +102,12 @@ By category on the real test prices:
 
 ## #3 Vendor Matching
 
-Not scored. The matching set (12 queries × 20 candidates) has no relevance ratings yet. The candidates file isn't on
-this machine: rebuild it on the 327 vendors with `python -m shevent_ml.eval.matching_set`, then rate. Once rated,
-`python -m shevent_ml.models.matching` reports NDCG@10 and Precision@5 next to sort-by-rating.
+Not scored. The matching set is rebuilt on the 327 vendors (11 Nov): 14 events with 234 candidate vendors
+(`data/splits/matching_candidates.csv`; the two lighting events have only 3, all there are). The data lead rates each
+0-3 in `data/processed/matching_to_label.csv` and saves it as `data/splits/matching_labels.csv`; then
+`python -m shevent_ml.models.matching` reports NDCG@10 and Precision@5 next to sort-by-rating. With no vendor ratings
+collected, sort-by-rating is close to an arbitrary order, so beating it will say little; the ratings themselves are
+the useful part.
 
 What is tested: vendors over capacity are excluded, sponsored vendors never enter the ranking, every match has factual
 reasons, the new-vendor boost is bounded, and a hall's add-on rent isn't treated as its price. Dataset v2 adds event
@@ -158,9 +161,12 @@ wording in the apps is guidance, never an accusation.
   photos they find 85% at 100% precision; MD5 exact matching (the baseline) finds none, pHash alone 77% and CLIP alone
   56%. CLIP adds crops (62%); reposts (crop + filter + watermark) are still missed (6%). On the real collection 14 pairs
   are flagged, 8 of them true copies, including a caterer and a venue showing the same three photos; the other 6 are
-  different photos of the same scene that CLIP matches. Style tags aren't built yet.
+  different photos of the same scene that CLIP matches. Style tags (CLIP zero-shot, scene and style groups) were
+  right for 23 of 29 tags on 12 real photos checked by eye. Served at `/v1/portfolio/check` since 11 Nov.
 
-Neither #7's duplicate check nor its style tags are served yet (`/v1/portfolio/check`).
+#6 also has a second-labeller check: `python -m shevent_ml.reviews.model --second-sheet` writes the 150 test
+reviews unlabelled; once a person labels them (`data/splits/review_labels_second.csv`), `--second` scores the
+model on their labels (an independent score) and reports the two labellers' agreement (Cohen's kappa).
 
 ## #8 AI Planning Assistant
 

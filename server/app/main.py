@@ -15,7 +15,7 @@ import threading
 from contextlib import asynccontextmanager
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -30,6 +30,7 @@ from .schemas import (
     Health,
     PackagesRequest,
     PackagesResponse,
+    PortfolioCheckResponse,
     QuoteCheckRequest,
     QuoteCheckResponse,
     RecommendRequest,
@@ -38,6 +39,8 @@ from .schemas import (
     ReviewInsightsResponse,
 )
 from .services import Services, Unavailable, load_services
+
+MAX_UPLOAD_BYTES = 10_000_000  # one portfolio photo
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -123,6 +126,21 @@ def create_app(services=None):
     def review_insights(request: ReviewInsightsRequest, services: ServicesDep):
         """#6 praise and complaints per aspect in a vendor's reviews, with pros and cons."""
         return services.review_insights(request.vendor_id)
+
+    @app.post("/v1/portfolio/check", response_model=PortfolioCheckResponse)
+    def portfolio_check(
+        services: ServicesDep,
+        vendor_id: Annotated[str, Form(min_length=1, max_length=64)],
+        image: Annotated[UploadFile, File()],
+    ):
+        """#7 style tags for an uploaded portfolio photo, and whether it copies another vendor's photo."""
+        data = image.file.read(MAX_UPLOAD_BYTES + 1)
+        if len(data) > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, f"Photos up to {MAX_UPLOAD_BYTES // 1_000_000} MB")
+        try:
+            return services.portfolio_check(data, vendor_id)
+        except ValueError as error:
+            raise HTTPException(422, str(error)) from error
 
     @app.post("/v1/feedback", response_model=FeedbackResponse)
     def feedback(request: FeedbackRequest, services: ServicesDep):

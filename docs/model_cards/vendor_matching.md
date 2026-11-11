@@ -35,9 +35,11 @@ which is too small to lift a poor fit above a good one.
 
 ## Evaluation
 
-**Not scored yet.** The test set (12 queries × 20 candidates, `data/splits/matching_candidates.csv`) needs rebuilding
-on the 327 vendors of dataset v2 (`python -m shevent_ml.eval.matching_set`), then rating 0-3 by the data lead. Then NDCG@10 and Precision@5 are compared with sort-by-rating. Unit tests cover capacity
-exclusion, sponsored separation, reasons and the new-vendor boost.
+**Not scored yet.** The test set is rebuilt on the 327 vendors of dataset v2 (14 events, 234 candidates,
+`data/splits/matching_candidates.csv`) and waits for the data lead's 0-3 ratings
+(`data/processed/matching_to_label.csv`, saved as `data/splits/matching_labels.csv`). Then NDCG@10 and Precision@5
+are compared with sort-by-rating, which, with no vendor ratings collected, is close to an arbitrary order. Unit tests
+cover capacity exclusion, sponsored separation, reasons and the new-vendor boost.
 
 ## Limitations
 

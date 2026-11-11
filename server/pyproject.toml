@@ -15,6 +15,8 @@ dependencies = [
     "httpx>=0.27",
     # uvicorn --env-file
     "python-dotenv>=1.0",
+    # /v1/portfolio/check (#7): photo uploads
+    "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]

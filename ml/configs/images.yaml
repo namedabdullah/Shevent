@@ -23,3 +23,26 @@ planted:
 duplicates:
   phash_max_distance: 10 # of 64 bits
   clip_min_similarity: 0.92
+
+# Style tags (#7): CLIP zero-shot, each tag scored against the others in its group (scores in a group add up to 1).
+# A tag is returned when its score is at least min_score; a photo gets at most max_tags.
+tags:
+  min_score: 0.3
+  max_tags: 4
+  prompt: "a photo of {} at a Pakistani wedding or event"
+  groups:
+    scene:
+      stage: "a decorated wedding stage"
+      entrance: "a decorated entrance or walkway"
+      seating: "guest tables and seating"
+      food: "a buffet or food display"
+      portrait: "a portrait of the bride or the couple"
+      guests: "guests celebrating"
+      venue: "an empty banquet hall or marquee"
+    style:
+      floral: "lots of fresh flowers"
+      fairy lights: "fairy lights and warm string lights"
+      mehndi colours: "bright yellow, orange and green mehndi decor"
+      red and gold: "red and gold decor"
+      pastel: "soft pastel decor"
+      white and green: "white flowers and greenery"

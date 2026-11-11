@@ -13,6 +13,8 @@ import {
   feedbackResponseSchema,
   packagesRequestSchema,
   packagesResponseSchema,
+  portfolioCheckRequestSchema,
+  portfolioCheckResponseSchema,
   quoteCheckRequestSchema,
   quoteCheckResponseSchema,
   recommendRequestSchema,
@@ -29,6 +31,8 @@ const ENDPOINTS: Record<string, [z.ZodType, z.ZodType]> = {
   feedback: [feedbackRequestSchema, feedbackResponseSchema],
   'assistant-chat': [assistantChatRequestSchema, assistantChatResponseSchema],
   'reviews-insights': [reviewInsightsRequestSchema, reviewInsightsResponseSchema],
+  // A form upload: the sample's request is its text field (vendor_id); the photo isn't saved.
+  'portfolio-check': [portfolioCheckRequestSchema, portfolioCheckResponseSchema],
 };
 
 describe('model server contract samples', () => {

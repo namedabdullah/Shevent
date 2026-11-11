@@ -37,7 +37,7 @@ import pandas as pd
 from scipy.sparse import csr_matrix, hstack
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import f1_score
+from sklearn.metrics import cohen_kappa_score, f1_score
 
 from shevent_ml.config import PROCESSED_DIR, REPO_ROOT, SEED, SPLITS_DIR, load_config
 from shevent_ml.reviews.draft import load_or_choose_test_set
@@ -47,6 +47,9 @@ from shevent_ml.reviews.synthetic import generate, phrases_hash, split_fragments
 ARTIFACT_DIR = REPO_ROOT / "ml" / "artifacts" / "review_insights"
 LABELS_FILE = SPLITS_DIR / "review_labels.csv"
 SHEET_FILE = PROCESSED_DIR / "reviews_to_label.csv"
+# A second person labels the test set blind, for an independent score and the labellers' agreement.
+SECOND_SHEET_FILE = PROCESSED_DIR / "reviews_to_label_second.csv"
+SECOND_LABELS_FILE = SPLITS_DIR / "review_labels_second.csv"
 LABELS = ["positive", "negative", "mixed", NOT_MENTIONED]
 NO_ASPECT = "none"
 JOINING_WORDS = ["but", "however", "though", "and", "also", "plus", "lekin", "magar", "aur", "or", "لیکن", "مگر",
@@ -310,14 +313,61 @@ def print_report(report):
         print("  No real test labels yet: the synthetic check uses unseen fragments, but they're still synthetic.")
 
 
+def second_labeller(model, config=None, labels_path=SECOND_LABELS_FILE, first_path=LABELS_FILE):
+    """The test set scored on a second person's labels (an independent score), and how often the two labellers agree:
+    Cohen's kappa per aspect (1 = always, 0 = no better than chance) and the share of identical labels."""
+    config = config or settings()
+    aspects = list(config["aspects"])
+    reviews = pd.read_parquet(PROCESSED_DIR / "reviews.parquet")
+    test_ids = load_or_choose_test_set(reviews, config)
+    second = read_labels(labels_path, aspects)
+    second = second[second["review_id"].isin(test_ids)].merge(reviews[["review_id", "text"]], on="review_id")
+    second = second.reset_index(drop=True)
+    report = {
+        "rows": len(second),
+        "model": score(model.predict(second["text"]), second, aspects),
+        "baseline": score(EnglishBaseline(config).predict(second["text"]), second, aspects),
+    }
+    first = read_labels(first_path, aspects)
+    if first is not None:
+        both = second[["review_id", *aspects]].merge(first, on="review_id", suffixes=("_second", "_first"))
+        kappas = {}
+        for a in aspects:
+            kappa = cohen_kappa_score(both[f"{a}_first"], both[f"{a}_second"], labels=LABELS)
+            kappas[a] = None if np.isnan(kappa) else round(float(kappa), 3)
+        same = np.mean([(both[f"{a}_first"] == both[f"{a}_second"]).mean() for a in aspects])
+        report["agreement"] = {"rows": len(both), "kappa_by_aspect": kappas, "identical_labels": round(float(same), 3)}
+    return report
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--sheet", action="store_true", help="write the labelling sheet for the real reviews")
+    parser.add_argument("--second-sheet", action="store_true", help="a blank test-set sheet for a second labeller")
+    parser.add_argument("--second", action="store_true", help="score the saved model on the second labeller's labels")
     parser.add_argument("--out", type=Path, default=ARTIFACT_DIR)
     args = parser.parse_args()
 
     sys.stdout.reconfigure(encoding="utf-8")
     config = settings()
+    if args.second_sheet:
+        reviews = pd.read_parquet(PROCESSED_DIR / "reviews.parquet")
+        test_ids = load_or_choose_test_set(reviews, config)
+        sheet = write_sheet(reviews[reviews["review_id"].isin(test_ids)], test_ids, list(config["aspects"]),
+                            SECOND_SHEET_FILE)  # fmt: skip
+        print(f"{len(sheet)} test reviews, unlabelled, written to {SECOND_SHEET_FILE}")
+        print(f"Fill the aspect columns without looking at {LABELS_FILE}, and save as {SECOND_LABELS_FILE}")
+        return 0
+    if args.second:
+        report = second_labeller(ReviewModel.load(args.out, config), config)
+        (args.out / "second_labeller.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+        print(f"On {report['rows']} test reviews labelled by a second person:")
+        print_report({"real_test": report["model"], "real_test_baseline": report["baseline"]})
+        if "agreement" in report:
+            agreement = report["agreement"]
+            print(f"  Labellers agree on {agreement['identical_labels']:.0%} of labels; kappa by aspect:")
+            print(f"  {agreement['kappa_by_aspect']}")
+        return 0
     if args.sheet:
         reviews = pd.read_parquet(PROCESSED_DIR / "reviews.parquet")
         test_ids = load_or_choose_test_set(reviews, config)

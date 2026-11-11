@@ -14,7 +14,11 @@ from PIL import Image, ImageChops, ImageOps
 
 
 def file_md5(path):
-    return hashlib.md5(path.read_bytes(), usedforsecurity=False).hexdigest()
+    return file_md5_bytes(path.read_bytes())
+
+
+def file_md5_bytes(data):
+    return hashlib.md5(data, usedforsecurity=False).hexdigest()
 
 
 def open_image(path):

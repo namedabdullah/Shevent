@@ -1,16 +1,21 @@
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from shevent_ml.config import load_config
+from shevent_ml.config import PROCESSED_DIR, load_config
 from shevent_ml.reviews.labels import NOT_MENTIONED, settings
 from shevent_ml.reviews.model import (
+    ARTIFACT_DIR,
+    LABELS_FILE,
     EnglishBaseline,
     ReviewModel,
     clause_examples,
     clauses,
     read_labels,
     score,
+    second_labeller,
     write_sheet,
 )
 
@@ -95,3 +100,19 @@ def test_the_sheet_lists_the_test_set_first(tmp_path):
     )
     sheet = write_sheet(reviews, {"R-3"}, ASPECTS, tmp_path / "sheet.csv")
     assert sheet["review_id"].tolist() == ["R-3", "R-1", "R-2"] and (sheet[ASPECTS] == "").all().all()
+
+
+@pytest.mark.skipif(
+    not (PROCESSED_DIR / "reviews.parquet").exists() or not LABELS_FILE.exists(),
+    reason="needs the real labelled reviews",
+)
+def test_a_second_labeller_who_agrees_completely_gets_kappa_one_and_the_same_score(tmp_path):
+    # The first labeller's file standing in for the second: perfect agreement, and the model's real-test score.
+    second = tmp_path / "review_labels_second.csv"
+    second.write_bytes(LABELS_FILE.read_bytes())
+    model = ReviewModel.load(ARTIFACT_DIR, CONFIG)
+    report = second_labeller(model, CONFIG, labels_path=second)
+    assert report["rows"] == 150 and report["agreement"]["identical_labels"] == 1.0
+    assert all(k in (None, 1.0) for k in report["agreement"]["kappa_by_aspect"].values())
+    saved = json.loads((ARTIFACT_DIR / "meta.json").read_text(encoding="utf-8"))["report"]["real_test"]
+    assert report["model"]["macro_f1"] == pytest.approx(saved["macro_f1"])

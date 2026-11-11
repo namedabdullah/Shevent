@@ -180,6 +180,30 @@ class ReviewInsightsResponse(BaseModel):
     model_version: str
 
 
+class PortfolioTag(BaseModel):
+    label: str
+    score: float = Field(ge=0, le=1)
+
+
+class PortfolioMatch(BaseModel):
+    media_id: str
+    vendor_id: str
+    phash_distance: int = Field(ge=0)
+    clip_similarity: float = Field(ge=-1, le=1)
+
+
+class PortfolioDuplicate(BaseModel):
+    status: Literal["unique", "possible_duplicate", "duplicate"]
+    matches: list[PortfolioMatch]
+
+
+class PortfolioCheckResponse(BaseModel):
+    tags: list[PortfolioTag]
+    duplicate: PortfolioDuplicate
+    phash: str
+    model_version: str
+
+
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant"]
     content: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]

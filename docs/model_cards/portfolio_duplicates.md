@@ -4,14 +4,14 @@
 |---|---|
 | Version | Rules in `ml/shevent_ml/images/hashing.py` and `duplicates.py`, thresholds and the CLIP model in `ml/configs/images.yaml` |
 | Code | `ml/shevent_ml/images/` (`download.py`, `build.py`, `hashing.py`, `planted.py`, `duplicates.py`) |
-| Served by | Not yet (`/v1/portfolio/check` is in the API contract; the apps don't show it) |
+| Served by | `POST /v1/portfolio/check` (a photo upload; the apps don't call it yet) |
 | Owner | ML lead |
 
 ## What it does
 
 Finds a vendor's portfolio photo that is a copy of another photo, even when it has been resized, recompressed,
-colour-filtered, turned grey, watermarked, framed, mirrored or cropped to hide that. The planned second half, style
-tags with CLIP ("floral stage", "fairy lights"), isn't built yet, though the CLIP model and embeddings now are.
+colour-filtered, turned grey, watermarked, framed, mirrored or cropped to hide that, and tags the photo's scene and
+style ("stage", "floral", "fairy lights") so hosts could filter portfolios by look.
 
 ## Method
 
@@ -62,12 +62,29 @@ So 8 of the 14 are real copies. An earlier version also flagged a bride's portra
 both were phone screenshots, and pHash saw mostly the black bars. Trimming bars on two opposite sides removed that
 false alarm (the two now hash 32 bits apart). In the app, only cross-vendor matches would be worth showing.
 
+**Style tags:** CLIP zero-shot, two groups of prompts in `ml/configs/images.yaml`: scene (stage, entrance,
+seating, food, portrait, guests, venue) and style (floral, fairy lights, mehndi colours, red and gold, pastel, white
+and green). Each tag is scored against the others in its group; tags at 0.3 or more are kept, at most four. On 12 real
+photos chosen at random across vendor types and checked by eye (by an AI assistant, not the data lead): the scene tag
+was right for 11, the style tags 12 times out of 16; 23 of 29 tags (79%) in all. Misses: "fairy lights" for a
+chandelier, "pastel" for bright mehndi ribbons, style tags on a studio portrait.
+
+## Serving
+
+`/v1/portfolio/check` takes a vendor id and a photo (up to 10 MB and 50 megapixels) and returns the tags, a duplicate
+status and up to five matching photos. **duplicate**: the same file or a pHash match with another vendor's photo;
+**possible_duplicate**: only CLIP finds one; **unique**: neither. The uploader's own photos never count. The server
+loads the photo index and CLIP at startup (about 15 s more, about 600 MB), from the local cache, without internet; a
+missing index or model makes the endpoint answer 503. A check takes about 0.2 s once warm.
+
 ## Limitations
 
 - **Reposts (crop + filter + watermark together) are still missed** (6%).
 - **CLIP's real precision is lower than on the planted set:** it also matches different photos of the same scene.
 - A match means "these look like the same photo", not "this vendor copied": a venue may legitimately show a
   photographer's photo of an event held there. Matches go to a person to check, never to an automatic penalty.
+- Style tags are judged on 12 photos only, by an AI assistant; a scene's tags compete, so a photo of a stage with
+  guests on it gets one or the other.
 - A photo whose own edge is as dark as screenshot bars (or as light as a white frame) can lose a strip of itself when
   trimmed.
 
