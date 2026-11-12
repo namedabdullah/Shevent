@@ -23,6 +23,7 @@ PriceUnit = Literal["per_head", "per_event", "per_hour", "per_package", "per_slo
 FairnessLevel = Literal["green", "yellow", "red"]
 PackageKind = Literal["cheapest", "balanced", "highest_quality"]
 ChatLanguage = Literal["en", "ur", "roman_ur", "mixed"]
+AssistantIntent = Literal["budget_split", "quote_check", "vendors", "prices", "advice", "greeting"]
 
 PriceRange = Annotated[list[float], Field(min_length=2, max_length=2, description="[low, high] in PKR")]
 ItemText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
@@ -39,8 +40,22 @@ class EventSpec(BaseModel):
     preferences: list[Annotated[str, StringConstraints(max_length=40)]] | None = Field(default=None, max_length=10)
 
 
+def _unique(categories):
+    if categories is not None and len(set(categories)) != len(categories):
+        raise ValueError("categories must be unique")
+    return categories
+
+
 class EstimateRequest(EventSpec):
     total_budget_pkr: int = Field(ge=10_000, le=500_000_000)
+    categories: list[Category] | None = Field(
+        default=None, min_length=1, max_length=len(CATEGORIES), description="The services the host needs; all if absent"
+    )
+
+    @field_validator("categories")
+    @classmethod
+    def unique(cls, categories):
+        return _unique(categories)
 
 
 class AllocationItem(BaseModel):
@@ -98,9 +113,7 @@ class PackagesRequest(BaseModel):
     @field_validator("categories")
     @classmethod
     def unique(cls, categories):
-        if len(set(categories)) != len(categories):
-            raise ValueError("categories must be unique")
-        return categories
+        return _unique(categories)
 
 
 class PackageItem(BaseModel):
@@ -223,18 +236,28 @@ class ExtractedPlan(BaseModel):
     venue_type: VenueType | None = None
     event_date: date | None = None
     total_budget_pkr: int | None = Field(default=None, ge=10_000, le=500_000_000)
+    categories: list[Category] | None = None
 
     @model_serializer(mode="wrap")
     def without_unset(self, handler):
         return {k: v for k, v in handler(self).items() if v is not None}
 
 
+class AssistantRecommendations(BaseModel):
+    """#3's best matches for one service, as the assistant suggests them (sponsored listings never included)."""
+
+    category: Category
+    matches: list[Match]
+
+
 class AssistantChatResponse(BaseModel):
     reply: str
     language: ChatLanguage
+    intent: AssistantIntent
     extracted: ExtractedPlan
     missing: list[str]
     estimate: EstimateResponse | None
+    recommendations: AssistantRecommendations | None = None
     fallback_to_form: bool
     model_version: str
 

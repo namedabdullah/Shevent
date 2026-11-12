@@ -1,4 +1,4 @@
-import { CATEGORIES, CATEGORY_LABELS, categoryFromSlug, categorySlug } from '@shevent/core/enums';
+import { CATEGORY_LABELS, categoryFromSlug, categorySlug } from '@shevent/core/enums';
 import { formatPkrCompact, formatPkrRange } from '@shevent/core/format';
 import { AI_ESTIMATE_LABEL, SPONSORED_LABEL, SPONSORED_NOTE } from '@shevent/core/labels';
 import type { RecommendResponse } from '@shevent/core/schemas';
@@ -14,7 +14,7 @@ import { Notice } from '@/components/ui/notice';
 import { Page, PageHeader } from '@/components/ui/page';
 import { Link } from '@/i18n/navigation';
 import { getAi } from '@/lib/ai';
-import { getPlan, planEstimate, planToRequest } from '@/lib/plans';
+import { getPlan, planCategories, planEstimate, planToRequest } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,6 +28,9 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
   if (!category) notFound();
 
   const [t, plan] = await Promise.all([getTranslations('Matches'), getPlan(id)]);
+  // Only the services the host chose have a page.
+  const categories = planCategories(plan);
+  if (!categories.includes(category)) notFound();
   const estimate = planEstimate(plan);
   const label = CATEGORY_LABELS[category];
   const allocation = estimate?.allocation[category];
@@ -62,7 +65,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
         {/* Switch category without going back to the plan. */}
         <nav aria-label={t('categoriesLabel')} className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <ul className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
-            {CATEGORIES.map((value) => {
+            {categories.map((value) => {
               const current = value === category;
               return (
                 <li key={value}>

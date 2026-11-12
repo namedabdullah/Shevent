@@ -43,7 +43,7 @@ describe('every fixture follows its contract', () => {
   });
 
   it.each(CATEGORIES)('recommend: %s', (category) => {
-    const budget = fixtureEstimate(plan).allocation[category].pkr;
+    const budget = fixtureEstimate(plan).allocation[category]!.pkr;
     const response = fixtureRecommend({ plan, category, budget_pkr: budget });
     expect(recommendResponseSchema.safeParse(response).success).toBe(true);
     expect(response.matches.length).toBeGreaterThan(0);

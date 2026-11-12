@@ -1,4 +1,4 @@
-import { CATEGORIES, CATEGORY_LABELS } from '@shevent/core/enums';
+import { CATEGORY_LABELS } from '@shevent/core/enums';
 import { formatPkr, formatPkrCompact, formatPkrRange } from '@shevent/core/format';
 import { AI_ESTIMATE_LABEL } from '@shevent/core/labels';
 import { PACKAGE_KIND_LABELS, type PackagesResponse } from '@shevent/core/schemas';
@@ -12,7 +12,7 @@ import { Notice } from '@/components/ui/notice';
 import { cardStyles, Page, PageHeader } from '@/components/ui/page';
 import { Link } from '@/i18n/navigation';
 import { getAi } from '@/lib/ai';
-import { getPlan, planToRequest } from '@/lib/plans';
+import { getPlan, planCategories, planToRequest } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
 import { sendInquiry } from '../actions';
 
@@ -27,7 +27,7 @@ export default async function PackagesPage({ params }: PageProps<'/[locale]/plan
 
   let result: PackagesResponse | null = null;
   try {
-    result = await getAi().packages({ plan: planToRequest(plan), categories: [...CATEGORIES] });
+    result = await getAi().packages({ plan: planToRequest(plan), categories: planCategories(plan) });
   } catch (error) {
     console.error('Packages failed', error);
   }

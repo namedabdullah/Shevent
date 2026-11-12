@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from conftest import CATERER, CHAT, PLAN, FakeAllocator, FakeEstimator
+from conftest import CATERER, PLAN, FakeAllocator, FakeEstimator
 from fastapi.testclient import TestClient
 
 from app.catalog import StaticCatalog
@@ -15,6 +15,7 @@ from app.services import FIXTURE_VENDORS, Services
 from shevent_ml.config import CATEGORIES
 
 CONTRACT_DIR = Path(__file__).parent / "contract"
+ASK_FOR_CATERERS = "Suggest caterers for a mehndi for 300 guests in Gulberg"
 PHOTO = {"image": ("stage.jpg", bytes.fromhex("ffd8ffe0") + b"jpeg bytes", "image/jpeg")}
 VENUES = {"101": "00000000-0000-4000-8000-000000000101", "104": "00000000-0000-4000-8000-000000000104"}
 PHOTOGRAPHERS = ["00000000-0000-4000-8000-000000000601", "00000000-0000-4000-8000-000000000602"]
@@ -35,7 +36,8 @@ CONTRACT = {
     "recommend": {"plan": {**PLAN, "guest_count": 120}, "category": "venue", "budget_pkr": 675_000, "limit": 5},
     "packages": {"plan": PLAN, "categories": CATEGORIES, "unavailable_vendor_ids": [VENUES["101"]]},
     "quote-check": QUOTE,
-    "assistant/chat": {"messages": [{"role": "user", "content": CHAT}]},
+    # A vendor question, so the sample carries #3's suggestions (the estimate's shape is the estimate sample's).
+    "assistant/chat": {"messages": [{"role": "user", "content": ASK_FOR_CATERERS}]},
     "reviews/insights": {"vendor_id": CATERER},
     "feedback": {
         "plan_id": "plan-1",
@@ -50,7 +52,7 @@ def test_health_names_the_models_and_counts_the_vendors(client):
     body = client.get("/health").json()
     assert body == {"status": "ok", "models": {"budget_allocator": "alloc-test", "price_estimator": "cost-test",
                                                "review_insights": "reviews-test", "portfolio_check": "portfolio-test"},
-                    "vendors": 15, "assistant": "assistant-v1/llm-test"}  # fmt: skip
+                    "vendors": 15, "assistant": "assistant-v2/llm-test"}  # fmt: skip
 
 
 def test_review_insights_count_praise_and_complaints_and_keep_one_stray_reading_out(client):
@@ -105,10 +107,18 @@ def test_estimate_splits_the_budget_and_gives_every_category_a_range(client):
     assert body["model_version"] == "alloc-test+cost-test"
 
 
+def test_estimate_splits_the_budget_between_the_chosen_services_only(client):
+    body = client.post("/v1/estimate", json={**PLAN, "categories": ["photography", "catering"]}).json()
+    assert list(body["allocation"]) == ["catering", "photography"]
+    assert abs(sum(item["share"] for item in body["allocation"].values()) - 1) < 0.01
+    assert body["allocation"]["catering"]["pkr"] == 2_021_000  # 0.38 / (0.38 + 0.09) of Rs 25 lakh
+
+
 @pytest.mark.parametrize(
     "change",
     [{"area": "Atlantis"}, {"guest_count": 9}, {"total_budget_pkr": 9_999}, {"event_date": "19/12/2026"},
-     {"event_type": "funeral"}, {"preferences": ["x" * 41]}],
+     {"event_type": "funeral"}, {"preferences": ["x" * 41]}, {"categories": []}, {"categories": ["fireworks"]},
+     {"categories": ["decor", "decor"]}],
 )  # fmt: skip
 def test_bad_plans_are_rejected_before_any_model_runs(client, change):
     assert client.post("/v1/estimate", json={**PLAN, **change}).status_code == 422

@@ -106,9 +106,12 @@ class FakeAllocator:
         return pd.DataFrame([SHARES] * len(plans), index=plans.index)
 
     def allocate(self, plan, minimums=None):
+        """Like the real one, only the chosen services share the budget, in the same proportions."""
         budget = plan["total_budget_pkr"]
+        chosen = [c for c in CATEGORIES if c in (plan.get("categories") or CATEGORIES)]
+        shares = {c: SHARES[c] / sum(SHARES[k] for k in chosen) for c in chosen}
         return {
-            "allocation": {c: {"share": SHARES[c], "pkr": round(SHARES[c] * budget, -3)} for c in CATEGORIES},
+            "allocation": {c: {"share": shares[c], "pkr": round(shares[c] * budget, -3)} for c in chosen},
             "budget_too_low": False,
             "minimum_budget_pkr": sum((minimums or {}).values()),
             "warnings": [],

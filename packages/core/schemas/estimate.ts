@@ -14,11 +14,18 @@ export const estimateRequestSchema = z.object({
   event_date: z.iso.date(),
   total_budget_pkr: z.int().min(10_000).max(500_000_000),
   preferences: z.array(z.string().max(40)).max(10).optional(),
+  /** The services the host needs; the budget is split between these only. All six when absent. */
+  categories: z
+    .array(z.enum(CATEGORIES))
+    .min(1)
+    .max(CATEGORIES.length)
+    .refine((categories) => new Set(categories).size === categories.length, { message: 'categories must be unique' })
+    .optional(),
 });
 export type EstimateRequest = z.infer<typeof estimateRequestSchema>;
 
 /** The event itself, without the host's budget (what a vendor may see; what #5 prices). */
-export const eventSpecSchema = estimateRequestSchema.omit({ total_budget_pkr: true });
+export const eventSpecSchema = estimateRequestSchema.omit({ total_budget_pkr: true, categories: true });
 export type EventSpec = z.infer<typeof eventSpecSchema>;
 
 export const allocationItemSchema = z.object({
@@ -32,8 +39,10 @@ export const allocationItemSchema = z.object({
 export type AllocationItem = z.infer<typeof allocationItemSchema>;
 
 export const estimateResponseSchema = z.object({
+  /** One entry per service the host chose (all six unless the request named some). */
   allocation: z
-    .record(z.enum(CATEGORIES), allocationItemSchema)
+    .partialRecord(z.enum(CATEGORIES), allocationItemSchema)
+    .refine((allocation) => Object.keys(allocation).length > 0, { message: 'at least one category' })
     .refine((allocation) => Math.abs(Object.values(allocation).reduce((sum, item) => sum + item.share, 0) - 1) < 0.01, {
       message: 'shares must sum to 1',
     }),

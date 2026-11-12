@@ -14,7 +14,11 @@ import { Link } from '@/i18n/navigation';
  */
 export function BudgetSplit({ planId, estimate }: { planId?: string; estimate: EstimateResponse }) {
   const t = useTranslations('PlanDashboard');
-  const rows = CATEGORIES.map((category) => ({ category, label: CATEGORY_LABELS[category], ...estimate.allocation[category] }));
+  // Only the services the host chose are in the split.
+  const rows = CATEGORIES.flatMap((category) => {
+    const item = estimate.allocation[category];
+    return item ? [{ category, label: CATEGORY_LABELS[category], ...item }] : [];
+  });
 
   return (
     <div className="flex flex-col gap-6">

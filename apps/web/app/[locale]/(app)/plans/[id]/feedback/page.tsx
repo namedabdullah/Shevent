@@ -24,7 +24,8 @@ export default async function FeedbackPage({ params }: PageProps<'/[locale]/plan
   const budgets: Partial<Record<Category, string>> = {};
   const spend: Partial<Record<Category, string>> = {};
   for (const category of CATEGORIES) {
-    if (estimate) budgets[category] = formatPkrCompact(estimate.allocation[category].pkr);
+    const item = estimate?.allocation[category];
+    if (item) budgets[category] = formatPkrCompact(item.pkr);
     if (saved[category] !== undefined) spend[category] = formatNumber(saved[category]);
   }
 

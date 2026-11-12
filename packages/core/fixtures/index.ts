@@ -3,11 +3,12 @@
 // model_version "fixture" so the UI can show SAMPLE_DATA_LABEL.
 
 import { CATEGORIES, CATEGORY_LABELS, EVENT_TYPE_LABELS, type Category } from '../enums';
-import { formatEventDate, formatPkrCompact, todayInLahore } from '../format';
+import { formatEventDate, formatPkrCompact, formatPkrRange, todayInLahore } from '../format';
 import type { FairnessLevel } from '../labels';
 import type {
   AssistantChatRequest,
   AssistantChatResponse,
+  AssistantIntent,
   EstimateRequest,
   EstimateResponse,
   FeedbackResponse,
@@ -69,12 +70,18 @@ function toSummary(vendor: FixtureVendor): VendorSummary {
  */
 export function fixtureEstimate(request: EstimateRequest): EstimateResponse {
   const base = estimateResponseFixture;
+  // Like the real allocator, only the chosen services share the budget, in the same proportions.
+  const chosen = CATEGORIES.filter((category) => !request.categories || request.categories.includes(category));
+  const total = chosen.reduce((sum, category) => sum + base.allocation[category]!.share, 0);
   const allocation = Object.fromEntries(
-    CATEGORIES.map((category) => {
-      const item = base.allocation[category];
-      const pkr = roundTo1000(item.share * request.total_budget_pkr);
-      const [low, high] = item.range.map((bound) => roundTo1000((bound / item.pkr) * pkr)) as PriceRange;
-      return [category, { share: item.share, pkr, range: [low, high] }];
+    chosen.map((category) => {
+      const item = base.allocation[category]!;
+      const share = item.share / total;
+      const pkr = roundTo1000(share * request.total_budget_pkr);
+      // The typical price doesn't depend on which other services were chosen.
+      const fullShare = roundTo1000(item.share * request.total_budget_pkr);
+      const [low, high] = item.range.map((bound) => roundTo1000((bound / item.pkr) * fullShare)) as PriceRange;
+      return [category, { share, pkr, range: [low, high] }];
     }),
   ) as EstimateResponse['allocation'];
   return {
@@ -121,7 +128,7 @@ const PACKAGE_SPEND: Record<PackageKind, number> = { cheapest: 0.75, balanced: 0
 
 /** #4: three bundles that spend 75%, 90% and 100% of each category's allocation. */
 export function fixturePackages(request: PackagesRequest): PackagesResponse {
-  const estimate = fixtureEstimate(request.plan);
+  const estimate = fixtureEstimate({ ...request.plan, categories: request.categories });
   const unavailable = new Set(request.unavailable_vendor_ids);
   const options = (category: Category) =>
     fixtureVendors.filter((v) => v.category === category && !v.sponsored && !unavailable.has(v.vendor_id));
@@ -135,7 +142,7 @@ export function fixturePackages(request: PackagesRequest): PackagesResponse {
   const packages = filled.length === 0 ? [] : (Object.keys(PACKAGE_SPEND) as PackageKind[]).map((kind) => {
     const items = filled.map((category) => {
       const vendor = pick(kind, category);
-      const price_pkr = floorTo1000(estimate.allocation[category].pkr * PACKAGE_SPEND[kind]);
+      const price_pkr = floorTo1000(estimate.allocation[category]!.pkr * PACKAGE_SPEND[kind]);
       return {
         vendor: toSummary(vendor),
         price_pkr,
@@ -207,7 +214,7 @@ export const INCLUSION_CHECKLIST: Record<Category, { item: string; label: string
  * (the request carries no budget). The fixture ignores the vendor's tier.
  */
 export function fixtureQuoteCheck(request: QuoteCheckRequest): QuoteCheckResponse {
-  const base = estimateResponseFixture.allocation[request.category].range;
+  const base = estimateResponseFixture.allocation[request.category]!.range;
   const scale = request.plan.guest_count / estimateRequestFixture.guest_count;
   const [low, high] = base.map((bound) => bound * scale) as PriceRange;
   const divisor =
@@ -295,47 +302,154 @@ function describePlan(plan: ExtractedPlan): string {
   return parts.join(' ');
 }
 
+// #8's question types, read with a short version of the server's rules (server/app/assistant/intent.py).
+const INTENT_CUES: [AssistantIntent, RegExp][] = [
+  ['budget_split', /\b(split|divide|allocate|allocation|break ?down|distribute|taqseem|baant)\b|تقسیم/i],
+  ['quote_check', /\b(quote|quoted|asking|charging|fair|reasonable|too much|overpriced|mehnga)\b|مہنگا/i],
+  ['vendors', /\b(suggest|recommend|find|looking for|best|top|options|batao|koi)\b|بتائیں/i],
+  ['prices', /\b(how much|cost|costs|price|prices|rate|rates|kitna|kitne|kitni|kharcha)\b|کتنا|کتنے|قیمت|خرچ/i],
+];
+const GREETING = /^\s*(hi|hello|hey|salam|salaam|aoa|thanks|thank you|shukriya)\b[\s!.,?]*$/i;
+const SERVICE_WORDS: Record<Category, RegExp> = {
+  venue: /\b(venue|venues|hall|marquee|banquet|lawn|farmhouse)\b|ہال|مارکی/i,
+  catering: /\b(catering|caterers?|food|menu|khana)\b|کھانا/i,
+  decor: /\b(decor|decoration|decorators?|stage|flowers)\b|سجاوٹ/i,
+  dj_sound: /\b(dj|sound|music|dhol)\b|ڈی جے/i,
+  lighting: /\b(lighting|lights)\b|روشنی/i,
+  photography: /\b(photographers?|photography|photos?|video|videographer)\b|فوٹو/i,
+};
+const QUOTED = /\b(rs\.?\s*\d|\d[\d,.]*\s*(lakh|lac|k|crore)\b|\d[\d,]*\s*(per|\/|a)\s*(head|person|plate))/i;
+const VENDOR_WORDS: Record<Category, string> = {
+  venue: 'venues', catering: 'caterers', decor: 'decorators', dj_sound: 'DJs', lighting: 'lighting providers', photography: 'photographers',
+};
+const FIXTURE_HELLO =
+  'Sample reply: hello! I can tell you typical prices, suggest vendors, check a quote you received, or split your budget. What are you planning?';
+const FIXTURE_ADVICE =
+  'Sample reply: book the venue first, settle the guest count before asking for quotes, and get every quote in writing with what it includes.';
+
+function messageIntent(text: string): AssistantIntent | undefined {
+  if (GREETING.test(text)) return 'greeting';
+  const named = servicesNamed(text).length > 0;
+  for (const [intent, cue] of INTENT_CUES) {
+    if (!cue.test(text)) continue;
+    if (intent === 'quote_check' && !QUOTED.test(text)) continue;
+    if (intent === 'vendors' && !named) continue;
+    return intent;
+  }
+  return undefined;
+}
+
+function servicesNamed(text: string): Category[] {
+  return CATEGORIES.filter((category) => SERVICE_WORDS[category].test(text));
+}
+
+/** A plan the price fixtures accept: the host's details, with sample values for the rest. */
+function samplePlan(plan: ExtractedPlan, today: string): EstimateRequest {
+  return estimateRequestSchema.parse({
+    area: 'Gulberg',
+    event_date: today,
+    total_budget_pkr: 2_500_000,
+    ...plan,
+    categories: undefined,
+  });
+}
+
 /**
- * #8: reads the host's messages with simple rules (later messages override earlier ones), asks for
- * what is missing, and estimates once the plan is complete. After three messages that add nothing,
- * it hands over to the planner form, as the real assistant does when extraction fails.
+ * #8: reads what the host asks for with simple rules (a message without a cue continues the one
+ * before), asks for what that answer needs, and answers it from the other fixtures. Only a request
+ * to split the budget gets an estimate; after three messages that add nothing to one, it hands over
+ * to the planner form, as the real assistant does.
  */
 export function fixtureAssistantChat(request: AssistantChatRequest, today: string = todayInLahore()): AssistantChatResponse {
   const userMessages = request.messages.filter((message) => message.role === 'user').map((message) => message.content);
   const perMessage = userMessages.map((message) => extractPlanParams(message, today));
   const extracted: ExtractedPlan = Object.assign({}, ...perMessage);
-  const missing = missingPlanFields(extracted);
   const last = userMessages[userMessages.length - 1] ?? '';
-  const language = detectLanguage(last);
-  const base = { language, extracted, missing, model_version: FIXTURE_MODEL_VERSION };
+  const asking = [...userMessages].reverse().findIndex((message) => messageIntent(message) !== undefined);
+  const askedAt = asking === -1 ? -1 : userMessages.length - 1 - asking;
+  const intent: AssistantIntent = askedAt === -1 ? 'advice' : messageIntent(userMessages[askedAt]!)!;
+  const asked = askedAt === -1 ? last : userMessages.slice(askedAt).join('\n');
+  const services = servicesNamed(last).length > 0 ? servicesNamed(last) : servicesNamed(asked);
+  const base = {
+    language: detectLanguage(last),
+    intent,
+    extracted,
+    missing: [] as string[],
+    estimate: null,
+    recommendations: null,
+    fallback_to_form: false,
+    model_version: FIXTURE_MODEL_VERSION,
+  };
+  const ask = (why: string, missing: string[]) => {
+    const understood = Object.keys(extracted).length > 0 ? `Got it: ${describePlan(extracted)}. ` : '';
+    const questions = missing.map((field) =>
+      field === 'category' ? 'which service' : field === 'quote' ? 'the price you were quoted' : FIELD_QUESTIONS[field as RequiredPlanField],
+    );
+    return { ...base, missing, reply: `Sample reply: ${understood}${why} I still need ${listWithAnd(questions)}.` };
+  };
+  const needs = (fields: string[]) =>
+    fields.filter((field) => (field === 'category' ? services.length === 0 : field === 'quote' ? !QUOTED.test(asked) : !(field in extracted)));
 
-  if (missing.length === 0) {
-    const plan = estimateRequestSchema.parse(extracted);
-    const estimate = fixtureEstimate(plan);
-    const [top] = CATEGORIES.map((category) => ({ category, ...estimate.allocation[category] })).sort((a, b) => b.share - a.share);
-    return {
-      ...base,
-      reply:
-        `Sample reply: here is a budget split for ${describePlan(plan)}. ` +
-        `The biggest share goes to ${CATEGORY_LABELS[top!.category].toLowerCase()}, about ${formatPkrCompact(top!.pkr)}. ` +
-        'Save it as a plan to see vendors that fit.',
-      estimate,
-      fallback_to_form: false,
-    };
+  switch (intent) {
+    case 'greeting':
+      return { ...base, reply: FIXTURE_HELLO };
+    case 'budget_split': {
+      const missing = missingPlanFields(extracted);
+      if (missing.length > 0) {
+        const stuck = perMessage.length >= 3 && perMessage.slice(-3).every((plan) => Object.keys(plan).length === 0);
+        if (stuck) {
+          return {
+            ...base,
+            missing,
+            reply: "Sample reply: I couldn't work out the rest from our chat. The planner form will ask for it, with what I understood already filled in.",
+            fallback_to_form: true,
+          };
+        }
+        return ask('To work out your budget split', missing);
+      }
+      // A venue type ("in a marquee") isn't a choice of services; the word "venue" is.
+      const chosen = servicesNamed(asked).filter((category) => category !== 'venue' || /\bvenues?\b/i.test(asked));
+      const plan = estimateRequestSchema.parse({ ...extracted, categories: chosen.length > 0 ? chosen : undefined });
+      const estimate = fixtureEstimate(plan);
+      const [top] = Object.entries(estimate.allocation).sort(([, a], [, b]) => b.share - a.share);
+      return {
+        ...base,
+        extracted: plan,
+        estimate,
+        reply:
+          `Sample reply: here is a budget split for ${describePlan(plan)}. ` +
+          `The biggest share goes to ${CATEGORY_LABELS[top![0] as Category].toLowerCase()}, about ${formatPkrCompact(top![1].pkr)}. ` +
+          'Save it as a plan to see vendors that fit.',
+      };
+    }
+    case 'vendors': {
+      const missing = needs(['category', 'event_type', 'guest_count', 'area']);
+      if (missing.length > 0) return ask('To suggest vendors that fit', missing);
+      const category = services[0]!;
+      const plan = samplePlan(extracted, today);
+      const budget = fixtureEstimate(plan).allocation[category]!.pkr;
+      const { matches } = fixtureRecommend({ plan, category, budget_pkr: budget, limit: 3 });
+      const list = matches.map((match, index) => `${index + 1}. ${match.name} (${match.base_area})`).join('\n');
+      return {
+        ...base,
+        recommendations: { category, matches },
+        reply: `Sample reply: here are ${VENDOR_WORDS[category]} that fit ${describePlan(extracted)}:\n${list}`,
+      };
+    }
+    case 'prices': {
+      const missing = needs(['event_type', 'guest_count']);
+      if (missing.length > 0) return ask('To estimate typical prices', missing);
+      const estimate = fixtureEstimate(samplePlan(extracted, today));
+      const shown = services.length > 0 ? services : CATEGORIES;
+      const lines = shown.map((category) => `- ${CATEGORY_LABELS[category]}: ${formatPkrRange(...estimate.allocation[category]!.range)}`);
+      return { ...base, reply: `Sample reply: typical prices for ${describePlan(extracted)}:\n${lines.join('\n')}` };
+    }
+    case 'quote_check': {
+      const missing = needs(['category', 'quote', 'event_type', 'guest_count']);
+      if (missing.length > 0) return ask('To check that quote', missing);
+      return { ...base, reply: `Sample reply: that ${CATEGORY_LABELS[services[0]!].toLowerCase()} quote is within the usual range for this event.` };
+    }
+    default:
+      return { ...base, reply: FIXTURE_ADVICE };
   }
-
-  const stuck = perMessage.length >= 3 && perMessage.slice(-3).every((plan) => Object.keys(plan).length === 0);
-  if (stuck) {
-    return {
-      ...base,
-      reply: "Sample reply: I couldn't work out the rest from our chat. The planner form will ask for it, with what I understood already filled in.",
-      estimate: null,
-      fallback_to_form: true,
-    };
-  }
-
-  const understood = Object.keys(extracted).length > 0 ? `Got it: ${describePlan(extracted)}. ` : '';
-  const ask = `To work out your budget split I still need ${listWithAnd(missing.map((field) => FIELD_QUESTIONS[field]))}.`;
-  const example = understood ? '' : ' For example: "Mehndi for 300 guests in Gulberg on 19 December, around 25 lakh."';
-  return { ...base, reply: `Sample reply: ${understood}${ask}${example}`, estimate: null, fallback_to_form: false };
 }

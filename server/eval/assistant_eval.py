@@ -10,9 +10,12 @@ sent one message at a time with the assistant's own replies in between, as in th
 - extraction: each field (event type, guests, area, date, budget, venue type) right, including left out when the
   host didn't give it; the whole plan right. "Model alone" scores the LLM's raw reading before the server's checks.
 - invented values: a value in the plan the host never gave. Must be 0.
-- estimate: a complete plan got #1/#2's split (the tool call succeeded).
+- estimate: once a complete plan is read, the host asks "Split my budget across the services." and must get #1/#2's
+  split (only a request for a split runs #1).
 - replies: the LLM's own reply kept, or replaced by the fixed one because the checker found a figure no tool gave.
-  Every final reply is checked again here; none may contain a figure outside the tools' output and the host's words.
+  Every split reply is checked again here; none may contain a figure outside the tools' output and the host's words.
+- advice: the LLM's advice in each final reply, checked again: no figure the host didn't write. Also how often it
+  came from the model rather than the hand-written notes.
 - seconds per turn.
 
 The keyword and grounding rules were tuned on assistant_cases.jsonl, so its score is optimistic; the holdout set
@@ -34,7 +37,7 @@ from pathlib import Path
 from app.assistant import Assistant, OllamaClient
 from app.assistant.chat import check_reply, facts
 from app.assistant.extract import REQUIRED, Extractor, _date
-from app.assistant.figures import figures, parse_budget
+from app.assistant.figures import figures, parse_budget, stated
 from app.services import DEFAULT_LLM, load_services
 from shevent_ml.config import REPO_ROOT
 
@@ -43,6 +46,7 @@ CASES = {"main": Path(__file__).with_name("assistant_cases.jsonl"),
 REPORT = REPO_ROOT / "testing" / "reports" / "assistant-eval"
 TODAY = date(2026, 11, 8)  # the cases' expected dates are worked out from this day
 FIELDS = [*REQUIRED, "venue_type"]
+ASK_FOR_SPLIT = "Split my budget across the services."
 
 
 class Recording(Extractor):
@@ -73,6 +77,7 @@ def run_case(assistant, case):
     messages, seconds = [], []
     for turn in case["turns"]:
         messages.append({"role": "user", "content": turn})
+        assistant.last_advice = None
         started = time.perf_counter()
         response = assistant.chat(messages)
         seconds.append(time.perf_counter() - started)
@@ -92,16 +97,27 @@ def run_case(assistant, case):
         "raw_right": raw_right,
         "raw_invented": raw_invented,
         "complete": complete,
-        "estimated": response.get("estimate") is not None,
+        "intent": response["intent"],
         "fallback_to_form": response["fallback_to_form"],
         "reply": response["reply"],
         "seconds": seconds,
     }
-    if response.get("estimate"):
-        allowed = figures(facts(plan, response["estimate"])) | figures(host)
-        result["reply_problem"] = check_reply(response["reply"], allowed)
-        if assistant.llm_replies:
-            result["llm_reply_kept"] = not response["reply"].startswith("Here is a budget split for")
+    if assistant.last_advice is not None:
+        text, source = assistant.last_advice
+        result["advice_from_model"] = source == "llm"
+        result["advice_invented"] = sorted(v for k, v in stated(text) if (k, v) not in figures(host))
+    if complete:
+        result["estimated"] = False
+    if complete and all(field in plan for field in REQUIRED):
+        started = time.perf_counter()
+        split = assistant.chat([*messages, {"role": "user", "content": ASK_FOR_SPLIT}])
+        result["split_seconds"] = time.perf_counter() - started
+        result["estimated"] = split.get("estimate") is not None
+        if split.get("estimate"):
+            allowed = figures(facts(split["extracted"], split["estimate"])) | figures(host)
+            result["reply_problem"] = check_reply(split["reply"], allowed)
+            if assistant.llm_replies:
+                result["llm_reply_kept"] = not split["reply"].startswith("Here is a budget split for")
     return result
 
 
@@ -113,6 +129,7 @@ def summarize(results):
     turns = [s for r in results for s in r["seconds"]]
     groups = sorted({r["group"] for r in results})
     with_estimate = [r for r in results if "reply_problem" in r]
+    with_advice = [r for r in results if "advice_invented" in r]
     return {
         "cases": len(results),
         "field_accuracy": {f: share(r["right"][f] for r in results) for f in FIELDS},
@@ -121,7 +138,11 @@ def summarize(results):
         "field_accuracy_model_alone": share(v for r in results for v in r["raw_right"].values()),
         "invented_values": sum(len(r["invented"]) for r in results),
         "invented_values_model_alone": sum(len(r["raw_invented"]) for r in results),
-        "estimate_when_complete": share(r["estimated"] for r in results if r["complete"]),
+        "estimate_when_asked": share(r["estimated"] for r in results if r["complete"]),
+        "final_intents": {i: sum(r["intent"] == i for r in results) for i in sorted({r["intent"] for r in results})},
+        "advice_replies": len(with_advice),
+        "advice_from_model": share(r["advice_from_model"] for r in with_advice),
+        "advice_with_invented_figures": sum(bool(r["advice_invented"]) for r in with_advice),
         "llm_replies_kept": share(r["llm_reply_kept"] for r in with_estimate if "llm_reply_kept" in r),
         "replies_with_invented_figures": sum(r["reply_problem"] is not None for r in with_estimate),
         "fallback_to_form": sum(r["fallback_to_form"] for r in results),
@@ -150,7 +171,11 @@ def markdown(summary, results, model, cases_file):
         f"| Whole plan right (model alone, before the server's checks) | {pct(summary['plan_accuracy_model_alone'])} |",
         f"| Values the host never gave (assistant) | {summary['invented_values']} |",
         f"| Values the host never gave (model alone) | {summary['invented_values_model_alone']} |",
-        f"| Estimate produced when the plan was complete | {pct(summary['estimate_when_complete'])} |",
+        f"| Split produced when asked for one (plan complete) | {pct(summary['estimate_when_asked'])} |",
+        f"| Final replies by question type | {summary['final_intents']} |",
+        f"| Advice written by the model, of {summary['advice_replies']} (the rest: hand-written notes) | "
+        f"{pct(summary['advice_from_model'])} |",
+        f"| Advice with a figure the host didn't write | {summary['advice_with_invented_figures']} |",
         f"| LLM replies kept by the output checker | {pct(summary['llm_replies_kept'])} |",
         f"| Final replies with a figure no tool gave | {summary['replies_with_invented_figures']} |",
         f"| Sent to the planner form | {summary['fallback_to_form']} |",

@@ -165,6 +165,33 @@ def weighted_kl(logits, target, weight):
     return (weight * (target * (log_t - log_p)).sum(dim=1)).sum() / weight.sum()
 
 
+def chosen_categories(plan):
+    """The services the host wants (plan["categories"]), in the usual order; all six when none are given."""
+    wanted = plan.get("categories") or CATEGORIES
+    unknown = sorted(set(wanted) - set(CATEGORIES))
+    if unknown:
+        raise ValueError(f"unknown categories: {unknown}")
+    return [c for c in CATEGORIES if c in wanted]
+
+
+def model_input(plan):
+    """The plan as the network reads it: the services chosen don't change its inputs, only which shares are used."""
+    return {k: v for k, v in plan.items() if k != "categories"}
+
+
+def restrict(shares, categories):
+    """Shares of the chosen categories only, rescaled to sum to 1 (rows of a 2-D array, or a dict / Series).
+
+    The network's softmax over the six categories, renormalised over a subset, is the same as a softmax over that
+    subset's logits: each chosen service keeps its weight relative to the others."""
+    if isinstance(shares, np.ndarray):
+        index = [CATEGORIES.index(c) for c in categories]
+        part = shares[:, index]
+        return part / part.sum(axis=1, keepdims=True)
+    total = sum(float(shares[c]) for c in categories)
+    return {c: float(shares[c]) / total for c in categories}
+
+
 def apply_guardrails(shares, budget, minimums):
     """Rupees per category with every category at or above its minimum, plus what changed.
 
@@ -237,13 +264,15 @@ class BudgetAllocator:
         """One share column per category; each row sums to 1."""
         return pd.DataFrame(self._shares(self.encoder.transform(plans)), columns=CATEGORIES, index=plans.index)
 
-    def shapley(self, plan):
+    def shapley(self, plan, categories=None):
         """(groups, categories) contributions in share points of each input group, against the typical event.
 
         Exact: every subset of the seven groups is evaluated once (128 rows), mixing this plan's values with the
-        typical event's, and each group gets its Shapley-weighted average marginal effect.
+        typical event's, and each group gets its Shapley-weighted average marginal effect. With `categories`, the
+        shares are those of the chosen services only (see restrict).
         """
-        x = self.encoder.transform(pd.DataFrame([plan]))[0]
+        categories = categories or CATEGORIES
+        x = self.encoder.transform(pd.DataFrame([model_input(plan)]))[0]
         groups = self.encoder.group_columns()
         names = list(groups)
         n = len(names)
@@ -251,9 +280,9 @@ class BudgetAllocator:
         rows = np.tile(self.reference, (len(masks), 1))
         for g, name in enumerate(names):
             rows[np.ix_(masks[:, g], groups[name])] = x[groups[name]]
-        values = self._shares(rows)
+        values = restrict(self._shares(rows), categories)
         index = {tuple(m): i for i, m in enumerate(masks)}
-        phi = np.zeros((n, len(CATEGORIES)))
+        phi = np.zeros((n, len(categories)))
         for g in range(n):
             for mask in masks[~masks[:, g]]:
                 size = int(mask.sum())
@@ -261,17 +290,19 @@ class BudgetAllocator:
                 with_g = mask.copy()
                 with_g[g] = True
                 phi[g] += weight * (values[index[tuple(with_g)]] - values[index[tuple(mask)]])
-        return pd.DataFrame(phi * 100, index=names, columns=CATEGORIES)
+        return pd.DataFrame(phi * 100, index=names, columns=categories)
 
-    def explain(self, plan, shares, skip=()):
+    def explain(self, plan, shares, skip=(), categories=None):
         """Sentences for categories whose share differs from the typical event's, naming the biggest reason.
 
         Categories in skip (changed by the guardrails, so the model's share isn't what the host sees) are left out.
+        With `categories`, shares and the typical event's are both those of the chosen services only.
         """
-        typical = self._shares(self.reference[None, :])[0]
-        phi = self.shapley(plan)
+        categories = categories or CATEGORIES
+        typical = restrict(self._shares(self.reference[None, :]), categories)[0]
+        phi = self.shapley(plan, categories)
         sentences = []
-        for i, category in enumerate(CATEGORIES):
+        for i, category in enumerate(categories):
             gap = 100 * (shares[category] - typical[i])
             if category in skip or abs(gap) < self.settings["explain_min_points"]:
                 continue
@@ -294,11 +325,15 @@ class BudgetAllocator:
     def allocate(self, plan, minimums=None):
         """The split for one plan, in shares and rupees, after guardrails, with warnings and explanations.
 
-        minimums: rupees per category (from #2, see price_minimums); without them no guardrails are applied.
+        Only the services in plan["categories"] get a share (all six when it's absent): the budget is split among
+        them in the model's proportions. minimums: rupees per category (from #2, see price_minimums); without them no
+        guardrails are applied.
         """
-        shares = self.predict(pd.DataFrame([plan])).iloc[0].to_dict()
+        wanted = chosen_categories(plan)
+        shares = restrict(self.predict(pd.DataFrame([model_input(plan)])).iloc[0], wanted)
         budget = float(plan["total_budget_pkr"])
-        guarded = apply_guardrails(shares, budget, minimums or {})
+        minimums = {c: m for c, m in (minimums or {}).items() if c in wanted}
+        guarded = apply_guardrails(shares, budget, minimums)
         amounts = guarded["amounts"]
         total = sum(amounts.values())
         warnings = []
@@ -310,12 +345,12 @@ class BudgetAllocator:
         for category in guarded["raised"]:
             warnings.append(f"{LABELS[category]} was raised to its minimum of about Rs {amounts[category]:,.0f}.")
         return {
-            "allocation": {c: {"share": amounts[c] / total, "pkr": round(amounts[c], -3)} for c in CATEGORIES},
+            "allocation": {c: {"share": amounts[c] / total, "pkr": round(amounts[c], -3)} for c in wanted},
             "budget_too_low": guarded["budget_too_low"],
             "minimum_budget_pkr": round(guarded["minimum_budget_pkr"], -3),
             "warnings": warnings,
             # Explanations describe the model's split, so none where the guardrails replaced it.
-            "explanations": [] if guarded["budget_too_low"] else self.explain(plan, shares, guarded["raised"]),
+            "explanations": [] if guarded["budget_too_low"] else self.explain(plan, shares, guarded["raised"], wanted),
             "model_version": self.version,
         }
 

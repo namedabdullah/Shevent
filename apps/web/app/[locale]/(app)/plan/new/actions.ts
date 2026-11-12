@@ -1,7 +1,7 @@
 'use server';
 
 import type { Json } from '@shevent/core/database';
-import { isPreference } from '@shevent/core/enums';
+import { CATEGORIES, isCategory, isPreference } from '@shevent/core/enums';
 import { parsePkr, todayInLahore } from '@shevent/core/format';
 import { estimateRequestSchema, type EstimateResponse } from '@shevent/core/schemas';
 import { redirect } from 'next/navigation';
@@ -18,6 +18,9 @@ export async function createPlan(_previous: PlanFormState, formData: FormData): 
   if (!supabase || !auth?.claims) redirect('/sign-in?next=%2Fplan%2Fnew');
 
   const text = (name: string) => String(formData.get(name) ?? '').trim();
+  // The services the host needs; with all six chosen the request leaves the list out, as before.
+  const categories = CATEGORIES.filter((category) => formData.getAll('categories').map(String).filter(isCategory).includes(category));
+  if (categories.length === 0) return { status: 'error', error: 'invalid', fields: ['categories'] };
   const parsed = estimateRequestSchema.safeParse({
     event_type: text('event_type'),
     guest_count: Number(text('guest_count')),
@@ -26,6 +29,7 @@ export async function createPlan(_previous: PlanFormState, formData: FormData): 
     event_date: text('event_date'),
     total_budget_pkr: parsePkr(text('budget')) ?? Number.NaN,
     preferences: formData.getAll('preferences').map(String).filter(isPreference),
+    categories: categories.length < CATEGORIES.length ? categories : undefined,
   });
   if (!parsed.success) {
     return { status: 'error', error: 'invalid', fields: [...new Set(parsed.error.issues.map((i) => String(i.path[0])))] };
@@ -51,7 +55,8 @@ export async function createPlan(_previous: PlanFormState, formData: FormData): 
       event_date: request.event_date,
       total_budget_pkr: request.total_budget_pkr,
       preferences: request.preferences ?? [],
-      estimate: estimate as Json | null,
+      // Without an estimate, keep the chosen services so the retry asks for the same ones (lib/plans.ts).
+      estimate: (estimate ?? (request.categories ? { categories: request.categories } : null)) as Json | null,
     })
     .select('id')
     .single();

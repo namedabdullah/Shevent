@@ -1,4 +1,4 @@
-import { isArea, isEventType, VENUE_TYPES } from '@shevent/core/enums';
+import { isArea, isCategory, isEventType, VENUE_TYPES } from '@shevent/core/enums';
 import { todayInLahore } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
@@ -16,7 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const one = (value: string | string[] | undefined) => (typeof value === 'string' ? value : undefined);
 
 // Pre-filled from the URL so the landing page's "try it" widget can hand over its inputs:
-// /plan/new?event_type=wedding_mehndi&guests=300&area=Gulberg&date=2026-12-19&budget=25+lakh
+// /plan/new?event_type=wedding_mehndi&guests=300&area=Gulberg&date=2026-12-19&budget=25+lakh&services=venue,catering
 export default async function NewPlanPage({ searchParams }: PageProps<'/[locale]/plan/new'>) {
   const [t, params] = await Promise.all([getTranslations('Planner'), searchParams]);
   const eventType = one(params.event_type);
@@ -29,6 +29,7 @@ export default async function NewPlanPage({ searchParams }: PageProps<'/[locale]
     venue_type: venueType && (VENUE_TYPES as readonly string[]).includes(venueType) ? venueType : undefined,
     event_date: one(params.date),
     budget: one(params.budget),
+    categories: one(params.services)?.split(',').filter(isCategory),
   };
   const next = t.raw('next') as string[];
 

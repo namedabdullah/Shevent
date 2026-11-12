@@ -1,0 +1,30 @@
+{"id": "q-01", "turns": ["What's a normal price for a DJ at a mehndi?"], "intent": "prices", "service": "dj_sound"}
+{"id": "q-02", "turns": ["how much do photographers charge for a baraat in Lahore"], "intent": "prices", "service": "photography"}
+{"id": "q-03", "turns": ["Can you recommend a decorator in Model Town?"], "intent": "vendors", "service": "decor"}
+{"id": "q-04", "turns": ["I need a good banquet hall in Johar Town for 400 people, any options?"], "intent": "vendors", "service": "venue"}
+{"id": "q-05", "turns": ["Our caterer wants 2,800 per head for the walima. Too much?"], "intent": "quote_check", "service": "catering"}
+{"id": "q-06", "turns": ["The DJ is charging Rs 60,000 for 4 hours, is that reasonable?"], "intent": "quote_check", "service": "dj_sound"}
+{"id": "q-07", "turns": ["Please break down 30 lakh for my baraat"], "intent": "budget_split", "service": null}
+{"id": "q-08", "turns": ["How should we spend 15 lakh on a birthday party for 150 guests?"], "intent": "budget_split", "service": null}
+{"id": "q-09", "turns": ["What do I need to book first for a walima?"], "intent": "advice", "service": null}
+{"id": "q-10", "turns": ["Any tips for choosing a photographer?"], "intent": "advice", "service": "photography"}
+{"id": "q-11", "turns": ["What should be on a mehndi menu?"], "intent": "advice", "service": "catering"}
+{"id": "q-12", "turns": ["salaam"], "intent": "greeting", "service": null}
+{"id": "q-13", "turns": ["thank you so much"], "intent": "greeting", "service": null}
+{"id": "q-14", "turns": ["shadi hall ka rent kitna hota hai DHA mein?"], "intent": "prices", "service": "venue"}
+{"id": "q-15", "turns": ["koi achha photographer batao walima ke liye"], "intent": "vendors", "service": "photography"}
+{"id": "q-16", "turns": ["caterer 3500 per head maang raha hai, ye rate zyada hai?"], "intent": "quote_check", "service": "catering"}
+{"id": "q-17", "turns": ["mera budget 20 lakh hai, isko taqseem kar do"], "intent": "budget_split", "service": null}
+{"id": "q-18", "turns": ["mehndi ke liye stage decoration kaisi honi chahiye?"], "intent": "advice", "service": "decor"}
+{"id": "q-19", "turns": ["ڈی جے کتنے کا ملے گا؟"], "intent": "prices", "service": "dj_sound"}
+{"id": "q-20", "turns": ["ولیمے کے لیے اچھا کیٹرر بتائیں"], "intent": "vendors", "service": "catering"}
+{"id": "q-21", "turns": ["How much does a farmhouse wedding cost for 200 guests?"], "intent": "prices", "service": null}
+{"id": "q-22", "turns": ["Find me lighting for an outdoor mehndi in Gulberg"], "intent": "vendors", "service": "lighting"}
+{"id": "q-23", "turns": ["Is it better to have the walima in a marquee or a hotel?"], "intent": "advice", "service": null}
+{"id": "q-24", "turns": ["A photographer quoted 1.5 lakh for the baraat and walima. Fair?"], "intent": "quote_check", "service": "photography"}
+{"id": "q-25", "turns": ["How much should I keep aside for decor?"], "intent": "prices", "service": "decor"}
+{"id": "q-26", "turns": ["Suggest caterers", "It's a mehndi for 250 guests in Bahria Town"], "intent": "vendors", "service": "catering"}
+{"id": "q-27", "turns": ["How much will catering cost?", "walima, 600 guests"], "intent": "prices", "service": "catering"}
+{"id": "q-28", "turns": ["Split my budget", "Baraat for 350 guests in Cantt on 5 January, 35 lakh"], "intent": "budget_split", "service": null}
+{"id": "q-29", "turns": ["We're having a mehndi for 300 guests in Gulberg in December"], "intent": "advice", "service": null}
+{"id": "q-30", "turns": ["What questions should I ask the hall manager before signing?"], "intent": "advice", "service": "venue"}

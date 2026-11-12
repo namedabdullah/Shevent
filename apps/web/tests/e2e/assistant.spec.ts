@@ -1,5 +1,6 @@
-// #8 Planning assistant on the web (WEB_APP_PLAN §4.2), on fixtures: it asks for what is missing,
-// shows the #1/#2 split once the plan is complete, and every save goes through the planner form.
+// #8 Planning assistant on the web (WEB_APP_PLAN §4.2), on fixtures: it answers what the host asks
+// (vendors, prices, advice), asks for what a budget split is missing, shows the #1/#2 split only
+// when asked for one, and every save goes through the planner form.
 import { expect, test, type Page } from '@playwright/test';
 import { signIn, uniqueEmail } from './helpers';
 
@@ -22,12 +23,12 @@ async function openAssistant(page: Page, label: string) {
   };
 }
 
-test('the assistant asks for what is missing, shows the split and saves through the planner', async ({ page }) => {
+test('the assistant asks for what a split needs, shows the split and saves through the planner', async ({ page }) => {
   test.setTimeout(120_000);
   const date = futureDate();
   const { chat, input } = await openAssistant(page, 'assistant');
 
-  await input.fill('mehndi karni hai 300 log, Gulberg mein');
+  await input.fill('mehndi ka budget taqseem karna hai, 300 log, Gulberg mein');
   await input.press('Enter');
   await expect(chat).toContainText('I still need the date and your total budget');
   await expect(chat.getByText('still needed', { exact: true })).toHaveCount(2);
@@ -50,6 +51,36 @@ test('the assistant asks for what is missing, shows the split and saves through 
   await expect(page.getByText("That's Rs 25 lakh.")).toBeVisible();
   await page.getByRole('button', { name: 'Get my budget split' }).click();
   await expect(page).toHaveURL(/\/plans\/[0-9a-f-]{36}\?created=1$/, { timeout: 30_000 });
+});
+
+test('a split can cover only some services, and the planner keeps that choice', async ({ page }) => {
+  test.setTimeout(120_000);
+  const date = futureDate();
+  const { chat, input } = await openAssistant(page, 'assistant-services');
+
+  await input.fill(`split 25 lakh for a mehndi, 300 log, Gulberg, ${date.words}, only catering and photography`);
+  await input.press('Enter');
+  await expect(chat.locator('tbody tr')).toHaveCount(2);
+  await expect(chat.getByRole('row', { name: /Catering/ })).toBeVisible();
+
+  await chat.getByRole('link', { name: 'Save as a plan' }).click();
+  await expect(page).toHaveURL(/\/plan\/new\?/);
+  await expect(page.getByRole('checkbox', { name: 'Catering' })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Photography' })).toBeChecked();
+  await expect(page.getByRole('checkbox', { name: 'Venue' })).not.toBeChecked();
+  await page.getByRole('button', { name: 'Get my budget split' }).click();
+  await expect(page).toHaveURL(/\/plans\/[0-9a-f-]{36}\?created=1$/, { timeout: 30_000 });
+  await expect(page.locator('tbody tr')).toHaveCount(2);
+});
+
+test('a vendor question gets suggestions, not a budget split', async ({ page }) => {
+  const { chat, input } = await openAssistant(page, 'assistant-vendors');
+  await input.fill('suggest a caterer for a walima, 500 guests in DHA');
+  await input.press('Enter');
+  const suggestions = chat.getByRole('region', { name: 'Catering: best matches' });
+  await expect(suggestions).toBeVisible();
+  await expect(suggestions.getByRole('listitem').first()).toBeVisible();
+  await expect(chat.locator('tbody tr')).toHaveCount(0);
 });
 
 test('Urdu input works, and the assistant hands over to the form when it cannot follow', async ({ page }) => {

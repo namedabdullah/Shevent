@@ -17,7 +17,7 @@ import pandas as pd
 from shevent_ml.config import CATEGORIES, DATA_DIR, PROCESSED_DIR, REPO_ROOT
 from shevent_ml.data.app_seed import app_vendor_id
 from shevent_ml.features.calendar import calendar_features
-from shevent_ml.models.budget_allocator import price_minimums
+from shevent_ml.models.budget_allocator import chosen_categories, model_input, price_minimums, restrict
 from shevent_ml.models.matching import listed_totals
 from shevent_ml.models.packages import PackageBuilder
 from shevent_ml.models.price_features import TIER_RANK
@@ -98,10 +98,12 @@ class Services:
         if missing:
             raise Unavailable(f"Model not loaded: {', '.join(missing)}. Train it and restart the server.")
 
-    def _category_budgets(self, plan):
-        """#1's split in rupees, without the guardrails and explanations (for #3's price fit inside #4)."""
-        shares = self.allocator.predict(pd.DataFrame([plan])).iloc[0]
-        return {c: float(shares[c]) * plan["total_budget_pkr"] for c in CATEGORIES}
+    def _category_budgets(self, plan, categories=None):
+        """#1's split in rupees over the services asked for, without the guardrails and explanations (for #3's
+        price fit inside #4)."""
+        shares = self.allocator.predict(pd.DataFrame([model_input(plan)])).iloc[0]
+        wanted = [c for c in CATEGORIES if c in (categories or CATEGORIES)]
+        return {c: share * plan["total_budget_pkr"] for c, share in restrict(shares, wanted).items()}
 
     def _range(self, plan, category, row):
         """The vendor's listed range for this event if it has one, else #2's for its tier."""
@@ -117,10 +119,12 @@ class Services:
         return [float(estimate["low"]), float(estimate["high"])]
 
     def estimate(self, plan):
-        """POST /v1/estimate: #1's split with its guardrails, and #2's range for each category."""
+        """POST /v1/estimate: #1's split with its guardrails, and #2's range for each category. Only the services in
+        plan["categories"] (all six without it) are in the split."""
         self.require("allocator", "price_estimator")
-        result = self.allocator.allocate(plan, minimums=price_minimums(self.estimates, plan))
-        ranges = self.estimates.estimate_plan(plan)
+        chosen_categories(plan)  # an unknown service is refused before any model runs
+        result = self.allocator.allocate(plan, minimums=price_minimums(self.estimates, model_input(plan)))
+        ranges = self.estimates.estimate_plan(model_input(plan))
         season = calendar_features(pd.to_datetime(pd.Series([plan["event_date"]]))).iloc[0]["season"]
         return {
             "allocation": {
@@ -137,9 +141,17 @@ class Services:
             "model_version": f"{self.allocator.version}+{self.price_estimator.version}",
         }
 
+    def price_ranges(self, plan, categories=None):
+        """#2's typical range for the whole event, per service: {category: (low, likely, high)}."""
+        self.require("price_estimator")
+        table = self.estimates.estimate_plan(model_input(plan))
+        wanted = [c for c in CATEGORIES if c in (categories or CATEGORIES)]
+        return {c: tuple(float(table.loc[c, q]) for q in ("low", "mid", "high")) for c in wanted}
+
     def recommend(self, plan, category, budget, limit=None):
         """POST /v1/recommend: #3's ranking. Sponsored vendors come back in their own list, never in the matches."""
         self.require("price_estimator")
+        plan = model_input(plan)
         vendors = for_event(self.catalog.vendors(), plan["area"])
         scored = self.matcher.score(plan, category, vendors, budget=budget)
         scored = scored.sort_values(["score", "vendor_id"], ascending=[False, True])
@@ -167,8 +179,8 @@ class Services:
         """POST /v1/packages: #4's bundles, each item with the vendor's public summary."""
         self.require("price_estimator")
         vendors = for_event(self.catalog.vendors(), plan["area"])
-        budgets = self._category_budgets(plan) if self.allocator is not None else None
-        result = self.builder.build(plan, categories, vendors, unavailable or (), budgets)
+        budgets = self._category_budgets(plan, categories) if self.allocator is not None else None
+        result = self.builder.build(model_input(plan), categories, vendors, unavailable or (), budgets)
         by_id = {row["vendor_id"]: row for row in vendors.to_dict("records")}
         packages = [
             {
@@ -238,7 +250,8 @@ class Services:
         return self.portfolio.check(data, vendor_id)
 
     def assistant_chat(self, messages):
-        """POST /v1/assistant/chat: #8's turn. It estimates through self.estimate, so it needs #1 and #2 too."""
+        """POST /v1/assistant/chat: #8's turn. It answers with #1-#5 through the methods above, so it needs #1 and
+        #2 loaded too."""
         self.require("assistant", "allocator", "price_estimator")
         return self.assistant.chat(messages)
 
