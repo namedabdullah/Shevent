@@ -20,6 +20,18 @@ test('header links work', async ({ page }) => {
   await expect(page).toHaveURL(/\/$/);
 });
 
+test('directory pages: one per category, not indexed, unknown ones are 404', async ({ page, request }) => {
+  expect((await request.get('/lahore/dj-sound')).status()).toBe(200);
+  expect((await request.get('/lahore/flowers')).status()).toBe(404);
+  await page.goto('/lahore/venue');
+  await expect(page.getByRole('heading', { level: 1, name: 'Venues in Lahore' })).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+  // Real listings, an honest "none yet", or (without a database) "couldn't load": never an empty page.
+  await expect(page.getByText(/vendors? listed|No one is listed here yet|Listings couldn't load/).first()).toBeVisible();
+  await page.getByRole('link', { name: 'All categories' }).click();
+  await expect(page).toHaveURL(/\/#categories$/);
+});
+
 test('unknown URLs show the not-found page with a real 404', async ({ page, request }) => {
   expect((await request.get('/no-such-page')).status()).toBe(404);
   await page.goto('/no-such-page');

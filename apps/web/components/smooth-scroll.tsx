@@ -22,14 +22,24 @@ export function SmoothScroll() {
   return null;
 }
 
-const HEADER_OFFSET = -76;
+/** Room the sticky header takes at the top of the window, in px. */
+const HEADER_SPACE = 76;
+
+/** An element's distance from the top of the page, from layout (ignores transforms such as `.reveal`). */
+function pageTop(element: HTMLElement) {
+  let top = 0;
+  for (let node: HTMLElement | null = element; node; node = node.offsetParent as HTMLElement | null) top += node.offsetTop;
+  return top;
+}
 
 /** Glide to a section on this page and put its id in the address bar. */
 export function scrollToSection(id: string) {
   const target = document.getElementById(id);
   if (!target) return false;
-  if (lenis) lenis.scrollTo(target, { offset: HEADER_OFFSET, duration: 1.1 });
-  else target.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  // A plain number, so Lenis never measures the element itself mid-glide (it could land short).
+  const top = pageTop(target) - HEADER_SPACE;
+  if (lenis) lenis.scrollTo(top, { duration: 1.1 });
+  else window.scrollTo({ top, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   history.pushState(null, '', `#${id}`);
   return true;
 }
