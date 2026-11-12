@@ -18,7 +18,8 @@ export default async function MarketingLayout({ children }: LayoutProps<'/[local
   return (
     <>
       <SmoothScroll />
-      <header className="sticky top-0 z-40 border-b border-line/80 bg-canvas/80 backdrop-blur-xl">
+      {/* Named so it stays put while page content slides during route transitions (globals.css). */}
+      <header style={{ viewTransitionName: 'site-header' }} className="sticky top-0 z-40 border-b border-line/80 bg-canvas/80 backdrop-blur-xl">
         <div className="mx-auto flex min-h-16 w-full max-w-6xl items-center gap-6 px-4 sm:px-6">
           <Logo name={t('Metadata.siteName')} />
           <SectionNav label={t('Nav.label')} links={sections} />

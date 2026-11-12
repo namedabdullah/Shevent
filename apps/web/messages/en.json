@@ -8,44 +8,26 @@
     "description": "Plan weddings, birthdays, corporate dinners, conferences and concerts in Lahore with AI price ranges and vendors matched to your budget. Coming soon."
   },
   "Home": {
-    "eyebrow": "Coming soon · Lahore",
-    "title": "Plan your <event>event</event> <line>with real price ranges</line>",
+    "badge": "Coming soon",
+    "badgeNote": "Starting in Lahore",
+    "title": "Planning <event>?</event> <line>Start with real price ranges.</line>",
     "rotating": [
-      "wedding",
-      "birthday",
-      "conference",
-      "gala dinner",
-      "concert",
-      "launch"
+      "an event",
+      "a wedding",
+      "a birthday",
+      "a conference",
+      "a gala dinner",
+      "a concert",
+      "a launch"
     ],
-    "subtitle": "Split your budget, see what things cost in your area, and find vendors that fit. One place for every event.",
+    "subtitle": "Split your budget across six parts, see what each one costs in Lahore and find vendors that fit.",
+    "orbitLabel": "Budget categories",
     "tryLink": "Or try the budget planner",
-    "stack": [
-      {
-        "title": "Weddings",
-        "note": "Halls, menus and the stage."
-      },
-      {
-        "title": "Birthdays",
-        "note": "A venue, food and music."
-      },
-      {
-        "title": "Corporate",
-        "note": "Dinners, launches, conferences."
-      },
-      {
-        "title": "University galas",
-        "note": "Farewells and formal nights."
-      },
-      {
-        "title": "Concerts",
-        "note": "Sound and light first."
-      }
-    ],
+    "occasionsLabel": "For every occasion",
     "occasions": [
       "Weddings",
       "Birthdays",
-      "Corporate dinners",
+      "Corporate",
       "Conferences",
       "Launches",
       "University galas",
@@ -82,6 +64,7 @@
       "photography": "Photo and video coverage."
     },
     "categoryUnits": "Priced {units}",
+    "categoryBrowse": "See vendors",
     "trustEyebrow": "Principles",
     "trustTitle": "Honest by design",
     "trust": [
@@ -617,6 +600,43 @@
     "light": "Light",
     "dark": "Dark",
     "sand": "Sand"
+  },
+  "Directory": {
+    "metaDescription": "Every {category} vendor listed on Shevent in Lahore, with areas, capacity and event types.",
+    "back": "All categories",
+    "titles": {
+      "venue": "Venues in Lahore",
+      "catering": "Caterers in Lahore",
+      "decor": "Decorators in Lahore",
+      "dj_sound": "DJs and sound in Lahore",
+      "lighting": "Lighting in Lahore",
+      "photography": "Photographers in Lahore"
+    },
+    "priced": "Priced {units}.",
+    "switcherLabel": "Categories",
+    "listTitle": "Listed vendors",
+    "loading": "Loading vendors…",
+    "count": "{count, plural, one {# vendor listed} other {# vendors listed}}",
+    "order": "Verified first, then by reviews.",
+    "unavailableTitle": "Listings couldn't load",
+    "unavailable": "Please try again in a moment.",
+    "emptyTitle": "No one is listed here yet",
+    "empty": "Vendors list for free. If you offer this service in Lahore, be the first.",
+    "emptyAction": "List your business",
+    "verified": "Verified",
+    "demo": "Demo listing",
+    "capacity": "{min}–{max} guests",
+    "capacityMax": "Up to {max} guests",
+    "capacityMin": "From {min} guests",
+    "areas": "{count, plural, one {Serves # area} other {Serves # areas}}",
+    "years": "{count, plural, one {# year active} other {# years active}}",
+    "rating": "{rating} from {count, plural, one {# review} other {# reviews}}",
+    "noReviews": "No reviews yet",
+    "ctaEyebrow": "Matched to you",
+    "ctaTitle": "Want the ones that fit your event?",
+    "ctaBody": "Plan your event and Shevent ranks vendors by your guests, area and budget, with typical prices.",
+    "ctaPlan": "Plan your event",
+    "ctaTry": "Try the budget planner"
   },
   "DatePicker": {
     "open": "Open calendar",

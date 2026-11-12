@@ -13,7 +13,7 @@ async function expectNoSeriousViolations(page: Page, name: string) {
 }
 
 test('public pages', async ({ page }) => {
-  for (const path of ['/', '/sign-in', '/no-such-page']) {
+  for (const path of ['/', '/sign-in', '/lahore/venue', '/no-such-page']) {
     await page.goto(path);
     await page.waitForLoadState('networkidle');
     await expectNoSeriousViolations(page, path);

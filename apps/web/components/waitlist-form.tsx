@@ -6,7 +6,6 @@ import { submitLead, type LeadFormState } from '@/app/[locale]/(marketing)/actio
 import { Icon } from '@/components/icons';
 import { SubmitButton } from '@/components/submit-button';
 import { buttonStyles } from '@/components/ui/button';
-import { inputStyles } from '@/components/ui/field';
 import { track } from '@/lib/analytics';
 import { getAttribution } from '@/lib/attribution';
 
@@ -24,7 +23,7 @@ export function WaitlistForm() {
 
   if (state.status === 'success') {
     return (
-      <p role="status" className="flex max-w-lg animate-enter items-center gap-3 rounded-2xl border border-success-line bg-success-soft px-4 py-3.5 text-success-ink">
+      <p role="status" className="mx-auto flex max-w-lg animate-enter items-center gap-3 rounded-2xl border border-success-line bg-success-soft px-4 py-3.5 text-start text-success-ink">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success text-on-solid">
           <Icon name="check" className="size-4" />
         </span>
@@ -46,7 +45,7 @@ export function WaitlistForm() {
   const error = state.status === 'error' ? state.error : undefined;
 
   return (
-    <form onSubmit={submit} className="flex w-full max-w-lg flex-col gap-2" noValidate>
+    <form onSubmit={submit} className="flex w-full max-w-lg flex-col items-center gap-2.5" noValidate>
       <input type="hidden" name="type" value="waitlist" />
       {/* Honeypot, hidden from people and screen readers */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden className="absolute -start-[9999px] h-0 w-0 opacity-0" />
@@ -54,7 +53,8 @@ export function WaitlistForm() {
       <label htmlFor={inputId} className="text-sm font-semibold text-ink">
         {t('label')}
       </label>
-      <div className="flex flex-col gap-2 sm:flex-row">
+      {/* One pill: the field and its button share a border, and the focus ring goes round both. */}
+      <div className="flex w-full flex-col gap-1.5 rounded-[1.75rem] border border-control bg-surface p-1.5 shadow-card transition-[border-color,box-shadow] duration-200 focus-within:border-accent focus-within:ring-4 focus-within:ring-accent/20 hover:border-ink-soft has-[[aria-invalid=true]]:border-danger sm:flex-row sm:rounded-full">
         <input
           id={inputId}
           name="contact"
@@ -66,10 +66,11 @@ export function WaitlistForm() {
           placeholder={t('placeholder')}
           aria-invalid={error === 'invalid'}
           aria-describedby={messageId}
-          className={`${inputStyles} min-h-12 flex-1 rounded-full px-5`}
+          className="min-h-12 min-w-0 flex-1 rounded-full bg-transparent px-4 text-base text-ink outline-none placeholder:text-muted"
         />
-        <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', className: 'shrink-0' })}>
+        <SubmitButton pending={pending} className={buttonStyles({ size: 'lg', className: 'group shrink-0' })}>
           {pending ? t('submitting') : t('submit')}
+          <Icon name="arrowRight" className="size-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </SubmitButton>
       </div>
       <p id={messageId} aria-live="polite" className={error ? 'text-sm font-medium text-danger' : 'text-sm text-muted'}>

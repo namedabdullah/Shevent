@@ -299,6 +299,54 @@
   }
 }
 
+/* Landing hero (components/hero.tsx). */
+@keyframes pill-in {
+  from {
+    translate: 0 210%;
+    rotate: -24deg;
+  }
+}
+
+@keyframes pill-out {
+  to {
+    translate: 0 -210%;
+    rotate: 24deg;
+    visibility: hidden;
+  }
+}
+
+@keyframes word-in {
+  from {
+    translate: 0 125%;
+  }
+}
+
+@keyframes word-out {
+  to {
+    translate: 0 -130%;
+    visibility: hidden;
+  }
+}
+
+/* Route transitions (lib/transitions.ts): content slides up on `nav-forward`, down on `nav-back`. */
+@keyframes route-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes route-rise {
+  from {
+    translate: 0 var(--route-offset);
+  }
+}
+
+@keyframes morph-blur {
+  30% {
+    filter: blur(2px);
+  }
+}
+
 @layer base {
   body {
     background: var(--canvas);
@@ -550,6 +598,120 @@
     }
   }
 
+  /* ── Landing hero ─────────────────────────────────────────────────────────────────────────────
+     A fine grid that fades out from the centre, and the category orbit (components/hero.tsx). Chips
+     ride an ellipse with offset-path, so the orbit stretches with the hero instead of using fixed
+     pixel paths. The orbit only ever moves and scales; its labels never fade. The mask hides
+     whatever passes behind the headline. */
+  .hero-grid {
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 72px 72px;
+    background-position: center top;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black, transparent 80%);
+    opacity: 0.7;
+  }
+
+  .hero-orbit {
+    display: none;
+    mask-image: radial-gradient(ellipse 36% 30% at 50% 47%, transparent 62%, black 100%);
+  }
+
+  @supports (offset-path: ellipse(50% 50% at 50% 50%)) {
+    @media (width >= 80rem) {
+      .hero-orbit {
+        display: block;
+      }
+    }
+  }
+
+  /* The ring itself has no words, so it may fade in. */
+  .orbit-svg {
+    animation: orbit-ring-in 1.4s var(--ease-out-expo) both;
+    animation-delay: 0.15s;
+  }
+
+  .orbit-line {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+  }
+
+  .orbit-ring[data-faint] .orbit-svg {
+    animation-delay: 0.35s;
+  }
+
+  .orbit-ring[data-faint] .orbit-line {
+    stroke: var(--line);
+  }
+
+  .orbit-traveller {
+    position: absolute;
+    top: 0;
+    left: 0;
+    offset-path: ellipse(50% 50% at 50% 50%);
+    offset-rotate: 0deg;
+    offset-distance: var(--at);
+    animation: orbit-travel var(--orbit-duration) linear infinite;
+  }
+
+  .orbit-ring[data-reverse] .orbit-traveller {
+    animation-direction: reverse;
+  }
+
+  /* Hovering or focusing a chip holds the whole orbit still, so it can be read and clicked. */
+  .orbit-ring:has(.orbit-chip:hover, .orbit-chip :focus-visible) .orbit-traveller {
+    animation-play-state: paused;
+  }
+
+  /* The headline's changing word: clipped to its own box, so words slide in and out of view
+     instead of fading. */
+  .hero-word {
+    /* A taller box than the line (margins give the height back), so ascenders and descenders of the
+       resting word are never cut and the words leaving or arriving are fully outside it. */
+    line-height: 1.4;
+    margin-block: -0.19em;
+    clip-path: inset(0 -0.06em);
+  }
+
+  /* The changing word in an ink-to-accent gradient with a soft glow of the theme's accent. Both ends
+     pass contrast for large text in every theme (ink, and accent at 3:1 or more). */
+  .hero-word-ink {
+    background: linear-gradient(100deg, var(--ink) 10%, var(--accent-ink) 60%, var(--accent));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 0.28em color-mix(in srgb, var(--accent) 30%, transparent));
+  }
+
+  .orbit-chip {
+    animation: orbit-chip-in 0.7s var(--ease-out-expo) both;
+    animation-delay: var(--chip-delay, 0ms);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .hero-orbit-scroll {
+      animation: hero-orbit-exit linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 80vh;
+    }
+
+    .hero-copy {
+      animation: hero-copy-exit linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 80vh;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .orbit-traveller,
+    .hero-orbit-scroll,
+    .hero-copy {
+      animation: none;
+    }
+  }
+
   /* <details class="accordion"> opens smoothly where ::details-content is supported. */
   .accordion {
     interpolate-size: allow-keywords;
@@ -595,4 +757,63 @@ html.lenis body {
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 0.35s;
+}
+
+/* Route transitions. The header stays put above the moving content (no flash of two headers), the
+   page content rises in or sinks back, and a hero chip grows into its directory page's pill (.morph).
+   Clicks pass through the overlay to the live page. */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+::view-transition-old(.nav-forward),
+::view-transition-old(.nav-back) {
+  animation: route-fade 0.16s ease-in both reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --route-offset: 2.5rem;
+  animation:
+    route-fade 0.3s ease-out 0.12s both,
+    route-rise 0.6s var(--ease-out-expo) both;
+}
+
+::view-transition-new(.nav-back) {
+  --route-offset: -2.5rem;
+  animation:
+    route-fade 0.3s ease-out 0.12s both,
+    route-rise 0.6s var(--ease-out-expo) both;
+}
+
+::view-transition-group(.morph) {
+  animation-duration: 0.55s;
+  animation-timing-function: var(--ease-out-expo);
+}
+
+::view-transition-image-pair(.morph) {
+  animation-name: morph-blur;
+  animation-duration: 0.55s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*),
+  ::view-transition-image-pair(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }
