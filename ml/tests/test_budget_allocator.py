@@ -112,6 +112,42 @@ def test_allocate_says_when_the_budget_is_too_low(trained):
     assert out["explanations"] == []
 
 
+def test_only_the_chosen_services_share_the_budget(trained):
+    """A host who doesn't need decor, lighting or a DJ gets the whole budget split between the other three, in the
+    proportions the model gives them."""
+    model, _ = trained
+    chosen = ["venue", "catering", "photography"]
+    full = model.allocate(PLAN)["allocation"]
+    out = model.allocate({**PLAN, "categories": ["photography", "catering", "venue"]})
+    assert list(out["allocation"]) == chosen  # in the usual order, whatever order they were given in
+    assert sum(v["share"] for v in out["allocation"].values()) == pytest.approx(1)
+    assert sum(v["pkr"] for v in out["allocation"].values()) == pytest.approx(2_500_000, abs=3000)
+    ratio = out["allocation"]["venue"]["share"] / out["allocation"]["catering"]["share"]
+    assert ratio == pytest.approx(full["venue"]["share"] / full["catering"]["share"], rel=1e-6)
+    # Explanations compare with a typical event's split over the same three services.
+    assert all(e.split(" share")[0].lower() in ("venue", "catering", "photography") for e in out["explanations"])
+
+
+def test_one_chosen_service_gets_the_whole_budget_and_unknown_ones_are_refused(trained):
+    model, _ = trained
+    out = model.allocate({**PLAN, "categories": ["catering"]}, {"catering": 100_000, "venue": 5_000_000})
+    assert out["allocation"] == {"catering": {"share": 1.0, "pkr": 2_500_000}}
+    assert out["warnings"] == [] and not out["budget_too_low"]  # the venue's minimum doesn't apply
+    with pytest.raises(ValueError, match="unknown categories"):
+        model.allocate({**PLAN, "categories": ["fireworks"]})
+
+
+def test_shapley_values_over_chosen_services_add_up(trained):
+    model, _ = trained
+    chosen = ["venue", "catering", "decor"]
+    phi = model.shapley(PLAN, chosen)
+    shares = model.predict(pd.DataFrame([PLAN])).iloc[0][chosen].to_numpy()
+    typical = model._shares(model.reference[None, :])[0][[CATEGORIES.index(c) for c in chosen]]
+    np.testing.assert_allclose(
+        phi.sum(axis=0).to_numpy(), 100 * (shares / shares.sum() - typical / typical.sum()), atol=1e-4
+    )
+
+
 def test_save_and_load_give_the_same_split(trained, tmp_path):
     model, report = trained
     model.save(tmp_path, report)

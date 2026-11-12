@@ -79,15 +79,16 @@ describe('detectLanguage', () => {
 });
 
 describe('fixtureAssistantChat', () => {
-  it('asks for what is missing, then estimates once the plan is complete', () => {
-    const first = fixtureAssistantChat({ messages: [user('mehndi for 300 people in Gulberg')] }, TODAY);
+  it('asks for what a budget split needs, then estimates once the plan is complete', () => {
+    const first = fixtureAssistantChat({ messages: [user('split the budget for a mehndi for 300 people in Gulberg')] }, TODAY);
     expect(assistantChatResponseSchema.safeParse(first).success).toBe(true);
+    expect(first.intent).toBe('budget_split');
     expect(first.missing).toEqual(['event_date', 'total_budget_pkr']);
     expect(first.estimate).toBeNull();
     expect(first.reply).toContain('the date and your total budget');
 
     const second = fixtureAssistantChat(
-      { messages: [user('mehndi for 300 people in Gulberg'), assistant(first.reply), user('19 December, 25 lakh')] },
+      { messages: [user('split the budget for a mehndi for 300 people in Gulberg'), assistant(first.reply), user('19 December, 25 lakh')] },
       TODAY,
     );
     expect(second.missing).toEqual([]);
@@ -96,8 +97,33 @@ describe('fixtureAssistantChat', () => {
     expect(second.fallback_to_form).toBe(false);
   });
 
+  it('describing an event gets advice, not a budget split', () => {
+    const chat = fixtureAssistantChat({ messages: [user('mehndi for 300 people in Gulberg on 19 December, 25 lakh')] }, TODAY);
+    expect(assistantChatResponseSchema.safeParse(chat).error?.issues ?? []).toEqual([]);
+    expect(chat.intent).toBe('advice');
+    expect(chat.estimate).toBeNull();
+  });
+
+  it('a split can leave services out, and the shares still add up', () => {
+    const chat = fixtureAssistantChat(
+      { messages: [user('split 25 lakh for a mehndi, 300 log, Gulberg, 19 December, only catering and photography')] },
+      TODAY,
+    );
+    expect(Object.keys(chat.estimate!.allocation)).toEqual(['catering', 'photography']);
+    expect(Object.values(chat.estimate!.allocation).reduce((sum, item) => sum + item.share, 0)).toBeCloseTo(1);
+    expect(assistantChatResponseSchema.safeParse(chat).error?.issues ?? []).toEqual([]);
+  });
+
+  it('suggests vendors, sponsored ones left out', () => {
+    const chat = fixtureAssistantChat({ messages: [user('suggest a caterer for a walima, 500 guests in DHA')] }, TODAY);
+    expect(chat.intent).toBe('vendors');
+    expect(chat.recommendations?.category).toBe('catering');
+    expect(chat.recommendations?.matches.length).toBeGreaterThan(0);
+    expect(assistantChatResponseSchema.safeParse(chat).error?.issues ?? []).toEqual([]);
+  });
+
   it('never states a number that is not from the host or the estimate', () => {
-    const chat = fixtureAssistantChat({ messages: [user('walima 500 log DHA 2 jan budget 40 lakh')] }, TODAY);
+    const chat = fixtureAssistantChat({ messages: [user('walima 500 log DHA 2 jan budget 40 lakh, split it')] }, TODAY);
     const allowed = new Set([
       '500',
       '2',
@@ -113,14 +139,16 @@ describe('fixtureAssistantChat', () => {
     expect(chat.extracted.guest_count).toBe(450);
   });
 
-  it('hands over to the form after three messages it cannot read', () => {
-    const messages = [user('hello'), assistant('…'), user('not sure yet'), assistant('…'), user('hmm')];
+  it('hands over to the form after three messages that add nothing to a budget split', () => {
+    const messages = [user('split my budget'), assistant('…'), user('not sure yet'), assistant('…'), user('hmm'), assistant('…'), user('later')];
     expect(fixtureAssistantChat({ messages }, TODAY).fallback_to_form).toBe(true);
     expect(fixtureAssistantChat({ messages: messages.slice(0, 3) }, TODAY).fallback_to_form).toBe(false);
   });
 
-  it('shows an example when it understood nothing yet', () => {
+  it('a greeting gets a hello and says what it can do', () => {
     expect(missingPlanFields({})).toHaveLength(5);
-    expect(fixtureAssistantChat({ messages: [user('hi')] }, TODAY).reply).toContain('For example');
+    const chat = fixtureAssistantChat({ messages: [user('hi')] }, TODAY);
+    expect(chat.intent).toBe('greeting');
+    expect(chat.reply).toContain('split your budget');
   });
 });

@@ -1,9 +1,9 @@
 # Shevent
 
 **An AI-assisted event marketplace for Lahore.** A host describes an event (a 300-guest mehndi in Gulberg, Rs 25 lakh)
-and gets a budget split, fair price ranges, matched vendors, ready-made vendor packages, a fairness check on every
-quote, and a planning assistant that understands English, Roman Urdu and Urdu. Vendors get serious leads and see how
-their quote compares before they send it.
+and gets a budget split across the services they need, fair price ranges, matched vendors, ready-made vendor packages,
+a fairness check on every quote, and a planning assistant that answers their questions in English, Roman Urdu and Urdu.
+Vendors get serious leads and see how their quote compares before they send it.
 
 NETSOL AI/ML capstone, November 2026. Built entirely on free tools and open-weight models: no paid APIs.
 
@@ -13,14 +13,14 @@ NETSOL AI/ML capstone, November 2026. Built entirely on free tools and open-weig
 
 | # | Feature | What it does | Result on held-out data |
 |---|---|---|---|
-| 1 | Budget Allocator | Splits the budget across venue, catering, decor, DJ & sound, lighting and photography | Share error 2.4 points vs 5.7 for a fixed split (synthetic events; no host survey collected) |
+| 1 | Budget Allocator | Splits the budget across the services the host needs: venue, catering, decor, DJ & sound, lighting, photography | Share error 2.4 points vs 5.7 for a fixed split (synthetic events; no host survey collected) |
 | 2 | Price Range Estimator | Low / likely / high price per category for the event | 46 real test prices: 72% MAPE vs 92% for a median lookup; the 80% range holds 91% |
 | 3 | Vendor Matching | Ranks vendors with a reason for every match; sponsored listings kept separate | 234 rated candidates: NDCG@10 0.815 vs 0.713 for a random order (ratings by an AI assistant) |
 | 4 | Package Builder | Three complete vendor line-ups within the budget (OR-Tools CP-SAT) | Never over budget; beats a greedy baseline at tight budgets |
 | 5 | Quote Fairness Checker | Green / amber / red against the typical range, plus what to ask about | Not scored (no real quotes collected) |
 | 6 | Review Insights | Praise and complaints per aspect in reviews, in three languages | 150 real reviews labelled by a person: macro-F1 0.398 vs 0.392 (level); finds 13 of 23 complaints vs 6 |
 | 7 | Verified Portfolios | Finds reused portfolio photos (even resized, filtered, framed, mirrored or cropped) and tags their style | 900 planted copies: 85% found at 100% precision vs 0% for exact matching; tags 79% right on a 12-photo sample |
-| 8 | Planning Assistant | Chat in English, Roman Urdu or Urdu; a local LLM reads, the server answers from #1 and #2 | 95% of holdout chats read right; 0 invented values or figures |
+| 8 | Planning Assistant | Answers questions in English, Roman Urdu or Urdu: typical prices, matching vendors, a quote check, advice, or a budget split when asked; a local LLM reads and advises, the models give every figure | 95% of holdout chats read right; 0 invented values or figures; question type right on 29 of 30 |
 
 Every number, baseline and caveat is in the [evaluation report](../docs/evaluation_report.md). The honest summary:
 the methods are built, tested and served; the data behind several of them is thin, and the app labels every amount
@@ -85,7 +85,8 @@ error and the planner form stays available.
   reviews train #6 (the real ones are 97% five-star). Models are scored on held-out real data only.
 - **Guidance, not accusations:** quote checks say "worth asking about", never "overcharging"; review cons say "some
   reviews mention".
-- **No invented figures:** the assistant's model only reads; every number in a reply comes from #1 and #2.
+- **No invented figures:** the assistant's model reads the chat and writes advice without numbers; every number in a
+  reply comes from #1-#5.
 - **Sponsored listings** are labelled and never mixed into the ranked matches.
 
 ## Licences

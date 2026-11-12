@@ -99,6 +99,7 @@ Open `http://localhost:3000`. Sign-in uses a magic link: locally, the email arri
 | Python lint | `ml\.venv\Scripts\python -m ruff check ml server` |
 | Browser journeys (5 browser profiles) | `pnpm --filter @shevent/web exec playwright install`, then `pnpm --filter @shevent/web test:e2e` with the database running and the web app built with `NEXT_PUBLIC_API_FIXTURES=true` |
 | Assistant evaluation (needs Ollama) | `cd server; ..\ml\.venv\Scripts\python -m eval.assistant_eval --cases holdout` |
+| Assistant question types (no Ollama) | `cd server; ..\ml\.venv\Scripts\python -m eval.question_types` |
 
 ## 7. Retrain (optional)
 

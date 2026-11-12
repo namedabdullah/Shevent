@@ -193,7 +193,7 @@
   },
   "Planner": {
     "title": "Plan your event",
-    "intro": "Tell us about the event and your total budget. We'll split it across venue, catering, decor, DJ & sound, lighting and photography, and show typical prices for each.",
+    "intro": "Tell us about the event, the services you need and your total budget. We'll split the budget across those services and show typical prices for each.",
     "eventSection": "The event",
     "eventType": "Type of event",
     "choose": "Choose…",
@@ -216,7 +216,8 @@
       "event_date": "Choose a date from today onwards.",
       "area": "Choose the area.",
       "total_budget_pkr": "Enter a budget such as 25 lakh, 1 crore or 850000.",
-      "failed": "We couldn't save your plan. Please try again."
+      "failed": "We couldn't save your plan. Please try again.",
+      "categories": "Choose at least one service."
     },
     "eyebrow": "New plan",
     "assistantTitle": "Rather describe it in your own words?",
@@ -224,27 +225,32 @@
     "assistantLink": "Open the assistant",
     "nextTitle": "What happens next",
     "next": [
-      "Shevent splits your budget across the six categories.",
+      "Shevent splits your budget across the services you chose.",
       "You see typical prices for each, labelled as estimates.",
       "Choose a category to see vendors that fit and message them."
-    ]
+    ],
+    "servicesSection": "Services",
+    "services": "Which services do you need?",
+    "servicesHint": "The budget is split between the ones you tick. Leave out anything you've already arranged."
   },
   "Assistant": {
     "title": "Planning assistant",
-    "intro": "Describe your event in your own words, in English, Urdu or Roman Urdu. The assistant asks for anything missing, then works out your budget split. Every number comes from Shevent's estimates, not from the chat.",
+    "intro": "Ask in your own words, in English, Urdu or Roman Urdu: what a service usually costs, which vendors fit your event, whether a quote is fair, how to plan, or how to split your budget. Every number comes from Shevent's estimates, not from the chat.",
     "conversation": "Conversation with the planning assistant",
-    "greeting": "Salam! Tell me about your event: what it is, how many guests, where in Lahore, the date and your budget.",
+    "greeting": "Salam! What are you planning? Ask me what a service usually costs, which vendors fit your event, whether a quote is fair, or how to split your budget.",
     "you": "You",
     "assistant": "Assistant",
     "thinking": "Thinking…",
     "examplesTitle": "Try one of these",
     "examples": [
-      "Mehndi for 300 guests in Gulberg on 19 December, around 25 lakh",
-      "walima karni hai, 500 log, DHA mein, budget 40 lakh",
-      "گلبرگ میں 300 مہمانوں کی مہندی، بجٹ 25 لاکھ"
+      "How much does catering cost for a mehndi for 300 guests?",
+      "walima ke liye 500 log, DHA mein, koi achha caterer batao",
+      "A caterer quoted Rs 3,000 per head for a mehndi for 300 guests. Is that fair?",
+      "What should I ask a decorator before booking?",
+      "بجٹ تقسیم کریں: گلبرگ میں 300 مہمانوں کی مہندی، بجٹ 25 لاکھ"
     ],
     "inputLabel": "Your message",
-    "placeholder": "Describe your event…",
+    "placeholder": "Ask about your event…",
     "inputHint": "Press Enter to send, or Shift + Enter for a new line.",
     "send": "Send",
     "failed": "The assistant isn't available right now. Try again in a moment, or",
@@ -258,13 +264,20 @@
       "guest_count": "Guests",
       "area": "Area",
       "event_date": "Date",
-      "total_budget_pkr": "Budget"
+      "total_budget_pkr": "Budget",
+      "category": "Service",
+      "quote": "Quote"
     },
     "savePlan": "Save as a plan",
     "savePlanHint": "Opens the planner with these details filled in, so you can check them before saving.",
     "fallback": "Let's finish this with the planner form. What I understood is already filled in.",
     "openForm": "Open the planner form",
-    "eyebrow": "Chat to plan"
+    "eyebrow": "Chat to plan",
+    "suggestionsTitle": "{category}: best matches",
+    "suggestionsNote": "Ranked by fit for your event. Sponsored listings are never mixed in.",
+    "verified": "Verified",
+    "contactVendors": "Save a plan to contact them",
+    "contactVendorsHint": "Opens the planner with your details filled in. Vendors are messaged from a saved plan."
   },
   "PlanDashboard": {
     "metaTitle": "Your plan",

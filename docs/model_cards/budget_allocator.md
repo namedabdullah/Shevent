@@ -4,27 +4,35 @@
 |---|---|
 | Version | `alloc-v1-52d3ae4d` (`ml/artifacts/budget_allocator/`), trained 10 Nov |
 | Code | `ml/shevent_ml/models/budget_allocator.py`, settings in `ml/configs/budget_allocator.yaml` |
-| Served by | `POST /v1/estimate` (with #2), and inside `/v1/assistant/chat` |
+| Served by | `POST /v1/estimate` (with #2), and inside `/v1/assistant/chat` when the host asks for a split |
 | Owner | ML lead |
 
 ## What it does
 
-Splits a host's total budget across the six service categories (venue, catering, decor, DJ & sound, lighting,
-photography) for one event, with a price range per share from #2 and a short explanation of what moved the split.
+Splits a host's total budget across the services they need, out of six (venue, catering, decor, DJ & sound,
+lighting, photography), for one event, with a price range per share from #2 and a short explanation of what moved the
+split. A host who has already booked the hall, or doesn't want a DJ, leaves those out and the whole budget goes to the
+rest.
 
 ## Inputs and outputs
 
 - **In:** event type, guest count, area, venue type (optional), event date, total budget in PKR, preferences
-  (decor-heavy, premium food, live dhol). Derived: log guests, log budget, budget per guest, month as sine and cosine,
+  (decor-heavy, premium food, live dhol), and the services needed (`categories`, optional: all six when absent). Derived: log guests, log budget, budget per guest, month as sine and cosine,
   weekend, season.
-- **Out:** per category a share (0-1, summing to 1), the PKR amount and #2's range; the season; warnings (for example
-  "budget too low by Rs X"); explanations.
+- **Out:** per chosen service a share (0-1, summing to 1), the PKR amount and #2's range; the season; warnings (for
+  example "budget too low by Rs X"); explanations.
 
 ## Model
 
 A feed-forward network (two hidden layers of 64, dropout 0.1) with a softmax head, so the shares always add up to 1.
 Loss: KL divergence between predicted and actual shares. 40 epochs, Adam, learning rate 0.001, weight decay 0.0001.
 Real rows weigh 5× synthetic ones.
+
+**Chosen services (12 Nov):** the network always predicts all six shares; the shares of the services the host chose
+are rescaled to sum to 1. That is the same as a softmax over only their outputs, so each chosen service keeps its
+weight relative to the others (the network wasn't retrained). Guardrails and explanations then work over the chosen
+services only: a dropped venue's minimum doesn't count, and "above a typical event's share" compares with a typical
+event's split over the same services. The planner form ticks all six by default.
 
 **Guardrails after the model:** no category falls below the cheapest realistic price for this event (#2's low price
 for a budget-tier vendor). If even the minimums don't fit, the host is told the budget is too low and by how much.
@@ -60,6 +68,9 @@ half) hasn't run: there are no answers. Guardrails and the "budget too low" path
 - A plan's venue type is optional; a crash on plans without one was fixed on 8 Nov.
 - Most Lahore halls sell food and hall together; the split keeps them as two categories.
 - Splits are guidance, not quotes. The apps label every amount "AI estimate, not a vendor quote".
+- A split over fewer services assumes the others' shares would have been spread in proportion. The synthetic events
+  always have all six services, so this rescaling isn't evaluated separately; unit tests check the shares, the
+  guardrails and the explanations over chosen services.
 
 ## Licences
 

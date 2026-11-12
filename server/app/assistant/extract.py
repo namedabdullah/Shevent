@@ -107,10 +107,21 @@ EXAMPLES = [
 ]
 
 
-def transcript(messages, limit=12, max_chars=800):
-    """The latest messages as one block of text, so the model reads the chat instead of joining it."""
+ASSISTANT_CHARS = 160
+
+
+def transcript(messages, limit=12, max_chars=800, assistant_chars=ASSISTANT_CHARS):
+    """The latest messages as one block of text, so the model reads the chat instead of joining it. The assistant's
+    own replies are cut to their first line: they hold no detail the host didn't write, and long advice or price
+    lists made the 3B model lose details the host had given (holdout-en-06, 12 Nov)."""
     who = {"user": "Host", "assistant": "Assistant"}
-    return "\n".join(f"{who[m['role']]}: {m['content'][:max_chars]}" for m in messages[-limit:])
+
+    def text(m):
+        if m["role"] == "assistant":
+            return m["content"].split("\n")[0][:assistant_chars]
+        return m["content"][:max_chars]
+
+    return "\n".join(f"{who[m['role']]}: {text(m)}" for m in messages[-limit:])
 
 
 def _mentioned(text, aliases):

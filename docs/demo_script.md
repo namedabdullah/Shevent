@@ -44,48 +44,59 @@ here.
 
 Each step: what to **do**, what the audience **sees**, and what to **say**.
 
-### 1. The assistant (#8): about 2 minutes
+### 1. The assistant (#8): about 2.5 minutes
 
-**Do:** host window → **Assistant**. Type `mehndi karni hai 300 log, Gulberg mein, budget 25 lakh` and press Enter.
+**Do:** host window → **Assistant**. Type `300 logon ki mehndi ke liye catering kitne ki padegi?` and press Enter.
 
-**Sees:** "Got it: a mehndi / mayun / dholki for 300 guests in Gulberg with a budget of Rs 25 lakh. To work out your
-budget split I still need the date."
+**Sees:** "Typical prices for a mehndi / mayun / dholki for 300 guests, for the whole event (AI estimates, not vendor
+quotes): Catering: usually about Rs 5.52 lakh (Rs 2.42 lakh to Rs 11.01 lakh), about Rs 800 to Rs 3,650 per head. Tell
+me the area and the date for a closer estimate." Then a few points of advice (ask for the menu per head, check what
+the price includes, agree how extra guests are charged).
 
-**Do:** type `19 December, marquee mein` and press Enter.
+**Do:** type `Gulberg mein koi achha photographer batao` and press Enter.
+
+**Sees:** three Gulberg photographers from the collected listings, best match first (Fine Art Weddings by Irfan
+Ahson, AK Productions, Da Artist Photography), each with its reasons ("Serves Gulberg", "Does mehndi events") and
+likely price, as cards under the reply, then advice on choosing a photographer.
+
+**Do:** type `Mera budget 25 lakh hai, 19 December. Budget taqseem kar do, DJ nahi chahiye` and press Enter.
 
 **Sees:** "Here is a budget split for a mehndi / mayun / dholki for 300 guests in Gulberg on Sat, 19 Dec 2026 with a
-budget of Rs 25 lakh. Catering gets Rs 11.31 lakh (45%), within what this usually costs; Venue gets Rs 5.53 lakh (22%),
-within what this usually costs. It falls in peak wedding season, when prices run higher." and the split table.
+budget of Rs 25 lakh, split between venue, catering, decor, lighting and photography. Catering gets Rs 11.09 lakh
+(44%), within what this usually costs; Venue gets Rs 5.77 lakh (23%), within what this usually costs. It falls in
+peak wedding season, when prices run higher." and a five-row split table: no DJ.
 
 **Say:**
 - The host writes in Roman Urdu, the way people actually text. A small open-weight model, Qwen2.5 3B, runs on this
   laptop for free; no paid API.
-- The model only *reads* the message. The server keeps a value only if the host actually wrote it, and every number in
-  the reply comes from the budget and price models. On the evaluation set it never invented a value; the model on its
-  own made up 19.
-- It asked only for what was missing: the date.
+- The assistant answers what was asked: a price, vendors, and the split only when asked for one. The second and
+  third messages didn't repeat the event: it carried over.
+- The model reads the chat and writes the advice; every number comes from the price, matching and budget models. On
+  the evaluation chats it never invented a value (the model on its own made up 17), and its advice never contained a
+  figure the host didn't give.
+- "DJ nahi chahiye": the whole budget goes to the five services the host needs.
 
-**Do:** click **Save as a plan**. The planner opens filled in. Click **Get my budget split**.
+**Do:** click **Save as a plan**. The planner opens filled in, with DJ & Sound unticked under **Services**. Click
+**Get my budget split**.
 
 ### 2. The budget split (#1) and price ranges (#2): about 2 minutes
 
-**Sees:** "Mehndi / mayun / dholki in Gulberg", the six-way split, each category with the host's budget next to a
+**Sees:** "Mehndi / mayun / dholki in Gulberg", the split over the five chosen services, each with the host's budget next to a
 typical low-high range and the label "AI estimate, not a vendor quote". Under **Why this split**: "Venue share is below a
-typical event's (22% vs 26%), mainly because of the event type" and "Decor share is above a typical event's (19% vs
-16%), mainly because of the event type".
+typical event's (23% vs 26%), mainly because of the event type" and "Decor share is above a typical event's (20% vs
+17%), mainly because of the event type" (both compared over the same five services).
 
 | Category | Budget | Typical range |
 |---|---|---|
-| Catering | Rs 11.31 lakh | Rs 4.51-22.32 lakh |
-| Venue | Rs 5.53 lakh | Rs 1.48-13.03 lakh |
-| Decor | Rs 4.83 lakh | Rs 91,000-11.35 lakh |
-| Lighting | Rs 1.46 lakh | Rs 30,000-3.6 lakh |
-| Photography | Rs 1.33 lakh | Rs 24,000-3.27 lakh |
-| DJ & sound | Rs 54,000 | Rs 14,000-1.27 lakh |
+| Catering | Rs 11.09 lakh | Rs 4.52-22.19 lakh |
+| Venue | Rs 5.77 lakh | Rs 1.42-12.5 lakh |
+| Decor | Rs 5 lakh | Rs 92,000-11.51 lakh |
+| Lighting | Rs 1.71 lakh | Rs 31,000-3.65 lakh |
+| Photography | Rs 1.44 lakh | Rs 24,000-3.26 lakh |
 
 **Say:**
 - #1 is a small neural network whose shares always add to 100%, with guardrails so no category drops below a
-  realistic minimum. The explanations are exact Shapley values, not guesses.
+  realistic minimum. A host can leave services out; the rest keep their proportions. The explanations are exact Shapley values, not guesses.
 - #2 gives a range, not a single number: three LightGBM quantile models, calibrated to hold 80% of prices.
 - The ranges come from 402 real Lahore prices the team collected. On 46 prices held out from training, the range held
   91% of them (the target is 80%), and the likely price beat a simple median lookup (72% error against 92%).
@@ -97,8 +108,8 @@ typical event's (22% vs 26%), mainly because of the event type" and "Decor share
 
 **Do:** on the plan, click **Compare ready-made vendor packages**.
 
-**Sees:** Cheapest (about Rs 5.28 lakh), Balanced and Highest quality (about Rs 15.56 lakh each), all within Rs 25
-lakh, each with a vendor in all six categories and price ranges. Items marked as estimates are vendors without a listed
+**Sees:** Cheapest (about Rs 4.87 lakh), Balanced and Highest quality (about Rs 14.84 lakh each), all within Rs 25
+lakh, each with a vendor for each of the five chosen services and price ranges. Items marked as estimates are vendors without a listed
 price, priced by #2.
 
 **Say:**
@@ -179,7 +190,8 @@ open-weight model on this laptop.
 | Question | Answer |
 |---|---|
 | How good are the price ranges? | They hold real prices: 91% of 46 held-out real prices fall in the range (target 80%), and the likely price beats a median lookup (72% error against 92%). They're wide, especially for decor and photography, whose listings rarely say what's included. See `docs/evaluation_report.md` |
-| Can the assistant make up prices? | No. The model only reads; the server keeps only what the host wrote and writes the reply from the models' output. 0 invented values or figures on 71 test chats |
+| Can the assistant make up prices? | No. The model reads the chat and writes advice without numbers; the server keeps only what the host wrote and writes every figure from the models' output, and drops any advice sentence with a figure the host didn't give. 0 invented values or figures on 71 test chats |
+| Why doesn't the assistant always split the budget? | It answers what was asked: prices, vendors, a quote check or advice. The split is its own feature, run only when the host asks for one |
 | Why not let the LLM write the reply? | We tried. Every figure passed the check, but it still made false claims with true figures ("60% more than usual" for an amount below the usual range). So the server writes it |
 | What does it cost to run? | Nothing: Vercel Hobby, Supabase free, the model server and Ollama on a laptop through a free Cloudflare tunnel |
 | Is it in Urdu? | The host can write English, Roman Urdu, Urdu or a mix; the app answers in English |
@@ -190,7 +202,7 @@ open-weight model on this laptop.
 | Problem | Do this |
 |---|---|
 | Assistant slow on the first message (model loading) | Keep talking through step 1; it loads once. If it fails, use the planner: `/plan/new` with the same details |
-| Assistant says it can't help, or answers 503 | Use the planner form (step 1's second half): it gives the same split |
+| Assistant says it can't help, or answers 503 | Use the planner form (step 1's second half), untick DJ & Sound: it gives the same split |
 | Budget split says "We couldn't work out your budget split yet" | Check the PowerShell window. If it stopped, restart the script, update `MODEL_SERVER_URL` in Vercel and redeploy (about 3 minutes); meanwhile play the backup video |
 | The demo vendor isn't in the lighting matches | Listings refresh every 5 minutes: show another category, then come back |
 | A message doesn't appear in the other window | Refresh the page |

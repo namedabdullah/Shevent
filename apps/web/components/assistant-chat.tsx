@@ -1,10 +1,11 @@
 'use client';
 
 import { createApiClient } from '@shevent/core/api';
-import { EVENT_TYPE_LABELS } from '@shevent/core/enums';
+import { CATEGORY_LABELS, EVENT_TYPE_LABELS } from '@shevent/core/enums';
 import { REQUIRED_PLAN_FIELDS, type ExtractedPlan } from '@shevent/core/fixtures';
-import { formatEventDate, formatPkrCompact } from '@shevent/core/format';
-import type { AssistantChatResponse, ChatMessage } from '@shevent/core/schemas';
+import { formatEventDate, formatPkrCompact, formatPkrRange } from '@shevent/core/format';
+import { AI_ESTIMATE_LABEL } from '@shevent/core/labels';
+import type { AssistantChatResponse, AssistantRecommendations, ChatMessage } from '@shevent/core/schemas';
 import { useTranslations } from 'next-intl';
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
 import { BudgetSplit } from '@/components/budget-split';
@@ -34,6 +35,7 @@ function plannerHref(plan: ExtractedPlan) {
   if (plan.venue_type) query.venue_type = plan.venue_type;
   if (plan.event_date) query.date = plan.event_date;
   if (plan.total_budget_pkr) query.budget = String(plan.total_budget_pkr);
+  if (plan.categories?.length) query.services = plan.categories.join(',');
   return { pathname: '/plan/new' as const, query };
 }
 
@@ -219,10 +221,15 @@ function AssistantName({ label }: { label: string }) {
   );
 }
 
-/** Under a reply: what was understood so far, then the split (or the hand-over to the form). */
+/**
+ * Under a reply: what was understood (and what this answer still needs), then whatever the answer
+ * carries: the split for a budget question, #3's vendors for a vendor question, or the hand-over to
+ * the form.
+ */
 function ResponseDetails({ response }: { response: AssistantChatResponse }) {
   const t = useTranslations('Assistant');
   const plan = response.extracted;
+  const askedFor = response.missing.filter((field): field is 'category' | 'quote' => field === 'category' || field === 'quote');
   const value = (field: (typeof REQUIRED_PLAN_FIELDS)[number]) => {
     switch (field) {
       case 'event_type':
@@ -238,12 +245,20 @@ function ResponseDetails({ response }: { response: AssistantChatResponse }) {
     }
   };
 
+  // Known details, and the ones this answer still needs; nothing for details it doesn't need.
+  const chips = [
+    ...REQUIRED_PLAN_FIELDS.flatMap((field) => {
+      const known = value(field);
+      return known || response.missing.includes(field) ? [{ field, known }] : [];
+    }),
+    ...askedFor.map((field) => ({ field, known: undefined })),
+  ];
+
   return (
     <div className="flex w-full flex-col gap-3">
-      <dl aria-label={t('understood')} className="flex flex-wrap gap-1.5 text-xs">
-        {REQUIRED_PLAN_FIELDS.map((field) => {
-          const known = value(field);
-          return (
+      {chips.length > 0 && (
+        <dl aria-label={t('understood')} className="flex flex-wrap gap-1.5 text-xs">
+          {chips.map(({ field, known }) => (
             <div
               key={field}
               className={`flex items-center gap-1 rounded-full border px-2.5 py-1 ${known ? 'border-success-line bg-success-soft text-success-ink' : 'border-dashed border-control text-muted'}`}
@@ -251,9 +266,13 @@ function ResponseDetails({ response }: { response: AssistantChatResponse }) {
               <dt className="font-medium">{t(`fields.${field}`)}:</dt>
               <dd>{known || t('needed')}</dd>
             </div>
-          );
-        })}
-      </dl>
+          ))}
+        </dl>
+      )}
+
+      {response.recommendations && response.recommendations.matches.length > 0 && (
+        <Suggestions recommendations={response.recommendations} href={plannerHref(plan)} />
+      )}
 
       {response.estimate && (
         <div className="flex flex-col gap-4 rounded-2xl border border-line bg-canvas p-4 sm:p-5">
@@ -278,5 +297,60 @@ function ResponseDetails({ response }: { response: AssistantChatResponse }) {
         </div>
       )}
     </div>
+  );
+}
+
+/** #3's best matches for the service asked about: who, why they fit, and the likely price. */
+function Suggestions({ recommendations, href }: { recommendations: AssistantRecommendations; href: ReturnType<typeof plannerHref> }) {
+  const t = useTranslations('Assistant');
+  const { category, matches } = recommendations;
+  return (
+    <section aria-label={t('suggestionsTitle', { category: CATEGORY_LABELS[category] })} className="flex flex-col gap-3 rounded-2xl border border-line bg-canvas p-4 sm:p-5">
+      <div className="flex flex-col gap-0.5">
+        <h3 className="flex items-center gap-2 font-semibold text-ink">
+          <Icon name={category} className="size-4 text-muted" />
+          {t('suggestionsTitle', { category: CATEGORY_LABELS[category] })}
+        </h3>
+        <p className="text-sm text-muted">{t('suggestionsNote')}</p>
+      </div>
+      <ol className="grid gap-3 sm:grid-cols-2">
+        {matches.map((match) => (
+          <li key={match.vendor_id} className="flex flex-col gap-2 rounded-xl border border-line bg-surface p-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-semibold text-ink">{match.name}</span>
+              <span className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
+                <Icon name="mapPin" className="size-3.5" />
+                {match.base_area}
+                {match.verified && <> · {t('verified')}</>}
+              </span>
+            </div>
+            <ul className="flex flex-col gap-1 text-sm text-ink-soft">
+              {match.reasons.slice(0, 3).map((reason) => (
+                <li key={reason} className="flex gap-2">
+                  <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" />
+                  {reason}
+                </li>
+              ))}
+            </ul>
+            <p className="text-sm tabular-nums">
+              <span className="font-semibold text-ink">
+                {/* One listed price comes back as a range with equal ends. */}
+                {Math.round(match.price_range[0]) === Math.round(match.price_range[1])
+                  ? formatPkrCompact(match.price_range[0])
+                  : formatPkrRange(match.price_range[0], match.price_range[1])}
+              </span>{' '}
+              <span className="text-xs text-muted">{AI_ESTIMATE_LABEL}</span>
+            </p>
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-col items-start gap-1">
+        <Link href={href} className={buttonStyles({ size: 'sm' })}>
+          {t('contactVendors')}
+          <Icon name="arrowRight" className="size-4" />
+        </Link>
+        <p className="text-sm text-muted">{t('contactVendorsHint')}</p>
+      </div>
+    </section>
   );
 }

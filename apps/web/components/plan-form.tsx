@@ -1,14 +1,15 @@
 'use client';
 
-import { AREAS, EVENT_TYPES, EVENT_TYPE_LABELS, PREFERENCES, PREFERENCE_LABELS, VENUE_TYPES, VENUE_TYPE_LABELS } from '@shevent/core/enums';
+import { AREAS, CATEGORIES, CATEGORY_LABELS, EVENT_TYPES, EVENT_TYPE_LABELS, PREFERENCES, PREFERENCE_LABELS, VENUE_TYPES, VENUE_TYPE_LABELS, type Category } from '@shevent/core/enums';
 import { formatPkrCompact, parsePkr } from '@shevent/core/format';
 import { useTranslations } from 'next-intl';
 import { startTransition, useActionState, useId, useState, type FormEvent, type ReactNode } from 'react';
 import { createPlan, type PlanFormState } from '@/app/[locale]/(app)/plan/new/actions';
+import { Icon } from '@/components/icons';
 import { SubmitButton } from '@/components/submit-button';
 import { buttonStyles } from '@/components/ui/button';
 import { DateField } from '@/components/ui/date-field';
-import { Field, Fieldset, FormSection, inputStyles, selectStyles } from '@/components/ui/field';
+import { Field, FieldError, Fieldset, FormSection, inputStyles, selectStyles } from '@/components/ui/field';
 
 export interface PlanFormDefaults {
   event_type?: string;
@@ -17,6 +18,8 @@ export interface PlanFormDefaults {
   venue_type?: string;
   event_date?: string;
   budget?: string;
+  /** The services to start ticked; all six when absent. */
+  categories?: Category[];
 }
 
 const initialState: PlanFormState = { status: 'idle' };
@@ -31,6 +34,7 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
   const [budget, setBudget] = useState(defaults.budget ?? '');
   const id = useId();
   const invalid = (field: string) => state.status === 'error' && state.fields.includes(field);
+  const startTicked = new Set<Category>(defaults.categories?.length ? defaults.categories : CATEGORIES);
   const parsedBudget = parsePkr(budget);
 
   // onSubmit instead of <form action>, which would clear the form on every submit.
@@ -107,6 +111,21 @@ export function PlanForm({ defaults, today }: { defaults: PlanFormDefaults; toda
             </select>,
           )}
         </div>
+      </FormSection>
+
+      <FormSection title={t('servicesSection')}>
+        <Fieldset legend={t('services')} hint={t('servicesHint')}>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map((category) => (
+              <label key={category} className={pillCheck}>
+                <input type="checkbox" name="categories" value={category} defaultChecked={startTicked.has(category)} className="size-4 shrink-0" />
+                <Icon name={category} className="size-4 text-muted" />
+                {CATEGORY_LABELS[category]}
+              </label>
+            ))}
+          </div>
+          {invalid('categories') && <FieldError>{t('errors.categories')}</FieldError>}
+        </Fieldset>
       </FormSection>
 
       <FormSection title={t('budgetSection')}>

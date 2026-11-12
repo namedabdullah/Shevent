@@ -14,7 +14,7 @@
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
 | 6 | Review Insights | Built, served | 150 real test reviews labelled by a person: macro-F1 0.398 (English-only baseline 0.392); finds 13 of 23 complaints (baseline 6). On the AI assistant's labels: 0.434 vs 0.421 | **Level** on macro-F1, **yes** on finding complaints; the test set was looked at twice |
 | 7 | Verified Portfolios | Built, served | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%); style tags 23 of 29 right on 12 photos | **Yes** for duplicates |
-| 8 | AI Planning Assistant | Built, served | Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 invented figures in replies | Yes, on its own chat sets (the baseline is the model without the server's checks) |
+| 8 | AI Planning Assistant | Built, served | Answers prices, vendors, quote checks, advice, and a split only when asked. Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 figures no tool gave; question type right on 29 of 30 | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
 **The one-line verdict:** the path from event details to a priced plan, matched vendors, packages, quote checks and a
 chat assistant is built, tested and served. Dataset v2 gives the price model real data to learn from: 175 real training
@@ -71,6 +71,10 @@ DJ & sound 0.5 vs 4.7, lighting 1.4 vs 1.8, photography 1.3 vs 3.9.
 - The synthetic events now carry real base prices for four categories, so the split for a 300-guest, Rs 25 lakh mehndi
   is catering 45%, venue 22%, decor 19%, lighting 6%, photography 5%, DJ & sound 2%.
 - The planner split is a placeholder until the interviews come in, so the comparison with it is weak.
+- **Chosen services (12 Nov):** a host can leave services out (planner checkboxes, or "no DJ" to the assistant). The
+  chosen shares are rescaled to sum to 1, keeping their proportions; the network isn't retrained, so the version and
+  the scores above are unchanged. Synthetic events always use all six services, so splits over fewer aren't scored
+  separately; unit tests cover the shares, guardrails and explanations over a subset.
 - Guardrails (no category below the cheapest realistic price from #2; "budget too low" with the shortfall) are unit
   tested.
 
@@ -194,18 +198,30 @@ and reports the two labellers' agreement (Cohen's kappa).
 ## #8 AI Planning Assistant
 
 Qwen2.5 3B Instruct (Q4_K_M) on Ollama, laptop GPU. The model reads the chat into a strict JSON schema; the server
-keeps only values the host actually wrote, runs #1 and #2 and writes the reply from their results. Measured on 8 Nov
-and re-run on 11 Nov with the final models.
+keeps only values the host actually wrote. **v2 (12 Nov)** answers what the host asks: rules read the question type
+(prices, vendors, a quote check, a budget split, advice); the server answers with #2, #3, #5, or #1 and #2 only when
+a split is asked for, and writes every figure; the LLM adds advice with no figures (any sentence with one the host
+didn't write is dropped). v1 answered every complete plan with the budget split. Measured on 8 Nov, re-run on 11 Nov,
+and run again for v2 on 12 Nov:
 
-| Measure | Tuning set (51 chats) | Holdout (20 chats) |
+| Measure (v2, 12 Nov) | Tuning set (51 chats) | Holdout (20 chats) |
 |---|---|---|
 | Whole plan right, assistant | 100% | **95%** |
 | Whole plan right, model alone | 82% | 80% |
 | Values the host never gave, assistant | 0 | **0** |
-| Values the host never gave, model alone | 14 | 5 |
-| Estimate produced when the plan was complete | 100% | 100% |
-| Final replies with a figure no tool gave | 0 | **0** |
-| Seconds per turn, median / max | 1.8 / 2.5 | |
+| Values the host never gave, model alone | 17 | 5 |
+| Split produced when asked for one (plan complete) | 100% | 100% |
+| Split replies with a figure no tool gave | 0 | **0** |
+| Advice with a figure the host didn't write | 0 of 49 | **0 of 20** |
+| Seconds per turn, median / max | 5.3 / 8.2 | 4.9 / 6.8 |
+
+- **Question types:** on 30 questions written for this after the rules (English, Roman Urdu, Urdu), scored once, the
+  type was right for 29 and the service for 28 (`python -m eval.question_types`).
+- **v2's holdout was scored twice:** on the first run one chat got no split when asked, because the model, re-reading
+  a transcript with the assistant's long advice in it, lost the guests and date. Earlier replies are now cut to their
+  first line when the model re-reads the chat; both sets were run again (above).
+- Turns take about 5 s, against 2 s in v1, because most answers make a second model call for the advice. Whether the
+  advice is *good* isn't measured; it was read by hand during development.
 
 - The chats are English, messy English, multi-message corrections, Roman Urdu, Urdu script and off-topic messages.
 - The grounding rules were tuned on the first set, so its 100% is optimistic. The holdout was written afterwards; its
@@ -225,9 +241,9 @@ and re-run on 11 Nov with the final models.
 
 | Suite | Result |
 |---|---|
-| `ml/` pytest, including the CLIP test | 180 passed |
-| `server/` pytest (API, contracts, assistant, review insights) | 90 passed |
-| `packages/core` and `apps/web` Vitest | 195 and 38 passed |
+| `ml/` pytest, including the CLIP test | 180 passed (185 on 12 Nov) |
+| `server/` pytest (API, contracts, assistant, review insights) | 90 passed (132 on 12 Nov, after the assistant v2 and services changes) |
+| `packages/core` and `apps/web` Vitest | 195 and 38 passed (199 and 38 on 12 Nov) |
 | Lint, typecheck, production build | clean |
 | Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean |
 | Model server, live, real models (every endpoint but feedback) | 39 of 39 checks; `/v1/estimate` 48 ms median warm |

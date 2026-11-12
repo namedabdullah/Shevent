@@ -5,13 +5,17 @@ import pytest
 from conftest import CHAT, READING, TODAY, FakeLLM
 
 from app.assistant import Assistant, LLMUnavailable
-from app.assistant.chat import CATEGORY_LABELS, EVENT_LABELS, check_reply, detect_language, format_pkr
+from app.assistant.chat import CATEGORY_LABELS, EVENT_LABELS, HELLO, OFFER, check_reply, detect_language, format_pkr
 from app.assistant.extract import ground
 from app.assistant.figures import figures, parse_budget, parse_date
+from app.assistant.guide import clean, fallback
+from app.assistant.intent import chosen_services, detect_intent, quoted_amount
 from shevent_ml.config import REPO_ROOT
 from shevent_ml.data.load import load_reference
 
 ALIASES = load_reference()["area_aliases"]
+SPLIT = f"Split my budget: {CHAT}"
+GUIDANCE = "Catering takes the biggest share. Open the plan to see vendors."  # FakeLLM's free-text answer
 
 
 def say(*texts):
@@ -25,19 +29,161 @@ def use(services, **llm):
 
 
 def test_a_complete_plan_is_estimated_and_the_reply_kept(client):
-    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    body = client.post("/v1/assistant/chat", json=say(SPLIT)).json()
     assert body["extracted"] == {"event_type": "wedding_mehndi", "guest_count": 300, "area": "Gulberg",
                                  "venue_type": "marquee", "event_date": "2026-12-19",
                                  "total_budget_pkr": 2_500_000}  # fmt: skip
     assert body["missing"] == [] and not body["fallback_to_form"] and body["language"] == "en"
+    assert body["intent"] == "budget_split" and body["recommendations"] is None
     assert body["estimate"]["allocation"]["catering"]["pkr"] == 950_000
-    assert body["reply"] == "Catering takes the biggest share. Open the plan to see vendors."
-    assert body["model_version"] == "assistant-v1/llm-test+alloc-test+cost-test"
+    assert body["reply"] == GUIDANCE
+    assert body["model_version"] == "assistant-v2/llm-test+alloc-test+cost-test"
+
+
+def test_a_described_event_gets_advice_and_typical_prices_not_a_split(client):
+    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    assert body["intent"] == "advice" and body["estimate"] is None
+    reply = body["reply"].split("\n\n")
+    assert reply[0] == ("Here's how I'd approach a mehndi / mayun / dholki for 300 guests in Gulberg on Sat, 19 Dec "
+                        "2026 with a budget of Rs 25 lakh.")  # fmt: skip
+    assert reply[1] == GUIDANCE  # the model's advice, which has no figures
+    # FakeEstimator: venue Rs 1-2 lakh, catering Rs 1,500-2,500 a head x 300.
+    assert reply[2] == (
+        "What the biggest services cost for this event (AI estimates): venue usually about Rs 1.5 lakh "
+        "(Rs 1 lakh to Rs 2 lakh); catering usually about Rs 6 lakh (Rs 4.5 lakh to Rs 7.5 lakh)."
+    )
+    assert reply[3] == OFFER
+
+
+def test_only_a_request_to_split_the_budget_runs_1_and_it_can_leave_services_out(client):
+    text = f"{CHAT}. Split it between the venue, catering and photography only"
+    body = client.post("/v1/assistant/chat", json=say(text)).json()
+    assert body["intent"] == "budget_split"
+    assert list(body["estimate"]["allocation"]) == ["venue", "catering", "photography"]
+    assert body["extracted"]["categories"] == ["venue", "catering", "photography"]
+
+
+def test_a_price_question_gets_2s_ranges_and_says_what_would_sharpen_them(client):
+    body = client.post("/v1/assistant/chat", json=say("How much does catering cost for a mehndi for 300 guests "
+                                                       "in Gulberg?")).json()  # fmt: skip
+    assert body["intent"] == "prices" and body["estimate"] is None
+    assert body["extracted"] == {"event_type": "wedding_mehndi", "guest_count": 300, "area": "Gulberg"}
+    facts, advice = body["reply"].split("\n\n")
+    assert facts.splitlines()[1:] == [
+        "- Catering: usually about Rs 6 lakh (Rs 4.5 lakh to Rs 7.5 lakh), about Rs 1,500 to Rs 2,500 per head",
+        "Tell me the date for a closer estimate.",
+    ]
+    assert advice == GUIDANCE
+
+
+def test_vendor_suggestions_are_3s_matches_without_sponsored_ones(client):
+    body = client.post("/v1/assistant/chat", json=say("Suggest a venue for a mehndi for 300 guests in Gulberg")).json()
+    assert body["intent"] == "vendors" and body["recommendations"]["category"] == "venue"
+    matches = body["recommendations"]["matches"]
+    assert 1 <= len(matches) <= 3 and all(m["category"] == "venue" for m in matches)
+    # No budget was given, so no reason talks about one.
+    assert not any("budget" in reason for m in matches for reason in m["reasons"])
+    assert body["reply"].startswith("Here are venues that fit a mehndi / mayun / dholki for 300 guests in Gulberg")
+    assert "sponsored listings are never mixed in" in body["reply"]
+
+
+def test_a_quoted_price_is_checked_by_5(client):
+    text = "A caterer quoted Rs 3,000 per head for our mehndi for 300 guests in Gulberg. Is that fair?"
+    body = client.post("/v1/assistant/chat", json=say(text)).json()
+    assert body["intent"] == "quote_check"
+    assert body["reply"].startswith("Rs 3,000 per head for catering ")
+    assert "(Rs 1,500 to Rs 2,500 per head)" in body["reply"]
+
+
+@pytest.mark.parametrize(
+    "texts, reading, missing",
+    [
+        (["Suggest a caterer"], {}, ["event_type", "guest_count", "area"]),
+        (["How much does a photographer cost?"], {}, ["event_type", "guest_count"]),
+        (["Is Rs 2 lakh fair for walima photography?"], {"event_type": "wedding_walima"}, ["guest_count"]),
+        (["Suggest a caterer for a walima", "the venue is in DHA"], {"event_type": "wedding_walima", "area": "DHA"},
+         ["guest_count"]),  # the second message answers the first one's question
+    ],
+)  # fmt: skip
+def test_each_answer_asks_only_for_what_it_needs(client, services, texts, reading, missing):
+    use(services, reading=reading)
+    body = client.post("/v1/assistant/chat", json=say(*texts)).json()
+    assert body["missing"] == missing and body["estimate"] is None and not body["fallback_to_form"]
+    assert "I still need" in body["reply"]
+
+
+def test_a_greeting_is_answered_without_the_model(client, services):
+    llm = use(services)
+    body = client.post("/v1/assistant/chat", json=say("Hello!")).json()
+    assert body["intent"] == "greeting" and body["reply"] == HELLO and llm.calls == []
+
+
+def test_advice_falls_back_to_the_notes_when_the_model_is_down_and_never_runs_1(client, services):
+    use(services, reply=LLMUnavailable("timed out"))
+    body = client.post("/v1/assistant/chat", json=say("What should I ask a decorator before booking?")).json()
+    assert body["intent"] == "advice" and body["reply"] == fallback("decor") and body["estimate"] is None
+
+
+def test_advice_sentences_with_figures_no_tool_gave_are_dropped():
+    advice = "- Book the hall early.\n- Halls cost Rs 5 lakh. Ask about parking.\n- Expect 20% extra.\n**Note**"
+    assert clean(advice, figures("")) == "- Book the hall early.\n- Ask about parking.\nNote"
+    assert clean("1. Visit www.example.pk for deals.", figures("")) == ""
+    assert clean("- Keep your 300 guests in mind.", figures("300 guests")) == "- Keep your 300 guests in mind."
+
+
+@pytest.mark.parametrize(
+    "host, intent",
+    [
+        (["Mehndi for 300 guests in Gulberg on 19 December, around 25 lakh"], "advice"),
+        (["How much does catering cost for a mehndi for 300 guests?"], "prices"),
+        (["mehndi ka khana kitne ka padega 300 logon ke liye"], "prices"),
+        (["Suggest photographers in DHA for a walima"], "vendors"),
+        (["walima ke liye 500 log, DHA mein, koi achha caterer batao"], "vendors"),
+        (["A caterer quoted Rs 3,000 per head. Is that fair?"], "quote_check"),
+        (["photographer ne 2 lakh maange hain, ye rate theek hai?"], "quote_check"),
+        (["How should I divide my budget of 20 lakh?"], "budget_split"),
+        (["What should I ask a decorator before booking?"], "advice"),
+        (["Is a marquee or a hall better for a winter mehndi?"], "advice"),
+        (["What is the best time of year for a wedding?"], "advice"),  # "best" without a service isn't a search
+        (["theek hai, 300 log hain"], "advice"),
+        (["Suggest a caterer", "walima, 400 guests, Johar Town"], "vendors"),
+        (["hi"], "greeting"),
+    ],
+)  # fmt: skip
+def test_the_question_is_read_from_the_hosts_words(host, intent):
+    assert detect_intent(host)[0] == intent
+
+
+@pytest.mark.parametrize(
+    "text, quote",
+    [
+        ("A caterer quoted Rs 3,000 per head for 300 guests", (3000, "per_head")),
+        ("the hall is asking 8 lakh for the baraat", (800_000, "per_event")),
+        ("they want 2.5k/head", (2500, "per_head")),
+        ("budget is Rs 25 lakh, 300 guests, 19 December", None),  # a budget, a guest count and a date
+        ("is it fair?", None),
+    ],
+)
+def test_a_quoted_price_is_read_with_its_unit(text, quote):
+    assert quoted_amount(text) == quote
+
+
+@pytest.mark.parametrize(
+    "text, services",
+    [
+        ("Split 25 lakh: only venue, catering and decor", ["venue", "catering", "decor"]),
+        ("split my budget, no DJ and no lighting please", ["venue", "catering", "decor", "photography"]),
+        ("split it, the venue is already booked", ["catering", "decor", "dj_sound", "lighting", "photography"]),
+        ("split 25 lakh for a mehndi in a marquee", None),  # a venue type isn't a choice of services
+    ],
+)
+def test_a_split_covers_the_services_the_host_names(text, services):
+    assert chosen_services(text) == services
 
 
 def test_missing_details_are_asked_for_and_nothing_is_estimated(client, services):
     use(services, reading={"event_type": "wedding_mehndi", "guest_count": 300})
-    body = client.post("/v1/assistant/chat", json=say("mehndi for 300 guests")).json()
+    body = client.post("/v1/assistant/chat", json=say("split the budget for a mehndi for 300 guests")).json()
     assert body["extracted"] == {"event_type": "wedding_mehndi", "guest_count": 300}
     assert body["missing"] == ["area", "event_date", "total_budget_pkr"] and body["estimate"] is None
     assert body["reply"].startswith("Got it: a mehndi / mayun / dholki for 300 guests.")
@@ -92,7 +238,7 @@ def test_an_area_the_model_missed_is_taken_from_the_hosts_words():
 
 def test_a_reply_with_an_invented_figure_is_replaced_by_the_fixed_one(client, services):
     use(services, reply="Catering gets Rs 12 lakh and the venue Rs 6.75 lakh.")
-    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    body = client.post("/v1/assistant/chat", json=say(SPLIT)).json()
     assert body["reply"].startswith("Here is a budget split for a mehndi / mayun / dholki for 300 guests in Gulberg")
     assert ("Catering gets Rs 9.5 lakh (38%), more than this usually costs; Venue gets Rs 6.75 lakh (27%), more than "
             "this usually costs." in body["reply"])  # fmt: skip
@@ -103,44 +249,44 @@ def test_a_reply_with_an_invented_figure_is_replaced_by_the_fixed_one(client, se
 def test_a_reply_quoting_the_tools_and_the_host_is_kept(client, services):
     reply = "For 300 guests on 19 December, catering takes Rs 9.5 lakh (38%) of your 2,500,000. Open the plan."
     use(services, reply=reply)
-    assert client.post("/v1/assistant/chat", json=say(CHAT)).json()["reply"] == reply
+    assert client.post("/v1/assistant/chat", json=say(SPLIT)).json()["reply"] == reply
     assert services.assistant.rejected == 0
 
 
 def test_after_four_messages_without_a_full_plan_the_host_goes_to_the_form(client, services):
     use(services, reading={"event_type": "wedding_walima"})
-    body = client.post("/v1/assistant/chat", json=say("walima", "not sure", "hmm", "soon")).json()
+    body = client.post("/v1/assistant/chat", json=say("split my budget for a walima", "not sure", "hmm", "soon")).json()
     assert body["fallback_to_form"] and body["extracted"] == {"event_type": "wedding_walima"}
     assert "planner form" in body["reply"]
 
 
 def test_unreadable_model_output_sends_the_host_to_the_form(client, services):
     use(services, reading=ValueError("not JSON"))
-    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    body = client.post("/v1/assistant/chat", json=say(SPLIT)).json()
     assert body["fallback_to_form"] and body["extracted"] == {} and len(body["missing"]) == 5
 
 
 def test_by_default_the_reply_is_the_fixed_one_and_the_model_only_reads(client, services):
     services.assistant = Assistant(FakeLLM(reply="Not used"), services, today=lambda: TODAY)
-    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    body = client.post("/v1/assistant/chat", json=say(SPLIT)).json()
     assert body["reply"].startswith("Here is a budget split for") and body["estimate"]
     assert [schema is not None for _, schema in services.assistant.llm.calls] == [True]  # one call: the reading
 
 
 def test_ollama_down_is_a_503_but_a_failed_reply_falls_back_to_the_fixed_one(client, services):
     use(services, reading=LLMUnavailable("connection refused"))
-    assert client.post("/v1/assistant/chat", json=say(CHAT)).status_code == 503
+    assert client.post("/v1/assistant/chat", json=say(SPLIT)).status_code == 503
     use(services, reply=LLMUnavailable("timed out"))
-    body = client.post("/v1/assistant/chat", json=say(CHAT)).json()
+    body = client.post("/v1/assistant/chat", json=say(SPLIT)).json()
     assert body["reply"].startswith("Here is a budget split") and body["estimate"]
 
 
 def test_the_model_reads_the_chat_with_todays_date(client, services):
     llm = use(services)
-    client.post("/v1/assistant/chat", json=say(CHAT))
+    client.post("/v1/assistant/chat", json=say(SPLIT))
     (extraction, schema), (reply, _) = llm.calls
     assert schema is not None and "Today is Sunday 08 November 2026." in extraction[0]["content"]
-    assert extraction[-1]["content"] == f"Host: {CHAT}"
+    assert extraction[-1]["content"] == f"Host: {SPLIT}"
     # Rs 9.5 lakh against #2's Rs 4.5-7.5 lakh: the server makes the comparison, not the model.
     assert "Catering: Rs 9.5 lakh (38%), more than this usually costs" in reply[1]["content"]
 

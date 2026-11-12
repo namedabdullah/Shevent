@@ -3,81 +3,72 @@
     "messages": [
       {
         "role": "user",
-        "content": "Mehndi in a marquee for 300 guests in Gulberg on 19 December, around 25 lakh"
+        "content": "Suggest caterers for a mehndi for 300 guests in Gulberg"
       }
     ]
   },
   "response": {
-    "reply": "Catering takes the biggest share. Open the plan to see vendors.",
+    "reply": "Here are caterers that fit a mehndi / mayun / dholki for 300 guests in Gulberg, best match first:\n1. Demo Caterers Johar Town (Johar Town): Serves Gulberg; likely Rs 4.5 lakh to Rs 7.5 lakh.\n2. Demo Catering Co Gulberg (Gulberg): Serves Gulberg; likely Rs 9 lakh to Rs 15 lakh.\nRanked by fit; sponsored listings are never mixed in. Prices are estimates unless the vendor lists them.\n\nCatering takes the biggest share. Open the plan to see vendors.",
     "language": "en",
+    "intent": "vendors",
     "extracted": {
       "event_type": "wedding_mehndi",
       "guest_count": 300,
-      "area": "Gulberg",
-      "venue_type": "marquee",
-      "event_date": "2026-12-19",
-      "total_budget_pkr": 2500000
+      "area": "Gulberg"
     },
     "missing": [],
-    "estimate": {
-      "allocation": {
-        "venue": {
-          "share": 0.27,
-          "pkr": 675000.0,
-          "range": [
-            100000.0,
-            200000.0
-          ]
-        },
-        "catering": {
-          "share": 0.38,
-          "pkr": 950000.0,
-          "range": [
+    "estimate": null,
+    "recommendations": {
+      "category": "catering",
+      "matches": [
+        {
+          "vendor_id": "00000000-0000-4000-8000-000000000201",
+          "slug": "demo-caterers-johar-town",
+          "name": "Demo Caterers Johar Town",
+          "category": "catering",
+          "base_area": "Johar Town",
+          "price_tier": "mid",
+          "verified": true,
+          "rating": 4.3,
+          "review_count": 54,
+          "score": 0.936,
+          "price_range": [
             450000.0,
             750000.0
-          ]
+          ],
+          "reasons": [
+            "Serves Gulberg",
+            "Handles 300 guests",
+            "Does mehndi events",
+            "Rated 4.3 from 54 reviews"
+          ],
+          "is_new": false
         },
-        "decor": {
-          "share": 0.12,
-          "pkr": 300000.0,
-          "range": [
-            100000.0,
-            200000.0
-          ]
-        },
-        "dj_sound": {
-          "share": 0.07,
-          "pkr": 175000.0,
-          "range": [
-            100000.0,
-            200000.0
-          ]
-        },
-        "lighting": {
-          "share": 0.07,
-          "pkr": 175000.0,
-          "range": [
-            100000.0,
-            200000.0
-          ]
-        },
-        "photography": {
-          "share": 0.09,
-          "pkr": 225000.0,
-          "range": [
-            100000.0,
-            200000.0
-          ]
+        {
+          "vendor_id": "00000000-0000-4000-8000-000000000202",
+          "slug": "demo-catering-co-gulberg",
+          "name": "Demo Catering Co Gulberg",
+          "category": "catering",
+          "base_area": "Gulberg",
+          "price_tier": "premium",
+          "verified": true,
+          "rating": 4.7,
+          "review_count": 61,
+          "score": 0.595,
+          "price_range": [
+            900000.0,
+            1500000.0
+          ],
+          "reasons": [
+            "Serves Gulberg",
+            "Handles 300 guests",
+            "Rated 4.7 from 61 reviews"
+          ],
+          "is_new": false
         }
-      },
-      "season_factor": "peak_wedding_season",
-      "warnings": [],
-      "explanations": [
-        "Catering takes the largest share for 300 guests."
-      ],
-      "model_version": "alloc-test+cost-test"
+      ]
     },
     "fallback_to_form": false,
-    "model_version": "assistant-v1/llm-test+alloc-test+cost-test"
+    "model_version": "assistant-v2/llm-test+match-v1/cost-test"
   }
 }

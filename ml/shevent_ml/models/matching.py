@@ -91,7 +91,10 @@ class VendorMatcher:
 
     def category_budget(self, plan, category):
         if self.allocator is not None:
-            return self.allocator.allocate(plan)["allocation"][category]["pkr"]
+            # Only the services the host chose get a share of #1's split; any other falls back to the usual share.
+            allocation = self.allocator.allocate(plan)["allocation"]
+            if category in allocation:
+                return allocation[category]["pkr"]
         return plan["total_budget_pkr"] * self.settings["fallback_shares"][category]
 
     def likely_prices(self, plan, category, vendors):
