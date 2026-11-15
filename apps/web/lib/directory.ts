@@ -1,16 +1,33 @@
 import type { Category } from '@shevent/core/enums';
 import { createClient } from '@/lib/supabase/server';
 import type { VendorRow } from '@/lib/vendor';
+import { PUBLIC_LISTING_FILTER } from '@/lib/vendor-profile';
 
-// The public directory (/lahore/[category], WEB_APP_PLAN §4.1): every listed vendor in one
-// category, straight from the vendors table (public under RLS). No ranking model here; #3 ranks
-// vendors for a host's plan once they've planned an event.
+// The public directory (/lahore/[category], WEB_APP_PLAN §4.1): every publicly listed vendor in one
+// category (PUBLIC_LISTING_FILTER), straight from the vendors table (public under RLS). No ranking
+// model here; #3 ranks vendors for a host's plan once they've planned an event.
 
-const COLUMNS = 'id, name, sub_type, base_area, areas_served, capacity_min, capacity_max, price_tier, event_types, years_active, verified, is_demo, public_consent';
+const COLUMNS =
+  'id, slug, name, category, sub_type, base_area, areas_served, capacity_min, capacity_max, price_tier, event_types, description, years_active, verified, is_demo, public_consent';
 
 export type DirectoryVendor = Pick<
   VendorRow,
-  'id' | 'name' | 'sub_type' | 'base_area' | 'areas_served' | 'capacity_min' | 'capacity_max' | 'price_tier' | 'event_types' | 'years_active' | 'verified' | 'is_demo' | 'public_consent'
+  | 'id'
+  | 'slug'
+  | 'name'
+  | 'category'
+  | 'sub_type'
+  | 'base_area'
+  | 'areas_served'
+  | 'capacity_min'
+  | 'capacity_max'
+  | 'price_tier'
+  | 'event_types'
+  | 'description'
+  | 'years_active'
+  | 'verified'
+  | 'is_demo'
+  | 'public_consent'
 > & { rating: number | null; reviewCount: number };
 
 /**
@@ -22,7 +39,7 @@ export async function getDirectory(category: Category): Promise<DirectoryVendor[
   const supabase = await createClient();
   if (!supabase) return 'unavailable';
   try {
-    const { data: vendors, error } = await supabase.from('vendors').select(COLUMNS).eq('category', category).limit(200);
+    const { data: vendors, error } = await supabase.from('vendors').select(COLUMNS).eq('category', category).or(PUBLIC_LISTING_FILTER).limit(200);
     if (error) throw error;
     const ids = vendors.map((vendor) => vendor.id);
     const { data: stats } = ids.length

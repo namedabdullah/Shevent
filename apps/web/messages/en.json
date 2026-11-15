@@ -453,7 +453,8 @@
       "inquiries": "Inquiries",
       "listing": "My listing",
       "label": "Vendor",
-      "badge": "Vendor"
+      "badge": "Vendor",
+      "locked": "Opens once your listing is created"
     },
     "onboardingEyebrow": "For vendors"
   },
@@ -520,7 +521,8 @@
     "booked": "Booked",
     "needsQuote": "Inquiries waiting for a quote",
     "noneWaiting": "No inquiries are waiting for a quote.",
-    "allInquiries": "See all inquiries"
+    "allInquiries": "See all inquiries",
+    "viewProfile": "View public profile"
   },
   "VendorInbox": {
     "title": "Inquiries",
@@ -612,7 +614,7 @@
     "system": "System",
     "light": "Light",
     "dark": "Dark",
-    "sand": "Sand"
+    "pine": "Pine"
   },
   "Directory": {
     "metaDescription": "Every {category} vendor listed on Shevent in Lahore, with areas, capacity and event types.",
@@ -638,11 +640,14 @@
     "emptyAction": "List your business",
     "verified": "Verified",
     "demo": "Demo listing",
-    "capacity": "{min}–{max} guests",
-    "capacityMax": "Up to {max} guests",
-    "capacityMin": "From {min} guests",
-    "areas": "{count, plural, one {Serves # area} other {Serves # areas}}",
-    "years": "{count, plural, one {# year active} other {# years active}}",
+    "anyArea": "Lahore",
+    "guests": "guests",
+    "upTo": "Up to {max}",
+    "from": "{min}+",
+    "areasServed": "{count, plural, one {area served} other {areas served}}",
+    "yearsActive": "{count, plural, one {year active} other {years active}}",
+    "eventsLabel": "Events they do",
+    "moreEvents": "+{count} more",
     "rating": "{rating} from {count, plural, one {# review} other {# reviews}}",
     "noReviews": "No reviews yet",
     "ctaEyebrow": "Matched to you",
@@ -656,5 +661,41 @@
     "dialog": "Calendar",
     "previous": "Previous month",
     "next": "Next month"
+  },
+  "PublicProfile": {
+    "metaTitle": "{name}: {category} in Lahore",
+    "metaDescription": "{name}, {category} based in {area}, Lahore. Capacity, areas served, events and reviews on Shevent.",
+    "notFoundTitle": "Vendor not found",
+    "back": "Back to {title}",
+    "loading": "Loading the profile…",
+    "unavailableTitle": "This profile couldn't load",
+    "unavailable": "Please try again in a moment.",
+    "demoTitle": "Demo listing",
+    "demo": "A fictional business for trying Shevent. It isn't a real vendor, so don't plan around it.",
+    "about": "About",
+    "noDescription": "They haven't written a description yet.",
+    "included": "What's included",
+    "events": "Events they do",
+    "glance": "At a glance",
+    "price": "Price level",
+    "guests": "Guests",
+    "basedIn": "Based in",
+    "experience": "Experience",
+    "years": "{count, plural, one {# year} other {# years}}",
+    "areas": "Areas served",
+    "notListed": "Not listed",
+    "reviews": "Reviews",
+    "ratingOutOf": "{rating} out of 5",
+    "reviewCount": "{count, plural, one {# review} other {# reviews}}",
+    "starsRow": "{stars, plural, one {# star} other {# stars}}: {count}",
+    "noReviewsTitle": "No reviews yet",
+    "noReviews": "Reviews come only from events booked through Shevent, so a new listing starts with none.",
+    "noWrittenReviews": "None of the reviews have written comments yet.",
+    "latest": "Latest comments",
+    "sourceBooking": "Booked through Shevent",
+    "sourceImported": "Imported public review",
+    "contactTitle": "Want to book them?",
+    "contactBody": "Plan your event first. Shevent checks whether they fit your guests, area and budget, then you can send them an inquiry.",
+    "contactAction": "Plan an event with them"
   }
 }

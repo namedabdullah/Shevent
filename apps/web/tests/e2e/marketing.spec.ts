@@ -32,6 +32,38 @@ test('directory pages: one per category, not indexed, unknown ones are 404', asy
   await expect(page).toHaveURL(/\/#categories$/);
 });
 
+test('a header section link on another page opens that section without reloading', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'the section links are in the desktop header');
+  await page.goto('/lahore/venue');
+  await page.waitForLoadState('networkidle');
+  // A plain <a> used to reload the page, show the hero, then scroll all the way down.
+  await page.evaluate(() => Object.assign(window, { __sameDocument: true }));
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'How it works' }).click();
+  await expect(page).toHaveURL(/\/#how$/);
+  await expect(page.getByRole('heading', { name: 'Three steps' })).toBeInViewport();
+  expect(await page.evaluate(() => '__sameDocument' in window), 'the page reloaded').toBe(true);
+});
+
+test('vendor profiles: malformed slugs are a real 404, and a profile never renders empty', async ({ page, request }) => {
+  expect((await request.get('/vendors/Not_A_Slug')).status()).toBe(404);
+  await page.goto('/vendors/no-vendor-has-this-slug');
+  // No such vendor (not-found page), or without a database, "couldn't load". Never indexed.
+  await expect(page.getByRole('heading', { name: 'Page not found' }).or(page.getByText("This profile couldn't load"))).toBeVisible();
+  await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute('content', /noindex/);
+});
+
+test('a directory card opens the vendor profile', async ({ page }) => {
+  await page.goto('/lahore/venue');
+  const cards = page.locator('article').getByRole('link');
+  await expect(page.getByText(/vendors? listed|No one is listed here yet|Listings couldn't load/).first()).toBeVisible();
+  test.skip((await cards.count()) === 0, 'no vendor rows (local Supabase not running or empty)');
+  const name = (await cards.first().textContent())!.trim();
+  await cards.first().click();
+  await expect(page).toHaveURL(/\/vendors\/[a-z0-9-]+$/);
+  await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Plan an event with them' }).first()).toHaveAttribute('href', /\/plan\/new\?services=venue/);
+});
+
 test('unknown URLs show the not-found page with a real 404', async ({ page, request }) => {
   expect((await request.get('/no-such-page')).status()).toBe(404);
   await page.goto('/no-such-page');

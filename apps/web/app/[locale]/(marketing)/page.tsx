@@ -136,7 +136,7 @@ export default async function HomePage() {
           </section>
 
           {/* Budget planner (#1 + #2 with no sign-up) */}
-          <section id="try" aria-labelledby="try-title" className="scroll-mt-20">
+          <section id="try" aria-labelledby="try-title">
             <div className={`flex flex-col gap-10 py-20 md:py-28 ${container}`}>
               <SectionHeading id="try-title" eyebrow={t('tryEyebrow')} title={t('tryTitle')} intro={t('tryIntro')} />
               <TryWidget />
@@ -144,7 +144,7 @@ export default async function HomePage() {
           </section>
 
           {/* How it works */}
-          <section id="how" aria-labelledby="steps-title" className="scroll-mt-20 border-t border-line">
+          <section id="how" aria-labelledby="steps-title" className="border-t border-line">
             <div className={`flex flex-col gap-12 py-20 md:py-28 ${container}`}>
               <SectionHeading id="steps-title" eyebrow={t('stepsEyebrow')} title={t('stepsTitle')} />
               <ol className="grid gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3">
@@ -164,7 +164,7 @@ export default async function HomePage() {
           </section>
 
           {/* Categories */}
-          <section id="categories" aria-labelledby="categories-title" className="scroll-mt-20 border-t border-line">
+          <section id="categories" aria-labelledby="categories-title" className="border-t border-line">
             <div className={`flex flex-col gap-12 py-20 md:py-28 ${container}`}>
               <SectionHeading id="categories-title" eyebrow={t('categoriesEyebrow')} title={t('categoriesTitle')} />
               <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -221,7 +221,7 @@ export default async function HomePage() {
           </section>
 
           {/* FAQ */}
-          <section id="faq" aria-labelledby="faq-title" className="scroll-mt-20">
+          <section id="faq" aria-labelledby="faq-title">
             <div className={`grid gap-10 py-20 md:py-28 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 ${container}`}>
               <div className="reveal flex flex-col gap-3">
                 <Eyebrow>{t('faqEyebrow')}</Eyebrow>
@@ -246,7 +246,7 @@ export default async function HomePage() {
           </section>
 
           {/* For vendors */}
-          <section id="vendors" aria-labelledby="vendors-title" className="scroll-mt-20 pb-20 md:pb-28">
+          <section id="vendors" aria-labelledby="vendors-title" className="pb-20 md:pb-28">
             <div className={container}>
               <div className="reveal grid gap-10 overflow-hidden rounded-[2rem] border border-line bg-surface p-7 sm:p-10 md:grid-cols-[1.1fr_0.9fr] md:items-center lg:p-14">
                 <div className="flex flex-col items-start gap-5">

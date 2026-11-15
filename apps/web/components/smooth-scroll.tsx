@@ -2,7 +2,7 @@
 
 import Lenis from 'lenis';
 import { useEffect, useState, type ComponentProps, type MouseEvent, type ReactNode } from 'react';
-import { usePathname } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 
 // Smooth, inertial scrolling for the marketing pages (Lenis), plus section links and a scroll-spy
 // that use it. Off when the visitor prefers reduced motion; touch scrolling stays native.
@@ -22,8 +22,8 @@ export function SmoothScroll() {
   return null;
 }
 
-/** Room the sticky header takes at the top of the window, in px. */
-const HEADER_SPACE = 76;
+/** Room the sticky header takes at the top of the window, in px: html's scroll-padding-top (5rem). */
+const HEADER_SPACE = 80;
 
 /** An element's distance from the top of the page, from layout (ignores transforms such as `.reveal`). */
 function pageTop(element: HTMLElement) {
@@ -45,20 +45,22 @@ export function scrollToSection(id: string) {
 }
 
 /**
- * A link to a section of the landing page. On the landing page it glides there; from any other page
- * it's an ordinary link to "/#section".
+ * A link to a section of the landing page. When the section is on this page (the landing page) it
+ * glides there. From any other page it's a client-side navigation that opens the landing page at
+ * that section, with the route transition (a plain <a> reloaded the whole page, showed the hero,
+ * then scrolled all the way down). Decided on click, not from the pathname, so the header and footer
+ * don't read the URL while rendering (that blocks prerendering of routes such as /vendors/[slug]).
  */
 export function SectionLink({ hash, className, children, ...props }: { hash: string; className?: string; children: ReactNode } & Omit<ComponentProps<'a'>, 'href'>) {
-  const pathname = usePathname();
   const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
     props.onClick?.(event);
     if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
-    if (pathname === '/' && scrollToSection(hash)) event.preventDefault();
+    if (scrollToSection(hash)) event.preventDefault();
   };
   return (
-    <a {...props} href={pathname === '/' ? `#${hash}` : `/#${hash}`} onClick={onClick} className={className}>
+    <Link {...props} href={`/#${hash}`} transitionTypes={['nav-back']} onClick={onClick} className={className}>
       {children}
-    </a>
+    </Link>
   );
 }
 
@@ -95,13 +97,13 @@ export function useActiveSection(ids: readonly string[]) {
 
 /** The landing page's section links, with the section on screen marked as the current location. */
 export function SectionNav({ label, links }: { label: string; links: { hash: string; label: string }[] }) {
-  const pathname = usePathname();
+  // Only the landing page has these sections, so elsewhere nothing is ever marked.
   const active = useActiveSection(links.map((link) => link.hash));
   return (
     <nav aria-label={label} className="hidden md:block">
       <ul className="flex items-center gap-1">
         {links.map((link) => {
-          const current = pathname === '/' && active === link.hash;
+          const current = active === link.hash;
           return (
             <li key={link.hash}>
               <SectionLink

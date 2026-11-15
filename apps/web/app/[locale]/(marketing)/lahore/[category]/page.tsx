@@ -1,18 +1,18 @@
-import { CATEGORIES, CATEGORY_LABELS, CATEGORY_UNITS, categoryFromSlug, categorySlug, EVENT_TYPE_LABELS, VENUE_TYPE_LABELS, type Category, type EventType, type VenueType } from '@shevent/core/enums';
+import { CATEGORIES, CATEGORY_LABELS, CATEGORY_UNITS, categoryFromSlug, categorySlug, type Category } from '@shevent/core/enums';
 import { UNIT_LABELS } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { Suspense, ViewTransition } from 'react';
 import { Icon } from '@/components/icons';
-import { Badge } from '@/components/ui/badge';
 import { buttonStyles } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Notice } from '@/components/ui/notice';
-import { cardStyles, Eyebrow } from '@/components/ui/page';
+import { Eyebrow } from '@/components/ui/page';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VendorCard } from '@/components/vendor-card';
 import { getPathname, Link } from '@/i18n/navigation';
-import { getDirectory, type DirectoryVendor } from '@/lib/directory';
+import { getDirectory } from '@/lib/directory';
 import { PAGE_TRANSITION } from '@/lib/transitions';
 
 // Directory page (WEB_APP_PLAN §4.1, /lahore/[category]): every listed vendor in one category. The
@@ -139,7 +139,7 @@ function DirectorySkeleton({ label }: { label: string }) {
       <Skeleton className="h-5 w-48 rounded-full" />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }, (_, index) => (
-          <Skeleton key={index} className="h-52 rounded-2xl" />
+          <Skeleton key={index} className="h-80 rounded-2xl" />
         ))}
       </div>
     </div>
@@ -187,84 +187,5 @@ async function VendorList({ category }: { category: Category }) {
         ))}
       </ul>
     </div>
-  );
-}
-
-async function VendorCard({ vendor }: { vendor: DirectoryVendor }) {
-  const [t, tTier] = await Promise.all([getTranslations('Directory'), getTranslations('Matches.tier')]);
-  const venueType = vendor.sub_type && vendor.sub_type in VENUE_TYPE_LABELS ? VENUE_TYPE_LABELS[vendor.sub_type as VenueType] : null;
-  const capacity =
-    vendor.capacity_min && vendor.capacity_max
-      ? t('capacity', { min: vendor.capacity_min, max: vendor.capacity_max })
-      : vendor.capacity_max
-        ? t('capacityMax', { max: vendor.capacity_max })
-        : vendor.capacity_min
-          ? t('capacityMin', { min: vendor.capacity_min })
-          : null;
-  const events = vendor.event_types.map((type) => EVENT_TYPE_LABELS[type as EventType] ?? type);
-
-  return (
-    <article className={`flex h-full flex-col gap-4 p-5 ${cardStyles}`}>
-      <div className="flex items-start gap-3.5">
-        {/* A monogram until vendors have verified portfolio photos (#7). */}
-        <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-accent-soft font-display text-lg font-semibold text-accent-ink">
-          {vendor.name.trim().charAt(0).toUpperCase()}
-        </span>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h3 className="text-lg leading-snug font-semibold">{vendor.name}</h3>
-          <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
-            <Icon name="mapPin" className="size-3.5" />
-            {vendor.base_area}
-            {vendor.price_tier && <> · {tTier(vendor.price_tier)}</>}
-          </p>
-        </div>
-      </div>
-
-      {(vendor.verified || vendor.is_demo || venueType) && (
-        <div className="flex flex-wrap gap-1.5">
-          {vendor.verified && (
-            <Badge tone="success" icon="shield">
-              {t('verified')}
-            </Badge>
-          )}
-          {venueType && <Badge tone="muted">{venueType}</Badge>}
-          {vendor.is_demo && <Badge tone="warning">{t('demo')}</Badge>}
-        </div>
-      )}
-
-      <ul className="flex flex-col gap-1.5 text-sm text-ink-soft">
-        {capacity && (
-          <li className="flex items-center gap-2">
-            <Icon name="users" className="size-4 text-muted" />
-            {capacity}
-          </li>
-        )}
-        {vendor.areas_served.length > 0 && (
-          <li className="flex items-center gap-2">
-            <Icon name="mapPin" className="size-4 text-muted" />
-            {t('areas', { count: vendor.areas_served.length })}
-          </li>
-        )}
-        {vendor.years_active !== null && (
-          <li className="flex items-center gap-2">
-            <Icon name="calendar" className="size-4 text-muted" />
-            {t('years', { count: vendor.years_active })}
-          </li>
-        )}
-      </ul>
-
-      {events.length > 0 && <p className="text-sm text-muted">{events.join(' · ')}</p>}
-
-      <p className="mt-auto flex items-center gap-1.5 border-t border-line pt-3 text-sm">
-        {vendor.rating !== null && vendor.reviewCount > 0 ? (
-          <>
-            <Icon name="star" className="size-4 fill-current text-accent-ink" />
-            <span className="font-semibold text-ink">{t('rating', { rating: vendor.rating.toFixed(1), count: vendor.reviewCount })}</span>
-          </>
-        ) : (
-          <span className="text-muted">{t('noReviews')}</span>
-        )}
-      </p>
-    </article>
   );
 }

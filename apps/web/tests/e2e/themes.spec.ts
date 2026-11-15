@@ -3,7 +3,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
-const THEMES = ['Light', 'Dark', 'Sand'] as const;
+const THEMES = ['Light', 'Dark', 'Pine'] as const;
 
 async function expectNoSeriousViolations(page: Page, name: string) {
   const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze();
@@ -33,8 +33,8 @@ test('every theme is readable on the landing page and the sign-in page', async (
   }
   await page.goto('/sign-in');
   await page.waitForLoadState('networkidle');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'sand');
-  await expectNoSeriousViolations(page, '/sign-in (Sand)');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'pine');
+  await expectNoSeriousViolations(page, '/sign-in (Pine)');
 });
 
 test('the chosen theme survives a reload, and System follows the OS', async ({ page }) => {
@@ -43,14 +43,22 @@ test('the chosen theme survives a reload, and System follows the OS', async ({ p
   await page.waitForLoadState('networkidle');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-  await chooseTheme(page, 'Sand');
+  await chooseTheme(page, 'Pine');
   await page.reload();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'sand');
-  await expect(page.getByRole('button', { name: 'Theme: Sand' })).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'pine');
+  await expect(page.getByRole('button', { name: 'Theme: Pine' })).toBeVisible();
 
   await chooseTheme(page, 'System');
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
+
+test('a stored theme that was removed (Sand) falls back to System', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.addInitScript(() => localStorage.setItem('shevent-theme', 'sand'));
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('html')).toHaveAttribute('data-theme-choice', 'system');
 });
 
 test('the calendar fills in the date field', async ({ page, isMobile }) => {

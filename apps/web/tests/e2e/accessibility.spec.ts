@@ -151,7 +151,7 @@ test.describe('with the OS set to dark mode', () => {
       await page.screenshot();
       await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
       const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-      expect(background, `${path} background`).toBe('rgb(15, 15, 17)');
+      expect(background, `${path} background`).toBe('rgb(14, 13, 18)'); // --canvas #0e0d12
       await expectNoSeriousViolations(page, `${path} (dark OS)`);
     }
   });

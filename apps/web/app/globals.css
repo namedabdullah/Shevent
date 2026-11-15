@@ -6,8 +6,9 @@
    <html data-theme> before first paint (see components/theme.tsx). Without JavaScript, the page
    follows the OS light/dark setting.
 
-   All three palettes are checked for WCAG AA: text tokens ≥ 4.5:1 on canvas, surface and subtle;
-   `control` (form borders) and status solids ≥ 3:1 on surface; on-accent ≥ 4.5:1 on accent.
+   Every palette (Light, Dark, Pine and Pine's dark bands) is checked for WCAG AA: text
+   tokens ≥ 4.5:1 on canvas, surface and subtle; `control` (form borders) and status solids ≥ 3:1
+   on surface; on-accent ≥ 4.5:1 on accent.
 
    `.scope-inverse` flips a section to the opposite palette (a dark band on a light page and the
    other way round). Utilities read the tokens directly (@theme inline), so the flip only needs the
@@ -61,41 +62,43 @@
 }
 
 [data-theme='dark'],
-[data-theme='light'] .scope-inverse,
-[data-theme='sand'] .scope-inverse {
+[data-theme='light'] .scope-inverse {
+  /* Near-black with a faint plum cast: the coral glows against it instead of turning brown, and
+     its tints read as rose. Status colours are softened to sit with it. */
   color-scheme: dark;
-  --canvas: #0f0f11;
-  --surface: #17171a;
-  --subtle: #1f1f23;
-  --sunken: #27272c;
-  --line: #2a2a2f;
-  --line-strong: #3b3b42;
-  --control: #6f6f77;
-  --ink: #f4f4f3;
-  --ink-soft: #d2d2ce;
-  --muted: #a19f99;
-  --faint: #6b6a66;
-  --accent: #ff7a50;
-  --accent-hover: #ff9471;
-  --on-accent: #1b0a04;
-  --accent-ink: #ff8e6a;
-  --accent-soft: #2b1810;
-  --accent-line: #5d2b1b;
-  --success: #4ade80;
-  --success-ink: #bbf7d0;
-  --success-soft: #10261a;
-  --success-line: #1f5134;
-  --warning: #fbbf24;
-  --warning-ink: #fde68a;
-  --warning-soft: #2a210b;
-  --warning-line: #5c4614;
-  --danger: #f87171;
-  --danger-ink: #fecaca;
-  --danger-soft: #2e1414;
-  --danger-line: #6b2424;
-  --on-solid: #0f0f11;
+  --canvas: #0e0d12;
+  --surface: #17151c;
+  --subtle: #1f1d25;
+  --sunken: #28252f;
+  --line: #2b2832;
+  --line-strong: #3d3946;
+  --control: #7b7685;
+  --ink: #f5f3f8;
+  --ink-soft: #d5d1db;
+  --muted: #a8a3b1;
+  --faint: #6f6a78;
+  --accent: #ff7d5c;
+  --accent-hover: #ff977b;
+  --on-accent: #1f0b06;
+  --accent-ink: #ff9576;
+  --accent-soft: #2c181b;
+  --accent-line: #5e2e30;
+  --success: #4fd09a;
+  --success-ink: #bdf2d9;
+  --success-soft: #10261e;
+  --success-line: #1f4c3b;
+  --warning: #f4bb4f;
+  --warning-ink: #fde7b0;
+  --warning-soft: #2a2114;
+  --warning-line: #5c4720;
+  --danger: #ff6f73;
+  --danger-ink: #ffcbcd;
+  --danger-soft: #30161a;
+  --danger-line: #6d2832;
+  --on-solid: #0e0d12;
   --shadow-rgb: 0 0 0;
-  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a19f99' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a8a3b1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
   /* The validated dark steps of the same palette. */
   --series-venue: #3987e5;
   --series-catering: #d95926;
@@ -105,64 +108,121 @@
   --series-photography: #008300;
 }
 
-[data-theme='sand'] {
+/* Pine: stone paper, green-black ink and a deep spruce accent, for a quieter, more formal look.
+   Its dark bands are spruce night with a jade accent. Chart colours stay the validated light steps
+   from :root. */
+[data-theme='pine'] {
   color-scheme: light;
-  --canvas: #f3eee6;
-  --surface: #fffdf9;
-  --subtle: #ebe4d9;
-  --sunken: #e1d8ca;
-  --line: #e2d9cb;
-  --line-strong: #cdbfab;
-  --control: #8e806f;
-  --ink: #241d17;
-  --ink-soft: #473c33;
-  --muted: #6a5d51;
-  --faint: #a8998a;
-  --accent: #8f3d27;
-  --accent-hover: #76311f;
+  --canvas: #f3f4f1;
+  --surface: #ffffff;
+  --subtle: #eaece7;
+  --sunken: #dfe2dc;
+  --line: #dee1da;
+  --line-strong: #c4c9c0;
+  --control: #79807a;
+  --ink: #111a16;
+  --ink-soft: #313d38;
+  --muted: #57625d;
+  --faint: #98a29d;
+  --accent: #1d5e4a;
+  --accent-hover: #164a3a;
   --on-accent: #ffffff;
-  --accent-ink: #8f3d27;
-  --accent-soft: #f5e4dc;
-  --accent-line: #e2b9a8;
-  --success: #15803d;
+  --accent-ink: #195440;
+  --accent-soft: #e2eee8;
+  --accent-line: #b1cfc1;
+  --success: #217a3c;
   --success-ink: #14532d;
-  --success-soft: #eaf5e9;
-  --success-line: #a9d6b3;
-  --warning: #a14a07;
-  --warning-ink: #78350f;
-  --warning-soft: #fbf1dc;
-  --warning-line: #e8c98d;
-  --danger: #b42626;
+  --success-soft: #e9f5ec;
+  --success-line: #a8d6b4;
+  --warning: #a65a0b;
+  --warning-ink: #723f10;
+  --warning-soft: #fbf2df;
+  --warning-line: #ebcf98;
+  --danger: #b42f2f;
   --danger-ink: #7f1d1d;
-  --danger-soft: #fae8e4;
-  --danger-line: #ecb4aa;
+  --danger-soft: #fbecea;
+  --danger-line: #eeb3ad;
   --on-solid: #ffffff;
-  --shadow-rgb: 52 38 26;
-  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236a5d51' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --shadow-rgb: 17 34 27;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2357625d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+[data-theme='pine'] .scope-inverse {
+  color-scheme: dark;
+  --canvas: #0d1814;
+  --surface: #13211b;
+  --subtle: #1a2a23;
+  --sunken: #21332b;
+  --line: #24352d;
+  --line-strong: #35493f;
+  --control: #6c8077;
+  --ink: #edf4f0;
+  --ink-soft: #cbd9d2;
+  --muted: #98ada3;
+  --faint: #5f7269;
+  --accent: #5fd0a0;
+  --accent-hover: #82dcb5;
+  --on-accent: #052117;
+  --accent-ink: #74d8ad;
+  --accent-soft: #14322a;
+  --accent-line: #285548;
+  --success: #6fd38a;
+  --success-ink: #c3f0d0;
+  --success-soft: #10291b;
+  --success-line: #22513a;
+  --warning: #f1bd55;
+  --warning-ink: #fbe5b2;
+  --warning-soft: #2a2414;
+  --warning-line: #5a4a21;
+  --danger: #ff7b78;
+  --danger-ink: #ffcfcd;
+  --danger-soft: #2f1818;
+  --danger-line: #6a2b2b;
+  --on-solid: #0d1814;
+  --shadow-rgb: 0 0 0;
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398ada3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --series-venue: #3987e5;
+  --series-catering: #d95926;
+  --series-decor: #199e70;
+  --series-dj_sound: #c98500;
+  --series-lighting: #d55181;
+  --series-photography: #008300;
 }
 
 /* No JavaScript yet (or ever): follow the OS. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --canvas: #0f0f11;
-    --surface: #17171a;
-    --subtle: #1f1f23;
-    --sunken: #27272c;
-    --line: #2a2a2f;
-    --line-strong: #3b3b42;
-    --control: #6f6f77;
-    --ink: #f4f4f3;
-    --ink-soft: #d2d2ce;
-    --muted: #a19f99;
-    --faint: #6b6a66;
-    --accent: #ff7a50;
-    --accent-hover: #ff9471;
-    --on-accent: #1b0a04;
-    --accent-ink: #ff8e6a;
-    --accent-soft: #2b1810;
-    --accent-line: #5d2b1b;
-    --on-solid: #0f0f11;
+    --canvas: #0e0d12;
+    --surface: #17151c;
+    --subtle: #1f1d25;
+    --sunken: #28252f;
+    --line: #2b2832;
+    --line-strong: #3d3946;
+    --control: #7b7685;
+    --ink: #f5f3f8;
+    --ink-soft: #d5d1db;
+    --muted: #a8a3b1;
+    --faint: #6f6a78;
+    --accent: #ff7d5c;
+    --accent-hover: #ff977b;
+    --on-accent: #1f0b06;
+    --accent-ink: #ff9576;
+    --accent-soft: #2c181b;
+    --accent-line: #5e2e30;
+    --success: #4fd09a;
+    --success-ink: #bdf2d9;
+    --success-soft: #10261e;
+    --success-line: #1f4c3b;
+    --warning: #f4bb4f;
+    --warning-ink: #fde7b0;
+    --warning-soft: #2a2114;
+    --warning-line: #5c4720;
+    --danger: #ff6f73;
+    --danger-ink: #ffcbcd;
+    --danger-soft: #30161a;
+    --danger-line: #6d2832;
+    --on-solid: #0e0d12;
     --shadow-rgb: 0 0 0;
   }
 }
@@ -613,6 +673,27 @@
     opacity: 0.7;
   }
 
+  /* Directory card cover: the category's chart colour as a soft light (position per vendor, set
+     inline), the accent from the opposite corner, and the hero's grid lines fading out. */
+  .vendor-cover {
+    background:
+      radial-gradient(70% 150% at var(--spot-x) var(--spot-y), color-mix(in srgb, var(--series) 30%, transparent), transparent 70%),
+      radial-gradient(60% 130% at calc(100% - var(--spot-x)) 100%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+      var(--subtle);
+  }
+
+  .vendor-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, var(--line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--line) 1px, transparent 1px);
+    background-size: 24px 24px;
+    mask-image: linear-gradient(to bottom, black, transparent 90%);
+    opacity: 0.55;
+  }
+
   .hero-orbit {
     display: none;
     mask-image: radial-gradient(ellipse 36% 30% at 50% 47%, transparent 62%, black 100%);
@@ -675,14 +756,14 @@
     clip-path: inset(0 -0.06em);
   }
 
-  /* The changing word in an ink-to-accent gradient with a soft glow of the theme's accent. Both ends
-     pass contrast for large text in every theme (ink, and accent at 3:1 or more). */
+  /* The changing word in an ink-to-accent gradient. Both ends pass contrast for large text in every
+     theme (ink, and accent at 3:1 or more). No glow: the word box's clip-path cut it into a visible
+     rectangle. */
   .hero-word-ink {
     background: linear-gradient(100deg, var(--ink) 10%, var(--accent-ink) 60%, var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 0 0.28em color-mix(in srgb, var(--accent) 30%, transparent));
   }
 
   .orbit-chip {

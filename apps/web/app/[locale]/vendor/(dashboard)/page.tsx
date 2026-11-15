@@ -59,10 +59,18 @@ async function Dashboard({ searchParams }: Pick<PageProps<'/[locale]/vendor'>, '
         eyebrow={tVendor('dashboardTitle')}
         title={vendor.name}
         actions={
-          <Link href="/vendor/profile" className={buttonStyles({ variant: 'secondary', size: 'sm' })}>
-            <Icon name="store" className="size-4" />
-            {t('editListing')}
-          </Link>
+          <>
+            {vendor.public_consent && (
+              <Link href={`/vendors/${vendor.slug}`} className={buttonStyles({ variant: 'ghost', size: 'sm' })}>
+                {t('viewProfile')}
+                <Icon name="arrowRight" className="size-4" />
+              </Link>
+            )}
+            <Link href="/vendor/profile" className={buttonStyles({ variant: 'secondary', size: 'sm' })}>
+              <Icon name="store" className="size-4" />
+              {t('editListing')}
+            </Link>
+          </>
         }
       >
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-ink-soft">

@@ -1,6 +1,7 @@
 'use server';
 
 import { slugify } from '@shevent/core/format';
+import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { invalidFields, listingColumns, parseVendorProfile, type VendorProfileState } from '@/lib/vendor';
@@ -34,5 +35,7 @@ export async function createListing(_previous: VendorProfileState, formData: For
     console.error('Listing insert failed', error.code, error.message);
     return { status: 'error', error: 'failed', fields: [] };
   }
+  // The vendor layout stays mounted across the redirect; re-render it so its nav unlocks.
+  revalidatePath('/[locale]/vendor', 'layout');
   redirect(error ? '/vendor' : '/vendor?onboarded=1');
 }
