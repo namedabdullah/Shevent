@@ -134,6 +134,21 @@ The live demo is `https://shevent.vercel.app`.
 | Database and sign-in | Supabase free | `pnpm db:push` applies the migrations; load the collected vendors by pasting `supabase/seeds/collected_vendors.sql` into the SQL Editor. Under Authentication → URL Configuration, set the Site URL and add `<site>/**` to the redirect URLs |
 | Model server and assistant | The team laptop | `powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1` starts the server and a Cloudflare quick tunnel and prints the address for `MODEL_SERVER_URL`. The address changes on every start: update it in Vercel and redeploy. Hugging Face Docker Spaces now need a paid plan, so they aren't used |
 
+Every AI feature on the live site (the budget split and prices, the home page planner, matches, packages, quote
+checks, review summaries, the photo check and the assistant) goes through this laptop. If the site says "The estimate
+service is still unavailable" or "Model server is unreachable", the laptop, the server or the tunnel is off, or Vercel
+still holds an old address:
+
+1. Run `scripts\start-demo.ps1` and wait for the green `MODEL_SERVER_URL=https://<words>.trycloudflare.com` line and
+   "The address answers /health from outside". Asking for a tunnel sometimes times out on a slow connection; the
+   script retries up to 5 times. Ollama is only needed for the assistant: without it, everything else still works.
+2. In Vercel, open the project's Settings → Environment Variables, set `MODEL_SERVER_URL` to that address (only the
+   address, without `MODEL_SERVER_URL=` or spaces), then go to Deployments and choose Redeploy on the latest one.
+   Changed variables only apply to new deployments.
+3. Try the budget planner on the home page, or create a plan.
+
+Keep the window open and the laptop awake (no sleep) for as long as the site should work.
+
 `server/Dockerfile` builds the model server image (`docker build -f server/Dockerfile -t shevent-server .`) for any host
 that runs containers with more than 512 MB of memory (PyTorch, LightGBM and OR-Tools don't fit in less).
 

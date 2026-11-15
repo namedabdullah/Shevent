@@ -1,7 +1,7 @@
 # Starts the model server and a Cloudflare quick tunnel to it, for the deployed web app. Run from the repo root:
 #   powershell -ExecutionPolicy Bypass -File scripts\start-demo.ps1
-# Leave the window open for the whole demo; Ctrl+C stops both. Needs Ollama running with the model pulled,
-# server\.env.local (see server\.env.example) and cloudflared (winget install Cloudflare.cloudflared).
+# Leave the window open for the whole demo; Ctrl+C stops both. Needs server\.env.local (see server\.env.example)
+# and cloudflared (winget install Cloudflare.cloudflared). The assistant also needs Ollama with the model pulled.
 #
 # The tunnel address changes every time this starts. Put the printed address in Vercel as MODEL_SERVER_URL and
 # redeploy; only the model server is exposed, Ollama stays on this machine.
@@ -17,13 +17,15 @@ New-Item -ItemType Directory -Force $logs | Out-Null
 foreach ($need in @($python, $cloudflared, (Join-Path $root 'server\.env.local'))) {
     if (-not (Test-Path $need)) { throw "Missing: $need" }
 }
+# Only the assistant (#8) needs Ollama. Without it the server still answers the budget split, prices, matches,
+# packages and quote checks (#1-#5), so warn instead of refusing to start the app's main features.
 try {
     $tags = Invoke-RestMethod -Uri 'http://127.0.0.1:11434/api/tags' -TimeoutSec 5
+    if (-not ($tags.models | Where-Object { $_.name -like 'qwen2.5:3b-instruct*' })) {
+        Write-Host 'The assistant model is missing (run `ollama pull qwen2.5:3b-instruct`); everything else will work.' -ForegroundColor Yellow
+    }
 } catch {
-    throw 'Ollama is not answering on http://127.0.0.1:11434. Start it first (the assistant needs it).'
-}
-if (-not ($tags.models | Where-Object { $_.name -like 'qwen2.5:3b-instruct*' })) {
-    throw 'The model is missing: run `ollama pull qwen2.5:3b-instruct`.'
+    Write-Host 'Ollama is not answering on http://127.0.0.1:11434, so the assistant (#8) will be unavailable; everything else will work.' -ForegroundColor Yellow
 }
 
 $server = $null
@@ -46,15 +48,17 @@ try {
     # Asking trycloudflare.com for a tunnel sometimes times out on a slow connection, so try a few times.
     $tunnelLog = Join-Path $logs 'tunnel.err.log'
     $address = $null
-    for ($attempt = 1; $attempt -le 3 -and -not $address; $attempt++) {
-        Write-Host "Opening the tunnel (attempt $attempt of 3)..."
+    for ($attempt = 1; $attempt -le 5 -and -not $address; $attempt++) {
+        Write-Host "Opening the tunnel (attempt $attempt of 5)..."
         $tunnel = Start-Process -FilePath $cloudflared -NoNewWindow -PassThru `
             -ArgumentList @('tunnel', '--no-autoupdate', '--url', "http://127.0.0.1:$Port") `
             -RedirectStandardOutput (Join-Path $logs 'tunnel.out.log') -RedirectStandardError $tunnelLog
         for ($i = 0; $i -lt 30 -and -not $address -and -not $tunnel.HasExited; $i++) {
             Start-Sleep -Seconds 2
             if (Test-Path $tunnelLog) {
-                $found = Select-String -Path $tunnelLog -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
+                # Not api.trycloudflare.com: a failed request logs that address ("failed to request quick Tunnel:
+                # Post https://api.trycloudflare.com/tunnel"), which once printed as if it were the tunnel.
+                $found = Select-String -Path $tunnelLog -Pattern 'https://(?!api\.)[a-z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
                 if ($found) { $address = $found.Matches[0].Value }
             }
         }
@@ -64,7 +68,7 @@ try {
             Start-Sleep -Seconds 5
         }
     }
-    if (-not $address) { throw "cloudflared couldn't open a tunnel in 3 attempts (internet slow or down?). See $tunnelLog" }
+    if (-not $address) { throw "cloudflared couldn't open a tunnel in 5 attempts (internet slow or down?). See $tunnelLog" }
 
     # The tunnel can take a few seconds to start routing.
     $reached = $false
