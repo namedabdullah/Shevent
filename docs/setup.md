@@ -134,6 +134,63 @@ The live demo is `https://shevent.vercel.app`.
 `server/Dockerfile` builds the model server image (`docker build -f server/Dockerfile -t shevent-server .`) for any host
 that runs containers with more than 512 MB of memory (PyTorch, LightGBM and OR-Tools don't fit in less).
 
+## Sign-in email (SMTP)
+
+Shevent's `signInWithOtp` action asks Supabase Auth to send the email. Configure SMTP in Supabase;
+the web app and AI server do not need SMTP credentials or another mail-sending library.
+
+### Hosted Supabase
+
+1. In your SMTP provider, verify the sender address/domain and apply the DNS records it requires.
+2. In your Supabase project, open **Authentication → Email → SMTP Settings**, enable custom SMTP,
+   and enter the provider's host, TLS port, username and SMTP password/API key. Set the sender name
+   to **Shevent** and sender address to the verified address. Use the provider's SMTP credentials.
+3. Under **Authentication → URL Configuration**, set Site URL to `https://shevent.vercel.app`
+   (or your actual production domain). Allow the callback
+   `https://shevent.vercel.app/api/auth/callback**` so the `?next=...` query is accepted.
+   Add localhost callback URLs separately only when using the hosted project for local development.
+4. Under **Authentication → Email → Templates**, copy
+   `supabase/templates/confirmation.html` into **Confirm signup**, with subject
+   **Welcome to Shevent — confirm your email**. Copy `supabase/templates/magic_link.html`
+   into **Magic Link**, with subject **Your Shevent sign-in link**.
+   Keep `{{ .ConfirmationURL }}` intact: Supabase builds the verification link and passes the
+   code to the existing `/api/auth/callback` handler. First-time and returning users can receive
+   different template types.
+5. Disable click tracking/link rewriting in the email provider. In Supabase Auth rate limits,
+   choose an email limit within your provider's quota; retain a per-recipient resend cooldown.
+6. Test with an address you control using the steps below.
+
+These are hosted Auth settings: `pnpm db:push` and a Vercel redeploy do not configure SMTP or
+upload these templates. Enter secrets directly in Supabase; keep them out of GitHub,
+`NEXT_PUBLIC_*` variables, and chat.
+
+### Local development
+
+The default config still delivers to Mailpit at `http://127.0.0.1:54324`, with both branded
+templates loaded from the repository. No SMTP account is needed.
+
+To deliberately test real delivery locally, copy `supabase/.env.example` to `supabase/.env`,
+fill in the values, uncomment the `auth.email.smtp` block in `supabase/config.toml`, and set
+its port to the provider's TLS port. Restart with `pnpm exec supabase stop` and `pnpm db:start`.
+Local custom SMTP also uses `auth.rate_limit.email_sent`, currently 2 per hour: adjust this
+for your test quota if needed, and use a sensible `auth.email.max_frequency` such as `"60s"`
+when sending real email. Re-comment the SMTP block and restart to return to Mailpit.
+The local SMTP opt-in edits should stay local.
+
+### Verify delivery and sign-in
+
+- Request a link from `/sign-in` with a new test address. Check the branded email, click the
+  link in the same browser, and confirm a signed-in page loads.
+- Sign out, request another link for the same address, and repeat to cover returning users.
+- Start from a protected page and confirm the link returns to the intended page.
+- Reusing the link should show the existing sign-in error. Request a fresh link to recover.
+- If sending fails, inspect Supabase Auth logs and the provider delivery logs. Check sender
+  verification, credentials, rate limits, spam, callback allowlists and disabled click tracking.
+
+References: [Supabase custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp),
+[email templates](https://supabase.com/docs/guides/auth/auth-email-templates),
+[local templates](https://supabase.com/docs/guides/local-development/customizing-email-templates).
+
 ## Licences
 
 Every model's and dataset's licence is in its card in `docs/model_cards/` and in `docs/data_card.md`. The assistant's
