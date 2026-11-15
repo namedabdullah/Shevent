@@ -44,6 +44,22 @@ test('a header section link on another page opens that section without reloading
   expect(await page.evaluate(() => '__sameDocument' in window), 'the page reloaded').toBe(true);
 });
 
+test('header section links still work after leaving the landing page', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'the section links are in the desktop header');
+  // Next keeps the landing page in the document (hidden) after you leave it; the link used to "scroll"
+  // to that hidden section and only change the address to /lahore/venue#how.
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.goto('/lahore/venue'); // a full load, then a client-side hop back and forth below
+  await page.getByRole('link', { name: 'Shevent', exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.locator('#categories a[href$="/lahore/venue"]').click();
+  await expect(page).toHaveURL(/\/lahore\/venue$/);
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'How it works' }).click();
+  await expect(page).toHaveURL(/\/#how$/);
+  await expect(page.getByRole('heading', { name: 'Three steps' })).toBeInViewport();
+});
+
 test('vendor profiles: malformed slugs are a real 404, and a profile never renders empty', async ({ page, request }) => {
   expect((await request.get('/vendors/Not_A_Slug')).status()).toBe(404);
   await page.goto('/vendors/no-vendor-has-this-slug');

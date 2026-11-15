@@ -32,9 +32,13 @@ function pageTop(element: HTMLElement) {
   return top;
 }
 
-/** Glide to a section on this page and put its id in the address bar. */
+/**
+ * Glide to a section on this page and put its id in the address bar. False when the section isn't
+ * on screen here: Next keeps pages visited earlier in the document, hidden with display: none (React
+ * Activity), so after leaving the landing page its sections still exist but aren't rendered.
+ */
 export function scrollToSection(id: string) {
-  const target = document.getElementById(id);
+  const target = [...document.querySelectorAll<HTMLElement>(`[id="${id}"]`)].find((element) => element.getClientRects().length > 0);
   if (!target) return false;
   // A plain number, so Lenis never measures the element itself mid-glide (it could land short).
   const top = pageTop(target) - HEADER_SPACE;
