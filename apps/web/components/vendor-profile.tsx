@@ -1,19 +1,23 @@
 import { CATEGORY_LABELS, EVENT_TYPE_LABELS, VENUE_TYPE_LABELS, categorySlug, type EventType, type VenueType } from '@shevent/core/enums';
+import { REVIEW_ASPECT_LABELS } from '@shevent/core/schemas';
 import { getLocale, getTranslations } from 'next-intl/server';
-import { ViewTransition, type CSSProperties } from 'react';
+import { Suspense, ViewTransition, type CSSProperties } from 'react';
 import { Icon } from '@/components/icons';
+import { SampleDataNotice } from '@/components/sample-data-notice';
 import { Badge } from '@/components/ui/badge';
 import { buttonStyles } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { Eyebrow } from '@/components/ui/page';
+import { Skeleton } from '@/components/ui/skeleton';
 import { coverSpot, PriceMeter, Stars } from '@/components/vendor-card';
 import { Link } from '@/i18n/navigation';
 import { getSiteUrl } from '@/lib/site';
-import { isIndexableProfile, type VendorProfileData } from '@/lib/vendor-profile';
+import { getReviewInsights, isIndexableProfile, type VendorProfileData } from '@/lib/vendor-profile';
 
-// A vendor's public profile (/vendors/[slug]): header, about, inclusions, events, reviews, and an
-// "at a glance" aside with the way to contact them (through a plan, since inquiries belong to one).
-// Presentation only; the page fetches.
+// A vendor's public profile (/vendors/[slug]): header, about, inclusions, events, what public reviews
+// mention (#6), Shevent reviews, and an "at a glance" aside with the way to contact them (through a
+// plan, since inquiries belong to one).
+// Presentation; the page fetches the profile, and the review insights section fetches #6 itself.
 
 /** The whole profile below the page's container. */
 export async function VendorProfile({ profile }: { profile: VendorProfileData }) {
@@ -159,6 +163,10 @@ export async function VendorProfile({ profile }: { profile: VendorProfileData })
               </ul>
             </section>
           )}
+
+          <Suspense fallback={<InsightsSkeleton label={t('insightsLoading')} />}>
+            <ReviewInsights vendorId={vendor.id} />
+          </Suspense>
 
           <section aria-labelledby="reviews" className="flex flex-col gap-5">
             <h2 id="reviews" className="text-xl font-semibold">
@@ -308,6 +316,106 @@ export async function VendorProfile({ profile }: { profile: VendorProfileData })
         </aside>
       </div>
     </>
+  );
+}
+
+/**
+ * #6 Review Insights: what the vendor's collected public reviews praise or complain about, as counts
+ * per aspect and "some reviews mention" lines. The reviews' own words aren't shown (they come from
+ * public listings). Hidden for a vendor with no collected reviews; a short note when the model
+ * server is down, so the rest of the profile never waits on it.
+ */
+async function ReviewInsights({ vendorId }: { vendorId: string }) {
+  const [insights, t] = await Promise.all([getReviewInsights(vendorId), getTranslations('PublicProfile')]);
+  if (insights === null) {
+    return (
+      <section aria-labelledby="insights" className="flex flex-col gap-3">
+        <h2 id="insights" className="text-xl font-semibold">
+          {t('insights')}
+        </h2>
+        <p className="text-sm text-muted">{t('insightsUnavailable')}</p>
+      </section>
+    );
+  }
+  if (insights.review_count === 0) return null;
+  const most = Math.max(1, ...insights.aspects.map((aspect) => aspect.positive + aspect.negative));
+
+  return (
+    <section aria-labelledby="insights" className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 id="insights" className="text-xl font-semibold">
+            {t('insights')}
+          </h2>
+          <Badge tone="accent" icon="sparkles">
+            {t('insightsBadge')}
+          </Badge>
+        </div>
+        <p className="max-w-prose text-sm leading-relaxed text-muted">{t('insightsIntro', { count: insights.review_count })}</p>
+      </div>
+      <SampleDataNotice response={insights} />
+
+      {insights.pros.length + insights.cons.length > 0 && (
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {insights.pros.map((pro) => (
+            <li key={pro} className="flex items-start gap-2.5 rounded-xl border border-success-line bg-success-soft px-3.5 py-3 text-sm text-success-ink">
+              <Icon name="check" className="mt-0.5 size-4 shrink-0 text-success" />
+              {pro}
+            </li>
+          ))}
+          {insights.cons.map((con) => (
+            <li key={con} className="flex items-start gap-2.5 rounded-xl border border-warning-line bg-warning-soft px-3.5 py-3 text-sm text-warning-ink">
+              <Icon name="alert" className="mt-0.5 size-4 shrink-0 text-warning" />
+              {con}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {insights.aspects.length > 0 ? (
+        <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5">
+          <p aria-hidden className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+            <span className="flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full bg-success" />
+              {t('praised')}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="size-2.5 rounded-full bg-warning" />
+              {t('complained')}
+            </span>
+          </p>
+          <ul className="flex flex-col gap-2.5">
+            {insights.aspects.map(({ aspect, positive, negative }) => (
+              <li key={aspect} className="grid grid-cols-[minmax(0,9rem)_minmax(0,1fr)] items-center gap-3 text-sm sm:grid-cols-[11rem_minmax(0,1fr)]">
+                <span className="text-ink-soft">{REVIEW_ASPECT_LABELS[aspect]}</span>
+                <span className="sr-only">{t('aspectRow', { positive, negative })}</span>
+                <span aria-hidden className="flex items-center gap-2">
+                  <span className="flex h-2 flex-1 overflow-hidden rounded-full bg-sunken">
+                    <span className="h-full bg-success" style={{ width: `${(positive / most) * 100}%` }} />
+                    <span className="h-full bg-warning" style={{ width: `${(negative / most) * 100}%` }} />
+                  </span>
+                  <span className="w-12 text-end text-xs text-muted tabular-nums">
+                    {positive} · {negative}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <p className="text-sm text-muted">{t('insightsNone')}</p>
+      )}
+    </section>
+  );
+}
+
+function InsightsSkeleton({ label }: { label: string }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="sr-only">{label}</p>
+      <Skeleton className="h-7 w-56 rounded-xl" />
+      <Skeleton className="h-36 rounded-2xl" />
+    </div>
   );
 }
 

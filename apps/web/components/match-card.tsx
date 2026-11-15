@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { buttonStyles } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
 
-/** A #3 result: who, why it fits, the #2 price range, and the inquiry button. */
+/** A #3 result: who (linked to their public profile when they have one), why it fits, the #2 price range, and the inquiry button. */
 export async function MatchCard({
   match,
   planId,
   inquiryId,
   rank,
   sponsored = false,
+  hasProfile = false,
 }: {
   match: Match;
   planId: string;
@@ -24,6 +25,8 @@ export async function MatchCard({
   /** Position in the organic ranking; sponsored cards have none. */
   rank?: number;
   sponsored?: boolean;
+  /** The vendor has a public profile (/vendors/[slug]) to link the name to. */
+  hasProfile?: boolean;
 }) {
   const t = await getTranslations('Matches');
   const score = Math.round(match.score * 100);
@@ -35,7 +38,15 @@ export async function MatchCard({
           {match.name.trim().charAt(0).toUpperCase()}
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <h3 className="text-lg leading-snug font-semibold">{match.name}</h3>
+          <h3 className="text-lg leading-snug font-semibold">
+            {hasProfile ? (
+              <Link href={`/vendors/${match.slug}`} className="underline-offset-4 hover:text-accent-ink hover:underline">
+                {match.name}
+              </Link>
+            ) : (
+              match.name
+            )}
+          </h3>
           <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
             <Icon name="mapPin" className="size-3.5 text-muted" />
             {match.base_area}

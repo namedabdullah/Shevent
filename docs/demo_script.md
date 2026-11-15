@@ -130,12 +130,19 @@ price, priced by #2.
 **Say:**
 - Matching scores price fit, area, capacity, experience and quality, and every match says why. Sponsored vendors, when
   there are any, appear in their own labelled list and never mix into the ranking.
-- *Planned, not built:* review insights (#6) and portfolio checks (#7). They're designed and their pipelines exist, but
-  no reviews or photos were collected, so there's nothing to train on.
+- *If there's time (30 seconds), review insights (#6):* a match's name opens the vendor's profile. Open
+  `/vendors/j-t-caterers-cat-046` (a collected caterer): **What public reviews mention** says the model read 9 public
+  reviews, "Polite, helpful staff (5 of 9 reviews)", with praise and complaints per aspect. Say: the reviews' words
+  aren't shown, only what they mention, and complaints are worded "some reviews mention", never as accusations.
 
 **Do:** **Send inquiry** on Gulberg Lights Demo. In the chat type `Salam, are you free on 19 December?` and **Send**.
 
 ### 5. The vendor's quote with a live fairness preview (#5): about 2 minutes
+
+*If there's time (30 seconds), verified portfolios (#7):* in the vendor window, **My listing** → **Check a portfolio
+photo** → choose `data\images\CAT-044\CAT-044_01.jpg` (a collected caterer's logo photo) → **Check photo**. It says
+"This photo is already on another listing" and tags it (food, red and gold). Say: it finds copies even resized,
+cropped, filtered or mirrored (85% of 900 planted copies at 100% precision), and nothing is stored.
 
 **Do:** switch to the vendor window → **Inquiries** (refresh) → open the new mehndi inquiry.
 

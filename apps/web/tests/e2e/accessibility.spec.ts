@@ -42,7 +42,7 @@ test('the assistant with a full answer', async ({ page }) => {
   await signIn(page, uniqueEmail('a11y-assistant'), '/assistant');
   await page.waitForLoadState('networkidle');
   await expectEveryControlLabelled(page, '/assistant');
-  await page.getByLabel('Your message').fill('walima for 400 guests in DHA, 2 March 2027, budget 40 lakh');
+  await page.getByLabel('Your message').fill('split my budget: walima for 400 guests in DHA, 2 March 2027, budget 40 lakh');
   await page.getByLabel('Your message').press('Enter');
   await expect(page.getByRole('link', { name: 'Save as a plan' })).toBeVisible();
   await expectNoSeriousViolations(page, 'assistant answer');

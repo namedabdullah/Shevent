@@ -12,8 +12,8 @@
 | 3 | Vendor Matching | Built, served | 14 events, 234 rated candidates: NDCG@10 0.815 vs 0.725 for sort-by-rating and 0.713 for a random order | **Yes**, on ratings by an AI assistant |
 | 4 | Package Builder | Built, served | Every package within budget; at 70% of the budget 68% of synthetic events get one (greedy 63%) | Synthetic only (it's an optimiser; the guarantees are tested) |
 | 5 | Quote Fairness Checker | Built, served | Synthetic: a doubled price flagged 87% of the time when the tier is known (measured with #2 v1) | **Not tested:** no scenario quotes collected |
-| 6 | Review Insights | Built, served | 150 real test reviews labelled by a person: macro-F1 0.398 (English-only baseline 0.392); finds 13 of 23 complaints (baseline 6). On the AI assistant's labels: 0.434 vs 0.421 | **Level** on macro-F1, **yes** on finding complaints; the test set was looked at twice |
-| 7 | Verified Portfolios | Built, served | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%); style tags 23 of 29 right on 12 photos | **Yes** for duplicates |
+| 6 | Review Insights | Built, served, on vendor profiles | 150 real test reviews labelled by a person: macro-F1 0.398 (English-only baseline 0.392); finds 13 of 23 complaints (baseline 6). On the AI assistant's labels: 0.434 vs 0.421 | **Level** on macro-F1, **yes** on finding complaints; the test set was looked at twice |
+| 7 | Verified Portfolios | Built, served, vendor photo check | 900 planted copies of 100 real photos: pHash or CLIP finds 85% at 100% precision (MD5 exact match: 0%); style tags 23 of 29 right on 12 photos | **Yes** for duplicates |
 | 8 | AI Planning Assistant | Built, served | Answers prices, vendors, quote checks, advice, and a split only when asked. Holdout chats: whole plan right 95% (model alone 80%); 0 invented values; 0 figures no tool gave; question type right on 29 of 30 | Yes, on its own chat sets (the baseline is the model without the server's checks) |
 
 **The one-line verdict:** the path from event details to a priced plan, matched vendors, packages, quote checks and a
@@ -181,7 +181,9 @@ wording in the apps is guidance, never an accusation.
     missed were added to them, which moved their score from 0.436 / 0.424 to 0.434 / 0.421.
   - **Caveat:** the test set was looked at twice: the first score (0.398) led to one change (aspect-free remarks in
     the synthetic data, aspect-free real reviews in training).
-  - Served at `/v1/reviews/insights` from the collected reviews; the apps don't show it yet.
+  - Served at `/v1/reviews/insights` from the collected reviews. Shown since 15 Nov on vendor profiles
+    (`/vendors/[slug]`) as "What public reviews mention": counts per aspect and "some reviews mention" lines, never
+    the reviews' words.
 - **#7 (built 10 Nov, see its [model card](model_cards/portfolio_duplicates.md)):** 541 of the 542 collected portfolio
   photos are downloaded. Two finders flag a pair when either matches: perceptual hashing (pHash), with plain bands on
   two opposite sides trimmed and mirror images hashed too, and CLIP image embeddings. On 900 planted copies of 100 real
@@ -189,7 +191,9 @@ wording in the apps is guidance, never an accusation.
   56%. CLIP adds crops (62%); reposts (crop + filter + watermark) are still missed (6%). On the real collection 14 pairs
   are flagged, 8 of them true copies, including a caterer and a venue showing the same three photos; the other 6 are
   different photos of the same scene that CLIP matches. Style tags (CLIP zero-shot, scene and style groups) were
-  right for 23 of 29 tags on 12 real photos checked by eye. Served at `/v1/portfolio/check` since 11 Nov.
+  right for 23 of 29 tags on 12 real photos checked by eye. Served at `/v1/portfolio/check` since 11 Nov, and in the app since 15 Nov: a vendor checks a photo on
+  their listing page (tags and whether it's on another listing; nothing stored). A collected vendor's photo uploaded by
+  a new test listing was flagged "already on another listing".
 
 #6's second-labeller check: `python -m shevent_ml.reviews.model --second-sheet` writes the 150 test reviews
 unlabelled; the person's labels are in `data/splits/review_labels_second.csv`, and `--second` scores the model on them
@@ -247,7 +251,7 @@ and run again for v2 on 12 Nov:
 | Lint, typecheck, production build | clean |
 | Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean |
 | Model server, live, real models (every endpoint but feedback) | 39 of 39 checks; `/v1/estimate` 48 ms median warm |
-| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key |
+| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass |
 | Retraining #1, #2, #6 from the committed data | Identical versions and results |
 | Lighthouse, landing page (mobile) | Accessibility, best practices, SEO 100; performance 77 locally, 62 on Vercel (target 90) |
 

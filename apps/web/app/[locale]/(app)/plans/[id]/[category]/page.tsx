@@ -14,6 +14,7 @@ import { Notice } from '@/components/ui/notice';
 import { Page, PageHeader } from '@/components/ui/page';
 import { Link } from '@/i18n/navigation';
 import { getAi } from '@/lib/ai';
+import { getPublicProfileIds } from '@/lib/vendor-profile';
 import { getPlan, planCategories, planEstimate, planToRequest } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
 
@@ -47,6 +48,8 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
   const supabase = await createClient();
   const { data: inquiries } = (await supabase?.from('inquiries').select('id, vendor_id').eq('plan_id', plan.id)) ?? { data: null };
   const inquiryFor = new Map(inquiries?.map((inquiry) => [inquiry.vendor_id, inquiry.id]));
+  // Names link to the vendor's public profile, unless they kept it private.
+  const withProfile = await getPublicProfileIds([...(result?.matches ?? []), ...(result?.sponsored ?? [])].map((match) => match.vendor_id));
 
   return (
     <Page>
@@ -108,7 +111,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
             {result.matches.length ? (
               <div className="grid gap-4 md:grid-cols-2">
                 {result.matches.map((match, index) => (
-                  <MatchCard key={match.vendor_id} match={match} rank={index + 1} planId={plan.id} inquiryId={inquiryFor.get(match.vendor_id)} />
+                  <MatchCard key={match.vendor_id} match={match} rank={index + 1} planId={plan.id} inquiryId={inquiryFor.get(match.vendor_id)} hasProfile={withProfile.has(match.vendor_id)} />
                 ))}
               </div>
             ) : (
@@ -129,7 +132,7 @@ export default async function MatchesPage({ params }: PageProps<'/[locale]/plans
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 {result.sponsored.map((match) => (
-                  <MatchCard key={match.vendor_id} match={match} planId={plan.id} inquiryId={inquiryFor.get(match.vendor_id)} sponsored />
+                  <MatchCard key={match.vendor_id} match={match} planId={plan.id} inquiryId={inquiryFor.get(match.vendor_id)} hasProfile={withProfile.has(match.vendor_id)} sponsored />
                 ))}
               </div>
             </section>
