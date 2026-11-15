@@ -18,8 +18,8 @@ NETSOL AI/ML capstone, November 2026. Built entirely on free tools and open-weig
 | 3 | Vendor Matching | Ranks vendors with a reason for every match; sponsored listings kept separate | 234 rated candidates: NDCG@10 0.815 vs 0.713 for a random order (ratings by an AI assistant) |
 | 4 | Package Builder | Three complete vendor line-ups within the budget (OR-Tools CP-SAT) | Never over budget; beats a greedy baseline at tight budgets |
 | 5 | Quote Fairness Checker | Green / amber / red against the typical range, plus what to ask about | Not scored (no real quotes collected) |
-| 6 | Review Insights | Praise and complaints per aspect in reviews, in three languages | 150 real reviews labelled by a person: macro-F1 0.398 vs 0.392 (level); finds 13 of 23 complaints vs 6 |
-| 7 | Verified Portfolios | Finds reused portfolio photos (even resized, filtered, framed, mirrored or cropped) and tags their style | 900 planted copies: 85% found at 100% precision vs 0% for exact matching; tags 79% right on a 12-photo sample |
+| 6 | Review Insights | Praise and complaints per aspect in reviews, in three languages; summarised on each vendor's profile | 150 real reviews labelled by a person: macro-F1 0.398 vs 0.392 (level); finds 13 of 23 complaints vs 6 |
+| 7 | Verified Portfolios | Finds reused portfolio photos (even resized, filtered, framed, mirrored or cropped) and tags their style; vendors check a photo on their listing page | 900 planted copies: 85% found at 100% precision vs 0% for exact matching; tags 79% right on a 12-photo sample |
 | 8 | Planning Assistant | Answers questions in English, Roman Urdu or Urdu: typical prices, matching vendors, a quote check, advice, or a budget split when asked; a local LLM reads and advises, the models give every figure | 95% of holdout chats read right; 0 invented values or figures; question type right on 29 of 30 |
 
 Every number, baseline and caveat is in the [evaluation report](../docs/evaluation_report.md). The honest summary:

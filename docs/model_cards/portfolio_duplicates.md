@@ -4,7 +4,7 @@
 |---|---|
 | Version | Rules in `ml/shevent_ml/images/hashing.py` and `duplicates.py`, thresholds and the CLIP model in `ml/configs/images.yaml` |
 | Code | `ml/shevent_ml/images/` (`download.py`, `build.py`, `hashing.py`, `planted.py`, `duplicates.py`) |
-| Served by | `POST /v1/portfolio/check` (a photo upload; the apps don't call it yet) |
+| Served by | `POST /v1/portfolio/check` (a photo upload); the web app's vendor listing page has a photo check since 15 Nov (nothing stored) |
 | Owner | ML lead |
 
 ## What it does

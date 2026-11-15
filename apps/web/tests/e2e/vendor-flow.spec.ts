@@ -9,6 +9,9 @@ const BUDGET = /25 lakh|2,500,000|2500000/;
 
 const main = (page: Page) => page.locator('main:visible');
 
+// A 1x1 PNG for the portfolio check.
+const TINY_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
 test('a vendor onboards, quotes with a live preview, and the host books the quote', async ({ browser }) => {
   test.setTimeout(240_000);
   const vendorEmail = uniqueEmail('vendor');
@@ -144,6 +147,25 @@ test('the listing form refuses contact details and saves edits', async ({ page }
   await main(page).getByRole('button', { name: 'Save changes' }).click();
   await expect(main(page).getByText('Your listing is saved.')).toBeVisible();
   expect(psql(`select description || '|' || capacity_max from public.vendors where id = '${vendorId}'`)).toBe('Mehndi and walima menus for up to 800 guests|800');
+});
+
+test('a vendor checks a portfolio photo (#7) and nothing is saved', async ({ page }) => {
+  test.setTimeout(120_000);
+  const email = uniqueEmail('portfolio');
+  await signIn(page, email, '/plans');
+  seedListing(email);
+
+  await page.goto('/vendor/profile');
+  const panel = main(page).getByRole('region', { name: 'Check a portfolio photo' });
+  await expect(panel.getByRole('button', { name: 'Check photo' })).toBeDisabled();
+  await panel.getByLabel(/Choose a photo/).setInputFiles({ name: 'stage.png', mimeType: 'image/png', buffer: Buffer.from(TINY_PNG, 'base64') });
+  await expect(panel.getByRole('img', { name: 'The photo you chose' })).toBeVisible();
+  await panel.getByRole('button', { name: 'Check photo' }).click();
+  // Fixtures answer "unique"; the real server may say any of the three, or be unavailable.
+  await expect(
+    panel.getByText('No copy found').or(panel.getByText(/already on another listing|Looks very like/)).or(panel.getByText("isn't available right now")),
+  ).toBeVisible({ timeout: 30_000 });
+  await expect(panel.getByText(ACCUSATION_WORDS)).toHaveCount(0);
 });
 
 test('a vendor cannot send a quote with contact details or a price of zero', async ({ browser }) => {

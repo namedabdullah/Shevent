@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
+import { PortfolioCheck } from '@/components/portfolio-check';
 import { Page, PageHeader } from '@/components/ui/page';
 import { VendorProfileForm } from '@/components/vendor-profile-form';
 import { requireListing } from '@/lib/vendor';
@@ -25,5 +26,10 @@ export default async function VendorProfilePage() {
 
 async function ListingForm() {
   const { vendor } = await requireListing();
-  return <VendorProfileForm action={updateListing} mode="edit" defaults={vendor} />;
+  return (
+    <>
+      <VendorProfileForm action={updateListing} mode="edit" defaults={vendor} />
+      <PortfolioCheck vendorId={vendor.id} />
+    </>
+  );
 }

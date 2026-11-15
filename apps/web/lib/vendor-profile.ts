@@ -1,6 +1,8 @@
 import type { Database } from '@shevent/core/database';
+import type { ReviewInsightsResponse } from '@shevent/core/schemas';
 import { createClient } from '@supabase/supabase-js';
 import { cacheLife, cacheTag } from 'next/cache';
+import { getAi } from '@/lib/ai';
 import { getSupabaseEnv } from '@/lib/supabase/env';
 import { isVendorSlug } from '@/lib/vendor-slug';
 import type { VendorRow } from '@/lib/vendor';
@@ -8,6 +10,7 @@ import type { VendorRow } from '@/lib/vendor';
 // Public vendor profiles (/vendors/[slug], WEB_APP_PLAN §4.1). Everything here is public under RLS
 // (vendors, reviews without author_id), so it's read without the visitor's session and cached:
 // the page is the same for everyone. A vendor's own edits expire it (updateTag in the profile action).
+// #6's review insights come from the model server, which reads the collected public reviews.
 
 /** Cache tag for every public profile; expired whenever a vendor saves their listing. */
 export const VENDOR_PROFILES_TAG = 'vendor-profiles';
@@ -122,6 +125,44 @@ export async function getVendorProfile(slug: string): Promise<VendorProfileData 
     console.error('Vendor profile failed', error);
     return 'unavailable';
   }
+}
+
+/** #6 for one vendor. Cached like the profile; a failure throws, so it's never cached. */
+async function loadReviewInsights(vendorId: string): Promise<ReviewInsightsResponse> {
+  'use cache';
+  cacheLife('hours');
+  cacheTag(VENDOR_PROFILES_TAG);
+  return getAi().reviewInsights(vendorId, { signal: AbortSignal.timeout(INSIGHTS_TIMEOUT_MS) });
+}
+
+const INSIGHTS_TIMEOUT_MS = 8000;
+
+/**
+ * What #6 reads in the vendor's collected public reviews (counts per aspect and "some reviews
+ * mention" lines, never the reviews' words). null when the model server can't be reached.
+ */
+export async function getReviewInsights(vendorId: string): Promise<ReviewInsightsResponse | null> {
+  try {
+    return await loadReviewInsights(vendorId);
+  } catch (error) {
+    console.error('Review insights failed', error);
+    return null;
+  }
+}
+
+/**
+ * Which of these vendors have a public profile to link to (same rule as the page), so a match card
+ * never links to a profile the vendor kept private. Empty when the database can't be reached.
+ */
+export async function getPublicProfileIds(ids: string[]): Promise<Set<string>> {
+  const supabase = publicClient();
+  if (!supabase || ids.length === 0) return new Set();
+  const { data, error } = await supabase.from('vendors').select('id').in('id', ids).or(PUBLIC_LISTING_FILTER);
+  if (error) {
+    console.error('Public profile lookup failed', error);
+    return new Set();
+  }
+  return new Set(data.map((row) => row.id));
 }
 
 /** Slugs of the vendors that agreed to an indexable profile (consent gate, WEB_APP_PLAN §6). */

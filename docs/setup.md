@@ -10,8 +10,8 @@ macOS or Linux use `ml/.venv/bin/python` where it says `ml\.venv\Scripts\python`
 | `apps/web` | Next.js web app (host and vendor sides) |
 | `packages/core` | Shared TypeScript: schemas, enums, formatting, labels, fixtures |
 | `supabase` | Database migrations, RLS policies, pgTAP tests, demo seed |
-| `ml` | Python package `shevent_ml`: data pipeline, features, models #1-#5, image and review tooling. Trained models in `ml/artifacts` |
-| `server` | FastAPI model server: `/v1/estimate`, `/recommend`, `/packages`, `/quote-check`, `/feedback`, `/assistant/chat` |
+| `ml` | Python package `shevent_ml`: data pipeline, features, models #1-#7. Trained models in `ml/artifacts` |
+| `server` | FastAPI model server: `/v1/estimate`, `/recommend`, `/packages`, `/quote-check`, `/reviews/insights`, `/portfolio/check`, `/feedback`, `/assistant/chat` |
 | `scripts` | `start-demo.ps1` (model server plus tunnel for the deployed site), `validate_data.py` |
 
 ## 1. Install the tools
@@ -42,6 +42,9 @@ ollama pull qwen2.5:3b-instruct
 
 The first `pip install` line gets the CPU build of PyTorch (the default one bundles CUDA and is several GB). The trained
 models are in `ml/artifacts`, so nothing needs training.
+
+Clone to a short path such as `D:\Projects\Shevent`: PyTorch's header files are deep, and under a long folder path pip
+fails with "No such file or directory" unless Windows long paths are enabled. (Checked on a fresh clone, 16 Nov.)
 
 ## 3. Start the database
 

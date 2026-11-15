@@ -64,6 +64,22 @@ test('a directory card opens the vendor profile', async ({ page }) => {
   await expect(page.getByRole('link', { name: 'Plan an event with them' }).first()).toHaveAttribute('href', /\/plan\/new\?services=venue/);
 });
 
+test('a vendor profile summarises what public reviews mention (#6), without their words', async ({ page }) => {
+  await page.goto('/lahore/catering');
+  const cards = page.locator('article').getByRole('link');
+  await expect(page.getByText(/vendors? listed|No one is listed here yet|Listings couldn't load/).first()).toBeVisible();
+  test.skip((await cards.count()) === 0, 'no vendor rows (local Supabase not running or empty)');
+  await cards.first().click();
+  const insights = page.getByRole('region', { name: 'What public reviews mention' });
+  // With reviews: the AI summary (sample-labelled on fixtures); without the model server: a short note.
+  // A vendor with no collected reviews has no section at all, so only check it when it's there.
+  await expect(page.getByRole('heading', { name: 'Reviews on Shevent' })).toBeVisible();
+  if ((await insights.count()) > 0) {
+    await expect(insights.getByText('AI summary').or(insights.getByText("isn't available right now"))).toBeVisible();
+    await expect(insights.getByText(/overcharg|scam|fraud/i)).toHaveCount(0);
+  }
+});
+
 test('unknown URLs show the not-found page with a real 404', async ({ page, request }) => {
   expect((await request.get('/no-such-page')).status()).toBe(404);
   await page.goto('/no-such-page');

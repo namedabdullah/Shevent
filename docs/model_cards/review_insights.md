@@ -4,7 +4,7 @@
 |---|---|
 | Version | `reviews-v1-…` (`ml/artifacts/review_insights/meta.json`) |
 | Code | `ml/shevent_ml/reviews/model.py`, synthetic reviews in `ml/shevent_ml/reviews/synthetic.py`, settings in `ml/configs/reviews.yaml` and `ml/configs/review_phrases.yaml` |
-| Served by | `POST /v1/reviews/insights` (the apps don't show it yet) |
+| Served by | `POST /v1/reviews/insights`; shown on the web app's vendor profiles (`/vendors/[slug]`) since 15 Nov |
 | Owner | ML lead |
 
 ## What it does

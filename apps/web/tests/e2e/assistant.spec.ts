@@ -70,7 +70,7 @@ test('a split can cover only some services, and the planner keeps that choice', 
   await expect(page.getByRole('checkbox', { name: 'Venue' })).not.toBeChecked();
   await page.getByRole('button', { name: 'Get my budget split' }).click();
   await expect(page).toHaveURL(/\/plans\/[0-9a-f-]{36}\?created=1$/, { timeout: 30_000 });
-  await expect(page.locator('tbody tr')).toHaveCount(2);
+  await expect(page.getByRole('table', { name: 'Your budget split' }).locator('tbody tr')).toHaveCount(2);
 });
 
 test('a vendor question gets suggestions, not a budget split', async ({ page }) => {
