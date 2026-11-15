@@ -6,6 +6,8 @@ import { NavLinkList, NavLinks, type NavLink } from '@/components/nav-links';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { Badge } from '@/components/ui/badge';
 import { PageSkeleton } from '@/components/ui/skeleton';
+import { getCurrentUser } from '@/lib/auth';
+import { getOwnListing } from '@/lib/vendor';
 
 /**
  * Layout for signed-in areas. The header renders in the static shell; everything that reads the
@@ -38,7 +40,11 @@ export async function AppShell({
   const navLabel = area === 'vendor' ? t('Vendor.nav.label') : t('App.navLabel');
   const nav = (variant: 'bar' | 'tabs') => (
     <Suspense fallback={<NavLinkList links={links} variant={variant} label={navLabel} />}>
-      <NavLinks links={links} variant={variant} label={navLabel} />
+      {area === 'vendor' ? (
+        <VendorNavLinks links={links} variant={variant} label={navLabel} locked={t('Vendor.nav.locked')} />
+      ) : (
+        <NavLinks links={links} variant={variant} label={navLabel} />
+      )}
     </Suspense>
   );
   return (
@@ -66,4 +72,14 @@ export async function AppShell({
       </Suspense>
     </>
   );
+}
+
+/**
+ * Every vendor section needs a listing, so until the account has one the links are shown locked:
+ * clicking them used to load the page, redirect and land back on the onboarding form.
+ */
+async function VendorNavLinks({ locked, ...props }: { links: NavLink[]; variant: 'bar' | 'tabs'; label: string; locked: string }) {
+  const user = await getCurrentUser();
+  const listed = user !== null && (user.role === 'vendor' || user.role === 'admin') && (await getOwnListing(user.id)) !== null;
+  return <NavLinks {...props} locked={listed ? undefined : locked} />;
 }

@@ -1,7 +1,9 @@
 'use server';
 
+import { updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { VENDOR_PROFILES_TAG } from '@/lib/vendor-profile';
 import { getOwnListing, invalidFields, listingColumns, parseVendorProfile, type VendorProfileState } from '@/lib/vendor';
 
 /** Saves the listing. RLS lets owners update only their own row and only the columns they may set. */
@@ -21,5 +23,7 @@ export async function updateListing(_previous: VendorProfileState, formData: For
     console.error('Listing update failed', error.code, error.message);
     return { status: 'error', error: 'failed', fields: [] };
   }
+  // The public profile (/vendors/[slug]) is cached; show the change there straight away.
+  updateTag(VENDOR_PROFILES_TAG);
   return { status: 'saved' };
 }

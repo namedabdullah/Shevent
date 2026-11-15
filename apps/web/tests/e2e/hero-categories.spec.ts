@@ -13,6 +13,19 @@ test('a category in the hero opens its directory page', async ({ page, isMobile 
   const link = page.getByRole('navigation', { name: 'Budget categories' }).getByRole('link', { name: 'Photography' });
   // The orbit's chips pop in (scale up from nothing) after load: wait until this one is full size.
   await expect.poll(async () => (await link.boundingBox())?.width ?? 0).toBeGreaterThan(100);
+  // On wide screens, also wait until it's the top element at its own centre (on a cold server it can
+  // still be popping in, and a forced click then lands on the hero behind it). The phone row is
+  // scrolled to by the click itself.
+  if (!isMobile) {
+    await expect
+      .poll(() =>
+        link.evaluate((chip) => {
+          const box = chip.getBoundingClientRect();
+          return document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)?.closest('a') === chip;
+        }),
+      )
+      .toBe(true);
+  }
   // Wide screens: the chips orbit slowly, so they never count as "stable" for Playwright. Phones get a
   // still row, which a normal click can scroll to and wait for.
   await link.click({ force: !isMobile });
