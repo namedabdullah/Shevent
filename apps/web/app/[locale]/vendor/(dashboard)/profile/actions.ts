@@ -2,6 +2,7 @@
 
 import { updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { contactBlock } from '@/lib/contact-guard';
 import { createClient } from '@/lib/supabase/server';
 import { VENDOR_PROFILES_TAG } from '@/lib/vendor-profile';
 import { getOwnListing, invalidFields, listingColumns, parseVendorProfile, type VendorProfileState } from '@/lib/vendor';
@@ -19,6 +20,8 @@ export async function updateListing(_previous: VendorProfileState, formData: For
   if (!parsed.success) return { status: 'error', error: 'invalid', fields: invalidFields(parsed.error) };
 
   const { error } = await supabase.from('vendors').update(listingColumns(parsed.data)).eq('id', vendor.id);
+  const blocked = contactBlock(error);
+  if (blocked) return { status: 'error', error: 'contact', fields: [blocked.field], reason: blocked.reason };
   if (error) {
     console.error('Listing update failed', error.code, error.message);
     return { status: 'error', error: 'failed', fields: [] };

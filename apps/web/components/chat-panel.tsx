@@ -5,6 +5,8 @@ import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'rea
 import { Icon } from '@/components/icons';
 import { buttonStyles } from '@/components/ui/button';
 import { FieldError, textareaStyles } from '@/components/ui/field';
+import { Notice } from '@/components/ui/notice';
+import { isContactReason, type ContactReason } from '@/lib/contact-guard';
 import { createClient } from '@/lib/supabase/client';
 
 export interface ChatMessage {
@@ -14,25 +16,35 @@ export interface ChatMessage {
   created_at: string;
 }
 
-/** Inquiry chat. New messages from either side arrive live through Supabase Realtime (RLS applies). */
+/**
+ * Inquiry chat. New messages from either side arrive live through Supabase Realtime (RLS applies).
+ * Messages are sent through send_message(), which keeps the booking on Shevent: until it's booked,
+ * contact details, apps, meetings and outside deals aren't sent (lib/contact-guard.ts).
+ */
 export function ChatPanel({
   inquiryId,
   currentUserId,
   otherName,
   initialMessages,
+  booked,
 }: {
   inquiryId: string;
   currentUserId: string;
   otherName: string;
   initialMessages: ChatMessage[];
+  /** A booking exists, so contact details may be shared (the database decides; this only sets the hint). */
+  booked: boolean;
 }) {
   const t = useTranslations('Chat');
+  const tGuard = useTranslations('ContactGuard');
   const supabase = useMemo(() => createClient(), []);
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [blocked, setBlocked] = useState<{ reason: ContactReason; count: number } | null>(null);
   const inputId = useId();
+  const ruleId = useId();
   const listRef = useRef<HTMLOListElement>(null);
 
   const add = (message: ChatMessage) =>
@@ -78,17 +90,19 @@ export function ChatPanel({
     if (!body) return;
     setSending(true);
     setFailed(false);
-    const { data, error } = await supabase
-      .from('messages')
-      .insert({ inquiry_id: inquiryId, body })
-      .select('id, sender_id, body, created_at')
-      .single();
+    setBlocked(null);
+    const { data, error } = await supabase.rpc('send_message', { target: inquiryId, content: body }).single();
     setSending(false);
     if (error || !data) {
       setFailed(true);
       return;
     }
-    add(data);
+    if (data.blocked_reason) {
+      // Nothing was sent. The draft stays so it can be rewritten.
+      setBlocked({ reason: isContactReason(data.blocked_reason) ? data.blocked_reason : 'contact', count: data.blocked_count });
+      return;
+    }
+    add({ id: data.message_id, sender_id: currentUserId, body, created_at: data.sent_at });
     setDraft('');
   }
 
@@ -120,24 +134,40 @@ export function ChatPanel({
           );
         })}
       </ol>
-      <form onSubmit={send} className="flex items-end gap-2 border-t border-line p-3 sm:p-4">
-        <label htmlFor={inputId} className="sr-only">
-          {t('label')}
-        </label>
-        <textarea
-          id={inputId}
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          maxLength={2000}
-          rows={2}
-          placeholder={t('placeholder')}
-          className={`${textareaStyles} min-h-12 flex-1 resize-none`}
-        />
-        <button type="submit" disabled={sending || !draft.trim()} className={buttonStyles({ className: 'min-h-12 shrink-0' })}>
-          <Icon name="arrowRight" className="size-4" />
-          {sending ? t('sending') : t('send')}
-        </button>
-      </form>
+      <div className="border-t border-line">
+        {blocked && (
+          <div className="px-3 pt-3 sm:px-4 sm:pt-4">
+            <Notice tone="warning" role="alert" title={tGuard('blockedTitle', { what: tGuard(`what.${blocked.reason}`) })}>
+              <p>{blocked.reason === 'payment' || blocked.reason === 'outside' ? tGuard('blockedWhyDeal') : tGuard('blockedWhy')}</p>
+              {blocked.count > 1 && <p className="mt-1">{tGuard('blockedCount', { count: blocked.count })}</p>}
+            </Notice>
+          </div>
+        )}
+        <form onSubmit={send} className="flex items-end gap-2 p-3 sm:p-4">
+          <label htmlFor={inputId} className="sr-only">
+            {t('label')}
+          </label>
+          <textarea
+            id={inputId}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            maxLength={2000}
+            rows={2}
+            placeholder={t('placeholder')}
+            aria-describedby={ruleId}
+            aria-invalid={blocked ? true : undefined}
+            className={`${textareaStyles} min-h-12 flex-1 resize-none`}
+          />
+          <button type="submit" disabled={sending || !draft.trim()} className={buttonStyles({ className: 'min-h-12 shrink-0' })}>
+            <Icon name="arrowRight" className="size-4" />
+            {sending ? t('sending') : t('send')}
+          </button>
+        </form>
+        <p id={ruleId} className="-mt-1 flex items-start gap-2 px-4 pb-3 text-xs leading-relaxed text-muted sm:px-5 sm:pb-4">
+          <Icon name="shield" className="mt-px size-3.5 shrink-0" />
+          {booked ? tGuard('noticeBooked') : tGuard('notice')}
+        </p>
+      </div>
       {failed && (
         <div className="px-4 pb-3">
           <FieldError>{t('failed')}</FieldError>

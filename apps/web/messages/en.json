@@ -360,6 +360,25 @@
     "sending": "Sending…",
     "failed": "Your message wasn't sent. Please try again."
   },
+  "ContactGuard": {
+    "notice": "Keep it on Shevent until you book: messages with phone numbers, emails, links, social apps, meeting plans or outside payments aren't sent.",
+    "noticeBooked": "You've booked on Shevent, so you can share contact details to plan the day. Payments stay on Shevent.",
+    "blockedTitle": "Not sent: it looks like it has {what}.",
+    "blockedWhy": "Contact details and meetings can be shared once you book here, so the price you agree on Shevent is the one on record. Rewrite the message without it.",
+    "blockedWhyDeal": "Payments and deals stay on Shevent, so the price you agree here is the one on record. Rewrite the message without it.",
+    "blockedCount": "That's {count} blocked messages from you in this chat. We note each one, but not what it said.",
+    "field": "Remove {what}. Contact details, meetings and deals outside Shevent aren't allowed here.",
+    "what": {
+      "phone": "a phone number",
+      "email": "an email address",
+      "link": "a link or web address",
+      "social": "a social media or messaging app",
+      "contact": "a request to call, text or swap numbers",
+      "payment": "a way to pay outside Shevent",
+      "outside": "a deal outside Shevent",
+      "meeting": "a plan to meet or visit in person"
+    }
+  },
   "Quote": {
     "aboveBy": "({percent}% above)",
     "belowBy": "({percent}% below)",
@@ -482,7 +501,7 @@
     "notSure": "Not sure",
     "yearsActive": "Years in business",
     "description": "About your business",
-    "descriptionHint": "Don't add phone numbers or email addresses. Hosts contact you through Shevent chat.",
+    "descriptionHint": "No phone numbers, emails, links, social media or invitations to visit. Hosts contact you through Shevent chat.",
     "inclusions": "What's usually included",
     "inclusionsHint": "One per line or separated by commas, e.g. serving staff, crockery, transport.",
     "consent": "Show my business on a public Shevent profile page",
@@ -564,7 +583,7 @@
     "exclusions": "Not included (optional)",
     "notes": "Notes for the host (optional)",
     "validUntil": "Price valid until (optional)",
-    "contactHint": "Don't add phone numbers or email addresses. Keep the conversation on Shevent.",
+    "contactHint": "No phone numbers, emails, links, social media, meetings or outside payments. Keep the booking on Shevent.",
     "send": "Send quote",
     "sending": "Sending…",
     "previewTitle": "What the host will see",

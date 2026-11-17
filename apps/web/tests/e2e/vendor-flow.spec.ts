@@ -196,3 +196,79 @@ test('a vendor cannot send a quote with contact details or a price of zero', asy
   await vendorContext.close();
   await hostContext.close();
 });
+
+test('the chat keeps contact details, meetings and outside deals off Shevent until a booking', async ({ browser }) => {
+  test.setTimeout(180_000);
+  const vendorEmail = uniqueEmail('guard');
+  const hostEmail = uniqueEmail('guard-host');
+
+  const hostContext = await browser.newContext();
+  const host = await hostContext.newPage();
+  await signIn(host, hostEmail, '/plans');
+  const vendorContext = await browser.newContext();
+  const vendor = await vendorContext.newPage();
+  await signIn(vendor, vendorEmail, '/plans');
+  const vendorId = seedListing(vendorEmail);
+  const { planId, inquiryId } = seedInquiry(hostEmail, vendorId);
+  const sentBy = (email: string) => psql(`select count(*) from public.messages where inquiry_id = '${inquiryId}' and sender_id = '${userId(email)}'`);
+  const blocked = () => psql(`select count(*) from private.blocked_messages where inquiry_id = '${inquiryId}'`);
+
+  await host.goto(`/inquiries/${inquiryId}`);
+  await vendor.goto(`/vendor/inquiries/${inquiryId}`);
+  const vendorChat = vendor.locator('ol[aria-live="polite"]:visible');
+  const hostChat = host.locator('ol[aria-live="polite"]:visible');
+  await expect(main(vendor).getByText('Keep it on Shevent until you book')).toBeVisible();
+
+  // The vendor offers a cheaper price by phone: nothing is sent, the draft stays, and they're told why.
+  const offer = 'Call me on 0300 1234567, I can do it for 19 lakh';
+  await main(vendor).getByLabel('Message').fill(offer);
+  await main(vendor).getByRole('button', { name: 'Send', exact: true }).click();
+  const alert = main(vendor).getByRole('alert');
+  await expect(alert).toContainText('Not sent: it looks like it has a phone number.');
+  await expect(main(vendor).getByLabel('Message')).toHaveValue(offer);
+  expect(sentBy(vendorEmail)).toBe('0');
+  expect(blocked()).toBe('1');
+
+  // Roman Urdu meeting plans too; the second block says it's counted.
+  await main(vendor).getByLabel('Message').fill('Milte hain kal, office aa jayen');
+  await main(vendor).getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(alert).toContainText('a plan to meet or visit in person');
+  await expect(alert).toContainText("That's 2 blocked messages from you in this chat");
+
+  // The same offer, kept on Shevent, goes through and reaches the host live.
+  await main(vendor).getByLabel('Message').fill('I can do it for 19 lakh, I will send a revised quote here.');
+  await main(vendor).getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(vendorChat.getByText('I can do it for 19 lakh, I will send a revised quote here.')).toBeVisible();
+  await expect(main(vendor).getByRole('alert')).toHaveCount(0);
+  await expect(hostChat.getByText('I can do it for 19 lakh, I will send a revised quote here.')).toBeVisible({ timeout: 15_000 });
+
+  // The host can't move the payment off Shevent either.
+  await main(host).getByLabel('Message').fill('Can I pay in cash without Shevent?');
+  await main(host).getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(main(host).getByRole('alert')).toContainText('a way to pay outside Shevent');
+  expect(sentBy(hostEmail)).toBe('1'); // only the seeded first message
+
+  // Quote notes: the form's own check passes (no number), the database catches the meeting.
+  await main(vendor).getByLabel('Your price').fill('3000');
+  await main(vendor).getByLabel('Notes for the host (optional)').fill('Visit our kitchen in Johar Town for a tasting');
+  await main(vendor).getByRole('button', { name: 'Send quote' }).click();
+  await expect(main(vendor).getByText('Remove a plan to meet or visit in person.')).toBeVisible();
+  expect(psql(`select count(*) from public.quotes where inquiry_id = '${inquiryId}'`)).toBe('0');
+
+  // Once it's booked on Shevent, the price is on record: numbers can be shared to plan the day.
+  const quoteId = psql(`insert into public.quotes (inquiry_id, amount_pkr, unit, total_pkr) values ('${inquiryId}', 3000, 'per_head', 900000) returning id`).split('\n')[0]!;
+  psql(`
+    insert into public.bookings (quote_id, inquiry_id, plan_id, vendor_id, host_id, amount_pkr)
+      values ('${quoteId}', '${inquiryId}', '${planId}', '${vendorId}', '${userId(hostEmail)}', 900000);
+    update public.inquiries set status = 'booked' where id = '${inquiryId}';
+  `);
+  await host.reload();
+  await expect(main(host).getByText("You've booked on Shevent, so you can share contact details")).toBeVisible();
+  await main(host).getByLabel('Message').fill('My number for the day is 0300 1234567');
+  await main(host).getByRole('button', { name: 'Send', exact: true }).click();
+  await expect(hostChat.getByText('My number for the day is 0300 1234567')).toBeVisible();
+  await expect(vendorChat.getByText('My number for the day is 0300 1234567')).toBeVisible({ timeout: 15_000 });
+
+  await vendorContext.close();
+  await hostContext.close();
+});

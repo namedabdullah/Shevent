@@ -305,6 +305,11 @@ isOneToOne: false
               "area": Database["public"]['Enums']["lahore_area"],"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"preferences": (string)[],"venue_type": Database["public"]['Enums']["venue_type"]
             }[]
                            },
+"send_message":
+{ Args: { "content": string,"target": string }; Returns: {
+              "blocked_count": number,"blocked_reason": string,"message_id": number,"sent_at": string
+            }[]
+                           },
 "share_plan":
 { Args: { "target": string }; Returns: string
                            },

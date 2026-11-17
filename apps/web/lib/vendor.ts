@@ -3,6 +3,7 @@ import { splitList, vendorProfileSchema, type VendorProfile } from '@shevent/cor
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import { requireVendor, type CurrentUser } from '@/lib/auth';
+import type { ContactReason } from '@/lib/contact-guard';
 import { createClient } from '@/lib/supabase/server';
 
 export type VendorRow = Database['public']['Tables']['vendors']['Row'];
@@ -25,7 +26,9 @@ export async function requireListing(): Promise<{ user: CurrentUser; vendor: Ven
 export type VendorProfileState =
   | { status: 'idle' }
   | { status: 'saved' }
-  | { status: 'error'; error: 'invalid' | 'failed'; fields: string[] };
+  | { status: 'error'; error: 'invalid' | 'failed'; fields: string[] }
+  /** The database refused text that would take bookings off Shevent (lib/contact-guard.ts). */
+  | { status: 'error'; error: 'contact'; fields: string[]; reason: ContactReason };
 
 /** Reads the listing form. `category` comes from the caller on edit, because it can't change. */
 export function parseVendorProfile(formData: FormData, category?: string) {

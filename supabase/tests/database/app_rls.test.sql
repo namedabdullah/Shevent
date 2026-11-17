@@ -73,10 +73,10 @@ select lives_ok(
   'hosts send inquiries from their plans'
 );
 select lives_ok(
-  $$ insert into public.messages (inquiry_id, body)
-     values ((select id from public.inquiries where plan_id = '00000000-0000-0000-0000-0000000000f1'), 'Salam, is 19 Dec free?') $$,
+  $$ select public.send_message((select id from public.inquiries where plan_id = '00000000-0000-0000-0000-0000000000f1'), 'Salam, is 19 Dec free?') $$,
   'hosts message the vendor'
 );
+-- send_message() sends as the caller; direct inserts (which could set sender_id) are revoked.
 select throws_ok(
   $$ insert into public.messages (inquiry_id, sender_id, body)
      values ((select id from public.inquiries where plan_id = '00000000-0000-0000-0000-0000000000f1'),
@@ -103,7 +103,7 @@ select throws_ok(
   '42501', null, 'nobody can send inquiries from another host''s plan'
 );
 select throws_ok(
-  $$ insert into public.messages (inquiry_id, body) values (current_setting('test.inquiry_id')::uuid, 'hi') $$,
+  $$ select public.send_message(current_setting('test.inquiry_id')::uuid, 'hi') $$,
   '42501', null, 'outsiders cannot join the chat'
 );
 select throws_ok($$ select public.share_plan('00000000-0000-0000-0000-0000000000f1') $$, 'P0002', null, 'nobody can share another host''s plan');

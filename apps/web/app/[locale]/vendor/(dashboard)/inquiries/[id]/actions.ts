@@ -4,13 +4,16 @@ import { CATEGORY_UNITS } from '@shevent/core/enums';
 import { parsePkr, todayInLahore } from '@shevent/core/format';
 import { quoteTotalPkr, splitList, vendorQuoteSchema } from '@shevent/core/schemas';
 import { redirect } from 'next/navigation';
+import { contactBlock, type ContactReason } from '@/lib/contact-guard';
 import { isUuid } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
 import { invalidFields } from '@/lib/vendor';
 
 export type QuoteFormState =
   | { status: 'idle' }
-  | { status: 'error'; error: 'invalid' | 'failed'; fields: string[] };
+  | { status: 'error'; error: 'invalid' | 'failed'; fields: string[] }
+  /** The database refused text that would take the booking off Shevent (lib/contact-guard.ts). */
+  | { status: 'error'; error: 'contact'; fields: string[]; reason: ContactReason };
 
 const MAX_TOTAL_PKR = 500_000_000;
 
@@ -60,6 +63,8 @@ export async function sendQuote(inquiryId: string, _previous: QuoteFormState, fo
     notes: quote.notes ?? null,
     valid_until: quote.valid_until ?? null,
   });
+  const blocked = contactBlock(error);
+  if (blocked) return { status: 'error', error: 'contact', fields: [blocked.field], reason: blocked.reason };
   if (error) {
     console.error('Quote insert failed', error.code, error.message);
     return { status: 'error', error: 'failed', fields: [] };
