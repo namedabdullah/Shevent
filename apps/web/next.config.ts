@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Only security upgrade reminders for coding agents (set by the 16.4.2 → 16.4.6 security upgrade).
+  experimental: { agentUpgrade: 'security' },
   headers: async () => [{ source: '/:path*', headers: securityHeaders }],
   // packages/core ships TypeScript source.
   transpilePackages: ["@shevent/core"],
