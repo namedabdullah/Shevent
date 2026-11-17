@@ -269,6 +269,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"visits": {
+                  Row: {
+                    "cancelled_by": string | null,"created_at": string,"host_note": string | null,"id": string,"inquiry_id": string,"starts_at": string,"status": Database["public"]['Enums']["visit_status"],"updated_at": string,"venue_address": string | null,"venue_note": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancelled_by"?: string | null,"created_at"?: string,"host_note"?: string | null,"id"?: string,"inquiry_id": string,"starts_at": string,"status"?: Database["public"]['Enums']["visit_status"],"updated_at"?: string,"venue_address"?: string | null,"venue_note"?: string | null
+                  }
+                  Update: {
+                    "cancelled_by"?: string | null,"created_at"?: string,"host_note"?: string | null,"id"?: string,"inquiry_id"?: string,"starts_at"?: string,"status"?: Database["public"]['Enums']["visit_status"],"updated_at"?: string,"venue_address"?: string | null,"venue_note"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "visits_inquiry_id_fkey"
+      columns: ["inquiry_id"]
+isOneToOne: false
+      referencedRelation: "inquiries"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -289,11 +309,17 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "become_vendor":
+            "answer_visit":
+{ Args: { "accept": boolean,"address"?: string,"note"?: string,"target": string }; Returns: undefined
+                           },
+"become_vendor":
 { Args: Record<PropertyKey, never>; Returns: undefined
                            },
 "book_quote":
 { Args: { "target": string }; Returns: string
+                           },
+"cancel_visit":
+{ Args: { "target": string }; Returns: undefined
                            },
 "get_shared_plan":
 { Args: { "token": string }; Returns: {
@@ -305,6 +331,9 @@ isOneToOne: false
               "area": Database["public"]['Enums']["lahore_area"],"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"preferences": (string)[],"venue_type": Database["public"]['Enums']["venue_type"]
             }[]
                            },
+"request_visit":
+{ Args: { "note"?: string,"starts_at": string,"target": string }; Returns: string
+                           },
 "send_message":
 { Args: { "content": string,"target": string }; Returns: {
               "blocked_count": number,"blocked_reason": string,"message_id": number,"sent_at": string
@@ -315,12 +344,12 @@ isOneToOne: false
                            },
 "vendor_inbox":
 { Args: Record<PropertyKey, never>; Returns: {
-              "area": Database["public"]['Enums']["lahore_area"],"created_at": string,"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"inquiry_id": string,"quote_total_pkr": number,"status": Database["public"]['Enums']["inquiry_status"],"updated_at": string
+              "area": Database["public"]['Enums']["lahore_area"],"created_at": string,"event_date": string,"event_type": Database["public"]['Enums']["event_type"],"guest_count": number,"inquiry_id": string,"quote_total_pkr": number,"status": Database["public"]['Enums']["inquiry_status"],"updated_at": string,"visit_starts_at": string,"visit_status": Database["public"]['Enums']["visit_status"]
             }[]
                            }
           }
           Enums: {
-            "booking_status": "confirmed"|"cancelled"|"completed","event_type": "wedding_mehndi"|"wedding_baraat"|"wedding_walima"|"engagement"|"birthday"|"corporate_dinner"|"corporate_other"|"university_gala"|"concert"|"private_party","inquiry_status": "open"|"quoted"|"booked"|"declined"|"closed","lahore_area": "Gulberg"|"DHA"|"Johar Town"|"Cantt"|"Model Town"|"Raiwind Road"|"Bahria Town"|"Wapda Town"|"Garden Town"|"Faisal Town"|"Allama Iqbal Town"|"Township"|"Lake City"|"Valencia"|"Shadman"|"Other","lead_type": "waitlist"|"vendor_join","media_status": "pending"|"approved"|"flagged","price_tier": "budget"|"mid"|"premium","price_unit": "per_head"|"per_event"|"per_hour"|"per_package"|"per_slot"|"per_setup","review_source": "booking"|"imported","service_category": "venue"|"catering"|"decor"|"dj_sound"|"lighting"|"photography","user_role": "host"|"vendor"|"admin","venue_type": "marquee"|"banquet"|"farmhouse"|"rooftop"|"lawn"|"hotel"|"other"
+            "booking_status": "confirmed"|"cancelled"|"completed","event_type": "wedding_mehndi"|"wedding_baraat"|"wedding_walima"|"engagement"|"birthday"|"corporate_dinner"|"corporate_other"|"university_gala"|"concert"|"private_party","inquiry_status": "open"|"quoted"|"booked"|"declined"|"closed","lahore_area": "Gulberg"|"DHA"|"Johar Town"|"Cantt"|"Model Town"|"Raiwind Road"|"Bahria Town"|"Wapda Town"|"Garden Town"|"Faisal Town"|"Allama Iqbal Town"|"Township"|"Lake City"|"Valencia"|"Shadman"|"Other","lead_type": "waitlist"|"vendor_join","media_status": "pending"|"approved"|"flagged","price_tier": "budget"|"mid"|"premium","price_unit": "per_head"|"per_event"|"per_hour"|"per_package"|"per_slot"|"per_setup","review_source": "booking"|"imported","service_category": "venue"|"catering"|"decor"|"dj_sound"|"lighting"|"photography","user_role": "host"|"vendor"|"admin","venue_type": "marquee"|"banquet"|"farmhouse"|"rooftop"|"lawn"|"hotel"|"other","visit_status": "requested"|"confirmed"|"declined"|"cancelled"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -440,7 +469,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "booking_status": ["confirmed", "cancelled", "completed"],"event_type": ["wedding_mehndi", "wedding_baraat", "wedding_walima", "engagement", "birthday", "corporate_dinner", "corporate_other", "university_gala", "concert", "private_party"],"inquiry_status": ["open", "quoted", "booked", "declined", "closed"],"lahore_area": ["Gulberg", "DHA", "Johar Town", "Cantt", "Model Town", "Raiwind Road", "Bahria Town", "Wapda Town", "Garden Town", "Faisal Town", "Allama Iqbal Town", "Township", "Lake City", "Valencia", "Shadman", "Other"],"lead_type": ["waitlist", "vendor_join"],"media_status": ["pending", "approved", "flagged"],"price_tier": ["budget", "mid", "premium"],"price_unit": ["per_head", "per_event", "per_hour", "per_package", "per_slot", "per_setup"],"review_source": ["booking", "imported"],"service_category": ["venue", "catering", "decor", "dj_sound", "lighting", "photography"],"user_role": ["host", "vendor", "admin"],"venue_type": ["marquee", "banquet", "farmhouse", "rooftop", "lawn", "hotel", "other"]
+            "booking_status": ["confirmed", "cancelled", "completed"],"event_type": ["wedding_mehndi", "wedding_baraat", "wedding_walima", "engagement", "birthday", "corporate_dinner", "corporate_other", "university_gala", "concert", "private_party"],"inquiry_status": ["open", "quoted", "booked", "declined", "closed"],"lahore_area": ["Gulberg", "DHA", "Johar Town", "Cantt", "Model Town", "Raiwind Road", "Bahria Town", "Wapda Town", "Garden Town", "Faisal Town", "Allama Iqbal Town", "Township", "Lake City", "Valencia", "Shadman", "Other"],"lead_type": ["waitlist", "vendor_join"],"media_status": ["pending", "approved", "flagged"],"price_tier": ["budget", "mid", "premium"],"price_unit": ["per_head", "per_event", "per_hour", "per_package", "per_slot", "per_setup"],"review_source": ["booking", "imported"],"service_category": ["venue", "catering", "decor", "dj_sound", "lighting", "photography"],"user_role": ["host", "vendor", "admin"],"venue_type": ["marquee", "banquet", "farmhouse", "rooftop", "lawn", "hotel", "other"],"visit_status": ["requested", "confirmed", "declined", "cancelled"]
           }
         }
 } as const

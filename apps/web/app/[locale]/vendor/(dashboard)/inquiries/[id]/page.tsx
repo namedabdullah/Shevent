@@ -18,10 +18,13 @@ import { buttonStyles } from '@/components/ui/button';
 import { Notice } from '@/components/ui/notice';
 import { cardStyles, MetaList, Page, PageHeader } from '@/components/ui/page';
 import { PageSkeleton } from '@/components/ui/skeleton';
+import { VisitCard } from '@/components/visit-card';
+import { VisitListener } from '@/components/visit-listener';
 import { getAi } from '@/lib/ai';
 import { isUuid, planToSpec } from '@/lib/plans';
 import { createClient } from '@/lib/supabase/server';
 import { requireListing } from '@/lib/vendor';
+import { VISIT_COLUMNS, type Visit } from '@/lib/visits';
 import { declineInquiry, sendQuote } from './actions';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -54,12 +57,14 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
   const { data: inquiry } = await supabase.from('inquiries').select('id, status, vendor_id').eq('id', id).eq('vendor_id', vendor.id).maybeSingle();
   if (!inquiry) notFound();
 
-  const [{ data: brief }, { data: messages }, { data: quote }, { data: booking }, tInquiry] = await Promise.all([
+  const [{ data: brief }, { data: messages }, { data: quote }, { data: booking }, { data: visit }, tInquiry, tVisit] = await Promise.all([
     supabase.rpc('inquiry_brief', { target: id }).maybeSingle(),
     supabase.from('messages').select('id, sender_id, body, created_at').eq('inquiry_id', id).order('created_at'),
     supabase.from('quotes').select('*').eq('inquiry_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
     supabase.from('bookings').select('status').eq('inquiry_id', id).maybeSingle(),
+    supabase.from('visits').select(VISIT_COLUMNS).eq('inquiry_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle<Visit>(),
     getTranslations('Inquiry'),
+    getTranslations('Visit'),
   ]);
   if (!brief) notFound();
   const spec = planToSpec(brief);
@@ -82,11 +87,13 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
   }
 
   const canQuote = inquiry.status === 'open' || inquiry.status === 'quoted';
+  const isVenue = vendor.category === 'venue';
   const preferences = brief.preferences.filter(isPreference).map((value) => PREFERENCE_LABELS[value]);
 
   return (
     <Page>
       {query.quoted && <TrackEvent event="quote_sent" />}
+      {isVenue && <VisitListener inquiryId={inquiry.id} />}
       <PageHeader back={{ href: '/vendor/inquiries', label: t('backToInbox') }} title={t('title', { event: EVENT_TYPE_LABELS[brief.event_type], area: brief.area })}>
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -108,6 +115,11 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           {t('quoteSent')}
         </Notice>
       )}
+      {typeof query.visit === 'string' && ['confirmed', 'declined', 'cancelled', 'failed'].includes(query.visit) && (
+        <Notice tone={query.visit === 'failed' ? 'error' : 'success'} role={query.visit === 'failed' ? 'alert' : 'status'}>
+          {tVisit(`done.${query.visit as 'confirmed'}`)}
+        </Notice>
+      )}
       {query.action === 'failed' && (
         <Notice tone="error" role="alert">
           {t('actionFailed')}
@@ -115,7 +127,14 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_28rem] lg:items-start">
-        <ChatPanel inquiryId={inquiry.id} currentUserId={user.id} otherName={tInquiry('host')} initialMessages={messages ?? []} booked={!!booking && booking.status !== 'cancelled'} />
+        <ChatPanel
+          inquiryId={inquiry.id}
+          currentUserId={user.id}
+          otherName={tInquiry('host')}
+          initialMessages={messages ?? []}
+          booked={!!booking && booking.status !== 'cancelled'}
+          visitHint={isVenue && canQuote ? { side: 'vendor', venue: vendor.name } : undefined}
+        />
 
         <section aria-labelledby="quote-heading" className={`${cardStyles} flex flex-col gap-5 p-5 sm:p-6`}>
           <h2 id="quote-heading" className="flex items-center gap-2 text-xl font-semibold">
@@ -162,6 +181,10 @@ async function Inquiry({ params, searchParams }: PageProps<'/[locale]/vendor/inq
           )}
         </section>
       </div>
+
+      {isVenue && (
+        <VisitCard side="vendor" inquiryId={inquiry.id} visit={visit} canRequest={canQuote} venueName={vendor.name} currentUserId={user.id} now={new Date()} />
+      )}
     </Page>
   );
 }

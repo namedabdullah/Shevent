@@ -27,6 +27,7 @@ export function ChatPanel({
   otherName,
   initialMessages,
   booked,
+  visitHint,
 }: {
   inquiryId: string;
   currentUserId: string;
@@ -34,6 +35,8 @@ export function ChatPanel({
   initialMessages: ChatMessage[];
   /** A booking exists, so contact details may be shared (the database decides; this only sets the hint). */
   booked: boolean;
+  /** A venue inquiry before booking: a blocked meeting plan points to the visit request instead. */
+  visitHint?: { side: 'host' | 'vendor'; venue: string };
 }) {
   const t = useTranslations('Chat');
   const tGuard = useTranslations('ContactGuard');
@@ -139,6 +142,11 @@ export function ChatPanel({
           <div className="px-3 pt-3 sm:px-4 sm:pt-4">
             <Notice tone="warning" role="alert" title={tGuard('blockedTitle', { what: tGuard(`what.${blocked.reason}`) })}>
               <p>{blocked.reason === 'payment' || blocked.reason === 'outside' ? tGuard('blockedWhyDeal') : tGuard('blockedWhy')}</p>
+              {blocked.reason === 'meeting' && visitHint && (
+                <p className="mt-1 font-medium">
+                  {visitHint.side === 'host' ? tGuard('visitHintHost', { venue: visitHint.venue }) : tGuard('visitHintVendor')}
+                </p>
+              )}
               {blocked.count > 1 && <p className="mt-1">{tGuard('blockedCount', { count: blocked.count })}</p>}
             </Notice>
           </div>
