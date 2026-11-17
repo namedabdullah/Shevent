@@ -90,8 +90,9 @@ error and the planner form stays available.
 - **Sponsored listings** are labelled and never mixed into the ranked matches.
 - **Bookings stay on Shevent:** until a quote is booked, the chat, quotes, listings and reviews can't carry phone
   numbers, emails, links, social apps, meeting plans or outside payment (checked in the database, in English, Roman
-  Urdu and Urdu). Blocked messages aren't sent and the sender is told why. After booking, contact details are allowed
-  to plan the day.
+  Urdu and Urdu). Blocked messages aren't sent and the sender is told why. A host who wants to see a venue requests a
+  visit on the inquiry, and the venue confirms it with the address, so the visit is on record too. After booking,
+  contact details are allowed to plan the day.
 
 ## Licences
 

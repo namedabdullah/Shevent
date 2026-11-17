@@ -1,9 +1,10 @@
 import { EVENT_TYPE_LABELS } from '@shevent/core/enums';
-import { formatEventDate, formatPkr } from '@shevent/core/format';
+import { formatEventDate, formatPkr, formatVisitTime } from '@shevent/core/format';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { Suspense } from 'react';
 import { DateLeaf } from '@/components/date-leaf';
+import { Icon } from '@/components/icons';
 import { InquiryStatusBadge } from '@/components/status-badge';
 import { buttonStyles } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -59,6 +60,12 @@ async function Inbox() {
                   <span className="text-muted">
                     {t('quote')}: <span className="font-semibold text-ink tabular-nums">{row.quote_total_pkr === null ? t('noQuote') : formatPkr(row.quote_total_pkr)}</span>
                   </span>
+                  {row.visit_status && row.visit_starts_at && (
+                    <span className={`inline-flex items-center gap-1.5 font-medium ${row.visit_status === 'requested' ? 'text-warning-ink' : 'text-success-ink'}`}>
+                      <Icon name="calendar" className="size-3.5" />
+                      {t(row.visit_status === 'requested' ? 'visitRequested' : 'visitConfirmed', { time: formatVisitTime(row.visit_starts_at) })}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

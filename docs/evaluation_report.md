@@ -262,6 +262,10 @@ The messages are hand-written, not a held-out set of real Shevent chats (there a
 false-alarm rate is unknown. Rules can be got round (a number spread over several messages, a photo of a card); they
 stop the easy cases and leave a record of repeat attempts.
 
+Seeing a venue before booking is arranged on the inquiry instead of the chat (migration
+`20261118000000_venue_visits`): the host requests a time, the venue confirms with the address or declines, and the
+visit stays on record. Once a visit is confirmed, the chat may talk about meeting; contact details stay blocked.
+
 ## Software tests (11 Nov, final testing round)
 
 | Suite | Result |
@@ -270,9 +274,9 @@ stop the easy cases and leave a record of repeat attempts.
 | `server/` pytest (API, contracts, assistant, review insights) | 90 passed (132 on 12 Nov, after the assistant v2 and services changes) |
 | `packages/core` and `apps/web` Vitest | 195 and 38 passed (199 and 38 on 12 Nov) |
 | Lint, typecheck, production build | clean |
-| Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean. 17 Nov: 113 passed (29 new for keeping bookings on Shevent) |
+| Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean. 17 Nov: 113 passed (29 new for keeping bookings on Shevent). 18 Nov: 137 passed (24 new for venue visits) |
 | Model server, live, real models (every endpoint but feedback) | 39 of 39 checks; `/v1/estimate` 48 ms median warm |
-| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass. 17 Nov, Chrome only: vendor and host journeys 9 of 9, including the new chat test (blocked phone number and meeting, outside payment, quote notes, contact details allowed after booking); accessibility, security and double-submit 23 passed, 1 by-design skip on a rerun (the first run, on 1.8 GB of free memory, had 2 failures) |
+| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass. 17 Nov, Chrome only: vendor and host journeys 9 of 9, including the new chat test (blocked phone number and meeting, outside payment, quote notes, contact details allowed after booking); accessibility, security and double-submit 23 passed, 1 by-design skip on a rerun (the first run, on 1.8 GB of free memory, had 2 failures). 18 Nov, Chrome only: venue visits (full loop, live updates, axe on the card), vendor and host journeys and accessibility: 18 of 18 |
 | Retraining #1, #2, #6 from the committed data | Identical versions and results |
 | Lighthouse, landing page (mobile) | Accessibility, best practices, SEO 100; performance 77 locally, 62 on Vercel (target 90) |
 
