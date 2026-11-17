@@ -3,6 +3,7 @@
 import { slugify } from '@shevent/core/format';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { contactBlock } from '@/lib/contact-guard';
 import { createClient } from '@/lib/supabase/server';
 import { invalidFields, listingColumns, parseVendorProfile, type VendorProfileState } from '@/lib/vendor';
 
@@ -30,6 +31,9 @@ export async function createListing(_previous: VendorProfileState, formData: For
   const { error } = await supabase
     .from('vendors')
     .insert({ owner_id: auth.claims.sub, slug, category: profile.category, ...listingColumns(profile) });
+  // Contact details or outside deals in the listing text: show it on the field.
+  const blocked = contactBlock(error);
+  if (blocked) return { status: 'error', error: 'contact', fields: [blocked.field], reason: blocked.reason };
   // 23505: this account already has a listing (a second tab, or a double submit).
   if (error && error.code !== '23505') {
     console.error('Listing insert failed', error.code, error.message);

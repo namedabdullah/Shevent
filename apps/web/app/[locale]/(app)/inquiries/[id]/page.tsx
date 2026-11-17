@@ -54,7 +54,7 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
     supabase.rpc('inquiry_brief', { target: id }).maybeSingle(),
     supabase.from('messages').select('id, sender_id, body, created_at').eq('inquiry_id', id).order('created_at'),
     supabase.from('quotes').select('*').eq('inquiry_id', id).order('created_at', { ascending: false }).limit(1).maybeSingle(),
-    supabase.from('bookings').select('id').eq('inquiry_id', id).maybeSingle(),
+    supabase.from('bookings').select('id, status').eq('inquiry_id', id).maybeSingle(),
   ]);
 
   const vendor = inquiry.vendors;
@@ -105,7 +105,7 @@ export default async function InquiryPage({ params, searchParams }: PageProps<'/
       )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start">
-        <ChatPanel inquiryId={inquiry.id} currentUserId={user.id} otherName={vendor.name} initialMessages={messages ?? []} />
+        <ChatPanel inquiryId={inquiry.id} currentUserId={user.id} otherName={vendor.name} initialMessages={messages ?? []} booked={!!booking && booking.status !== 'cancelled'} />
 
         <section aria-labelledby="quote-heading" className={`${cardStyles} flex flex-col gap-4 p-5 sm:p-6 lg:sticky lg:top-24`}>
           <h2 id="quote-heading" className="flex items-center gap-2 text-xl font-semibold">

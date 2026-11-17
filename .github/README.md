@@ -88,6 +88,10 @@ error and the planner form stays available.
 - **No invented figures:** the assistant's model reads the chat and writes advice without numbers; every number in a
   reply comes from #1-#5.
 - **Sponsored listings** are labelled and never mixed into the ranked matches.
+- **Bookings stay on Shevent:** until a quote is booked, the chat, quotes, listings and reviews can't carry phone
+  numbers, emails, links, social apps, meeting plans or outside payment (checked in the database, in English, Roman
+  Urdu and Urdu). Blocked messages aren't sent and the sender is told why. After booking, contact details are allowed
+  to plan the day.
 
 ## Licences
 

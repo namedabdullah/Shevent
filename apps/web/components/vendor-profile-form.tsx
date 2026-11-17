@@ -42,6 +42,14 @@ export function VendorProfileForm({
   const [category, setCategory] = useState<string>(defaults.category ?? '');
   const id = useId();
   const invalid = (field: string) => state.status === 'error' && state.fields.includes(field);
+  const tGuard = useTranslations('ContactGuard');
+  /** The field's error: why the database refused its text, or the form's own validation message. */
+  const fieldError = (name: string) =>
+    state.status === 'error' && state.error === 'contact' && state.fields.includes(name)
+      ? tGuard('field', { what: tGuard(`what.${state.reason}`) })
+      : invalid(name)
+        ? t(`errors.${name}` as 'errors.name')
+        : undefined;
 
   // onSubmit instead of <form action>, which would clear the form on every submit.
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -56,7 +64,7 @@ export function VendorProfileForm({
       label={label}
       hint={hint}
       hintId={`${id}-${name}-hint`}
-      error={invalid(name) ? t(`errors.${name}` as 'errors.name') : undefined}
+      error={fieldError(name)}
     >
       {control}
     </Field>

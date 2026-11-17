@@ -65,6 +65,14 @@ export function QuoteForm({
   const [preview, setPreview] = useState<{ key: string; result: QuoteCheckResponse | 'error' } | null>(null);
   const id = useId();
   const invalid = (field: string) => state.status === 'error' && state.fields.includes(field);
+  const tGuard = useTranslations('ContactGuard');
+  /** The field's error: why the database refused its text, or the form's own validation message. */
+  const fieldError = (name: string) =>
+    state.status === 'error' && state.error === 'contact' && state.fields.includes(name)
+      ? tGuard('field', { what: tGuard(`what.${state.reason}`) })
+      : invalid(name)
+        ? t(`errors.${name}` as 'errors.unit')
+        : undefined;
 
   const parsedAmount = parsePkr(amount);
   const parsedHours = unit === 'per_hour' && hours.trim() !== '' ? Number(hours) : undefined;
@@ -123,7 +131,7 @@ export function QuoteForm({
       label={label}
       hint={hint}
       hintId={`${id}-${name}-hint`}
-      error={invalid(errorKey) ? t(`errors.${errorKey}` as 'errors.unit') : undefined}
+      error={fieldError(errorKey)}
     >
       {control}
     </Field>

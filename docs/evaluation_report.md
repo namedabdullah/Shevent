@@ -241,6 +241,27 @@ and run again for v2 on 12 Nov:
 - Reproduce: `cd server && python -m eval.assistant_eval [--cases holdout] [--llm-replies]`; the reports go to
   `testing/reports/assistant-eval*.md`.
 
+## Keeping bookings on Shevent (rules, not a model)
+
+Before a booking, chat messages, quotes, vendor listings and booking reviews are checked in the database (migration
+`20261117000000_contact_guard`) for phone numbers, emails, links, social and messaging apps, requests to call or swap
+numbers, payment outside Shevent, talk of skipping Shevent, and plans to meet. The check reads English, Roman Urdu and
+basic Urdu, and numbers written as words ("zero three zero zero"), with the letter O, or split by spaces and dashes. A
+blocked message isn't sent; the sender is told why, and the attempt is recorded (the reason, not the text). After a
+booking, contact details and meetings are allowed so the day can be planned; outside payment stays blocked. Reviews
+only block actual details, so a complaint like "he never called me back" stays.
+
+| Check (17 Nov) | Result |
+|---|---|
+| 79 hand-written messages: 28 ordinary (prices, dates, "we can meet your budget", "nice to meet you", Roman Urdu) and 51 that should be caught, each with the expected reason | 79 of 79 |
+| 308 real collected reviews, checked as reviews | 0 blocked |
+| The same 308, as if sent in chat before a booking | 4 blocked (1.3%): mentions of Facebook or Instagram, and "didn't call me back" stories |
+| 350 local listings (327 collected, plus demo and test listings) | 0 blocked |
+
+The messages are hand-written, not a held-out set of real Shevent chats (there are none yet), so the real
+false-alarm rate is unknown. Rules can be got round (a number spread over several messages, a photo of a card); they
+stop the easy cases and leave a record of repeat attempts.
+
 ## Software tests (11 Nov, final testing round)
 
 | Suite | Result |
@@ -249,9 +270,9 @@ and run again for v2 on 12 Nov:
 | `server/` pytest (API, contracts, assistant, review insights) | 90 passed (132 on 12 Nov, after the assistant v2 and services changes) |
 | `packages/core` and `apps/web` Vitest | 195 and 38 passed (199 and 38 on 12 Nov) |
 | Lint, typecheck, production build | clean |
-| Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean |
+| Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean. 17 Nov: 113 passed (29 new for keeping bookings on Shevent) |
 | Model server, live, real models (every endpoint but feedback) | 39 of 39 checks; `/v1/estimate` 48 ms median warm |
-| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass |
+| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass. 17 Nov, Chrome only: vendor and host journeys 9 of 9, including the new chat test (blocked phone number and meeting, outside payment, quote notes, contact details allowed after booking); accessibility, security and double-submit 23 passed, 1 by-design skip on a rerun (the first run, on 1.8 GB of free memory, had 2 failures) |
 | Retraining #1, #2, #6 from the committed data | Identical versions and results |
 | Lighthouse, landing page (mobile) | Accessibility, best practices, SEO 100; performance 77 locally, 62 on Vercel (target 90) |
 
