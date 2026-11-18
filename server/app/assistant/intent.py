@@ -9,7 +9,8 @@ intent, so "300 guests, DHA" answers the question asked before it. Kinds of ques
 - vendors: suggest, recommend or find a vendor for a service
 - prices: how much a service, or the event, usually costs
 - advice: anything else, such as how to plan, what to ask a vendor, which venue type suits the season
-- greeting: hello, thanks
+- greeting: hello, thanks, or what the assistant can do
+- off_topic: set by chat.py when scope.py finds the message isn't about planning an event
 """
 
 import re
@@ -18,7 +19,7 @@ from shevent_ml.config import CATEGORIES
 
 from .figures import FIGURE, MULTIPLIERS, normalize
 
-INTENTS = ["budget_split", "quote_check", "vendors", "prices", "advice", "greeting"]
+INTENTS = ["budget_split", "quote_check", "vendors", "prices", "advice", "greeting", "off_topic"]
 LOOK_BACK = 3  # how many earlier host messages a message without a cue may inherit its intent from
 
 CUES = {
@@ -42,6 +43,14 @@ GREETING = re.compile(
     r"^\s*(hi|hii+|hello|hey|salam|salaam|assalam[a-z ]*|aoa|thanks|thank you|thank u|thx|shukriya|jazakallah|ok|"
     r"okay|great|nice|good (morning|evening|afternoon))\b[\s!.,?]*(there|again)?[\s!.,?]*$|^\s*(سلام|السلام علیکم|"
     r"شکریہ)[\s!.,?]*$",
+    re.I,
+)
+# Questions about the assistant itself: answered with the same hello, which says what it can do.
+HELP = re.compile(
+    r"^\s*(hi|hello|hey|salam|salaam|aoa)?[\s,!.]*(what can you do|what do you do|who are you|what are you|"
+    r"what can you help( me)? with|how can you help( me)?|how (does|do) (shevent|this|you|this app) work|"
+    r"what is shevent|help|help me|tum kya kar sakte ho|aap kya kar sakte (ho|hain)|aap kaun ho|tum kaun ho)"
+    r"[\s?!.]*$|^\s*(آپ کیا کر سکتے ہیں|آپ کون ہیں)[\s؟?]*$",
     re.I,
 )
 THANKS = re.compile(r"\b(thanks|thank you|thank u|thx|shukriya|jazakallah)\b|شکریہ", re.I)
@@ -82,7 +91,7 @@ def has_cue(text, intent):
 
 def message_intent(text, has_amount=None):
     """The intent a single message asks for, or None when it has no cue (it then continues the conversation)."""
-    if GREETING.match(text):
+    if GREETING.match(text) or HELP.match(text):
         return "greeting"
     lower = normalize(text)
     found = {name for name, pattern in CUES.items() if re.search(pattern, lower, re.I)}

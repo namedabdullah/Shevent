@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Version | `assistant-v2/qwen2.5:3b-instruct` (plus the versions of the models an answer used) |
-| Code | `server/app/assistant/` (`intent.py`, `extract.py`, `guide.py`, `figures.py`, `chat.py`, `llm.py`) |
+| Code | `server/app/assistant/` (`scope.py`, `intent.py`, `extract.py`, `guide.py`, `figures.py`, `chat.py`, `llm.py`) |
 | Served by | `POST /v1/assistant/chat`; the web app's `/assistant` page |
 | Owner | ML lead |
 
@@ -19,6 +19,7 @@ Answers a host's questions about their event in their own words, in English, Rom
 | How to split the budget | #1 and #2, over all services or only the ones named ("no DJ") |
 | How to plan, what to ask a vendor, which venue suits winter | The LLM's advice, figure-free, from hand-written notes |
 | Describes the event without a question | Advice on approaching it, typical venue and catering costs, and what else it can do |
+| Anything that isn't planning an event (18 Nov) | A fixed reply saying what it can help with; no model reads the event details |
 
 Until 12 Nov (v1) every complete plan was answered with the budget split. The team found that wrong: the split is a
 separate feature, and the assistant should answer what was asked. Only a request to split the budget runs #1 now.
@@ -34,6 +35,7 @@ separate feature, and the assistant should answer what was asked. Only a request
 
 | Step | Who does it |
 |---|---|
+| Check the latest message is about planning an event; if not, send the fixed reply (below) | Server rules (`scope.py`), the LLM as a yes/no for what they can't tell |
 | Read the chat into a strict JSON schema (event type, guests, area, venue, date and budget as written) | LLM, via Ollama structured output, temperature 0, fixed seed |
 | Keep only values the host actually wrote: guest count, budget and date must appear in their messages; area, event and venue type must be named | Server |
 | Decide the question type and the service it's about from cue words in three languages; a message without a cue continues the question before it ("300 guests, DHA" answers "suggest a caterer") | Server rules (`intent.py`) |
@@ -80,10 +82,45 @@ followed by "Split my budget across the services." to check the split. Re-run on
 - **Not measured:** whether the advice is good. About 20 replies were read by hand during development; it is
   limited by a 3B model (it once called a marquee better for a winter walima, so a note on heating was added).
 
+### Staying on topic (18 Nov)
+
+The assistant answers only what Shevent is for. `scope.py` checks each message first: instructions to change the
+assistant, writing and coding tasks, and personal questions around an event (the host's outfit or weight, a guest's
+cash gift, religious rulings, savings) are refused even when they name the event; an event word (walima, guests, a
+quote) then means it's in scope; other subjects (sport, politics, phones, health, studies) are refused; service and
+planning words and short follow-ups are in; the rest goes to the LLM as a yes/no question (answered if Ollama is down,
+from the hand-written notes). A refused message gets a fixed reply written by the server, so the model can't be talked
+into answering, and the advice prompt also tells the model to leave other topics out. Questions about the assistant
+("what can you do?") get the hello.
+
+Three sets of messages, half on topic and half off, only the last message judged (`python -m eval.assistant_scope`):
+
+| Set | Written by | Off-topic refused | On-topic wrongly refused |
+|---|---|---|---|
+| Development (120) | The rule writer, before the rules, then used while writing them | 63/63 (100%) | 0/57 |
+| Blind 1 (60) | A separate writer from the scope definition only, without seeing the rules | 19/30 (63%) when first scored; 30/30 after its failures shaped the rules | 2/30; then 0/30 |
+| **Blind 2 (60)** | The same way, after that change; scored once | **21/30 (70%)** | **2/30 (7%)** |
+| Blind 2, rules alone (the unclear ones answered) | | 16/30 (53%) | 0/30 |
+| Blind 2, the LLM alone on every message | | 24/30 (80%) | 6/30 (20%) |
+
+- Blind 2 is the honest number: about 7 in 10 off-topic messages are refused, and about 1 in 15 real questions is
+  wrongly refused. The development sets flatter the rules, as expected.
+- Rules first, then the model, is the best trade-off measured: the 3B model alone refuses more off-topic messages but
+  also refuses one real planning question in five.
+- What still gets through on blind 2: off-topic questions wrapped around an event in words the rules don't list (a
+  sehra or a thank-you email to write, medicine for anxiety before the mehndi, whether dancing is sunnah, crypto with
+  "my wedding fund", a quiet dinner on MM Alam, a camera for a hobby). Wrongly refused: a follow-up about a 50% advance
+  and a question naming Shevent in Urdu script; both went to the model.
+- Each round of fixes needs a new blind set: fixing blind 2's misses would make it development data too.
+
 ## Limitations
 
 - The 3B model misses some phrasings ("90 mehmaanon ke sath" in the holdout); the host is then asked again.
 - Question types, services, event and venue types depend on word lists, so unlisted words aren't understood.
+- Staying on topic is rules plus a 3B model: on messages it wasn't tuned on, about 3 in 10 off-topic questions still
+  get an answer (through the planning flow, whose advice prompt says to leave other topics out; what the model writes
+  for them wasn't checked one by one), and about 1 in 15 real questions gets the "I can only help with planning"
+  reply.
 - The advice is general guidance from a small model, not checked facts, and is in English only (the app is
   English-only), whatever language the host writes in.
 - A price question without an area or date is priced for Lahore as a whole, a few months ahead, and says so.
@@ -106,5 +143,6 @@ ollama pull qwen2.5:3b-instruct
 cd server && python -m eval.assistant_eval                 # tuning set
 cd server && python -m eval.assistant_eval --cases holdout
 cd server && python -m eval.question_types                 # question types, no LLM
+cd server && python -m eval.assistant_scope --set blind2 --model   # staying on topic (dev, blind1, blind2)
 cd server && python -m eval.assistant_eval --llm-replies   # model-written split replies with the checker
 ```

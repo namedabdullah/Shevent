@@ -12,8 +12,11 @@ import { matchSchema } from './recommend';
 export const CHAT_LANGUAGES = ['en', 'ur', 'roman_ur', 'mixed'] as const;
 export type ChatLanguage = (typeof CHAT_LANGUAGES)[number];
 
-/** What the host asked for, read from their words; only `budget_split` runs the budget allocator. */
-export const ASSISTANT_INTENTS = ['budget_split', 'quote_check', 'vendors', 'prices', 'advice', 'greeting'] as const;
+/**
+ * What the host asked for, read from their words; only `budget_split` runs the budget allocator.
+ * `off_topic`: not about planning an event, so the reply only says what the assistant can help with.
+ */
+export const ASSISTANT_INTENTS = ['budget_split', 'quote_check', 'vendors', 'prices', 'advice', 'greeting', 'off_topic'] as const;
 export type AssistantIntent = (typeof ASSISTANT_INTENTS)[number];
 
 /** #3's best matches for one service, as the assistant suggests them (never sponsored listings). */

@@ -23,7 +23,7 @@ PriceUnit = Literal["per_head", "per_event", "per_hour", "per_package", "per_slo
 FairnessLevel = Literal["green", "yellow", "red"]
 PackageKind = Literal["cheapest", "balanced", "highest_quality"]
 ChatLanguage = Literal["en", "ur", "roman_ur", "mixed"]
-AssistantIntent = Literal["budget_split", "quote_check", "vendors", "prices", "advice", "greeting"]
+AssistantIntent = Literal["budget_split", "quote_check", "vendors", "prices", "advice", "greeting", "off_topic"]
 
 PriceRange = Annotated[list[float], Field(min_length=2, max_length=2, description="[low, high] in PKR")]
 ItemText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]

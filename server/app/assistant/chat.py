@@ -1,6 +1,8 @@
 """#8 Planning Assistant: POST /v1/assistant/chat.
 
 Each turn, in order:
+0. The latest message must be about planning an event (scope.py): if not, a fixed reply says what the assistant can
+   help with, and no model reads the event details.
 1. The LLM reads the chat and the server keeps the details the host actually gave (extract.py).
 2. Rules read what the host is asking for (intent.py): typical prices, vendor suggestions, a check on a quote,
    a budget split, or advice. Only a request to split the budget runs #1; the others use #2, #3 and #5.
@@ -27,6 +29,7 @@ from .figures import CRORE, LAKH, figures, stated
 from .guide import guidance, notes_for
 from .intent import categories_named, chosen_services, detect_intent, is_thanks, quoted_amount
 from .llm import LLMUnavailable
+from .scope import OFF_TOPIC_REPLY, in_scope
 
 log = logging.getLogger(__name__)
 
@@ -291,6 +294,11 @@ class Assistant:
 
         if intent == "greeting" and len(host) == 1:
             return {**base, "reply": WELCOME if is_thanks(latest) else HELLO, "extracted": {}, "missing": []}
+        if intent != "greeting":
+            on_topic, decided_by = in_scope(self.llm, host)
+            if not on_topic:
+                log.info("Off-topic message (%s), not answered", decided_by)
+                return {**base, "intent": "off_topic", "reply": OFF_TOPIC_REPLY, "extracted": {}, "missing": []}
         try:
             plan, dropped = self.extractor.extract(messages, self.today())
         except (ValueError, KeyError, TypeError) as error:
