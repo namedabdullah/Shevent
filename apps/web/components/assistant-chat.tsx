@@ -56,6 +56,8 @@ export function AssistantChat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const examples = t.raw('examples') as string[];
   const latest = [...turns].reverse().find((turn) => turn.response)?.response;
+  // The planner links keep what the host told the assistant: an off-topic reply carries no details.
+  const planned = [...turns].reverse().find((turn) => turn.response && turn.response.intent !== 'off_topic')?.response;
 
   // Keep the newest message in view.
   useEffect(() => {
@@ -192,7 +194,7 @@ export function AssistantChat() {
         {failed && (
           <FieldError>
             {t('failed')}{' '}
-            <Link href={plannerHref(latest?.extracted ?? {})} className="font-semibold underline underline-offset-4">
+            <Link href={plannerHref(planned?.extracted ?? {})} className="font-semibold underline underline-offset-4">
               {t('useForm')}
             </Link>
           </FieldError>
@@ -201,7 +203,7 @@ export function AssistantChat() {
 
       <p className="text-sm text-muted">
         {t('preferForm')}{' '}
-        <Link href={plannerHref(latest?.extracted ?? {})} className={linkStyles}>
+        <Link href={plannerHref(planned?.extracted ?? {})} className={linkStyles}>
           {t('useForm')}
         </Link>
       </p>

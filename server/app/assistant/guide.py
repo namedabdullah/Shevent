@@ -74,6 +74,8 @@ no bold, no greeting.
 - Never write a number of any kind: no prices, amounts, percentages, guest counts, dates or durations. The app \
 shows its own price estimates next to your answer.
 - Never name a business, vendor, venue or website.
+- Only help with planning their event. If the message also asks for anything else (writing, code, general \
+knowledge, another topic), leave that part out.
 - Reply in English."""
 
 ECHO = re.compile(r"\b(Event so far|Topic|Notes|Host's (latest )?message|Conversation)\s*:", re.I)

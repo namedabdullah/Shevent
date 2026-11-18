@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 
 from app.assistant import Assistant
 from app.assistant.extract import SCHEMA
+from app.assistant.scope import SCHEMA as SCOPE_SCHEMA
 from app.catalog import StaticCatalog
 from app.main import create_app
 from app.services import FIXTURE_VENDORS, Services
@@ -122,18 +123,23 @@ class FakeAllocator:
 
 class FakeLLM:
     """Stands in for Ollama. Extraction answers with `reading` (a dict, or a function of the prompt), replies with
-    `reply`; either may be an exception to raise."""
+    `reply`, and the topic check (when the rules can't tell) with `on_topic`; any may be an exception to raise."""
 
     version = "llm-test"
 
-    def __init__(self, reading=READING, reply="Catering takes the biggest share. Open the plan to see vendors."):
-        self.reading, self.reply, self.calls = reading, reply, []
+    def __init__(self, reading=READING, reply="Catering takes the biggest share. Open the plan to see vendors.",
+                 on_topic=True):  # fmt: skip
+        self.reading, self.reply, self.on_topic, self.calls = reading, reply, on_topic, []
 
     def warm_up(self):
         pass
 
     def chat(self, messages, schema=None, max_tokens=300):
         self.calls.append((messages, schema))
+        if schema is SCOPE_SCHEMA:
+            if isinstance(self.on_topic, Exception):
+                raise self.on_topic
+            return {"on_topic": self.on_topic}
         answer = self.reply if schema is None else self.reading
         answer = answer(messages) if callable(answer) else answer
         if isinstance(answer, Exception):

@@ -326,6 +326,19 @@ const FIXTURE_HELLO =
   'Sample reply: hello! I can tell you typical prices, suggest vendors, check a quote you received, or split your budget. What are you planning?';
 const FIXTURE_ADVICE =
   'Sample reply: book the venue first, settle the guest count before asking for quotes, and get every quote in writing with what it includes.';
+// A short version of the server's topic check (server/app/assistant/scope.py): instructions and tasks that aren't
+// planning are refused, and so are other subjects unless an event or service word says it's about the event.
+const INJECTION = /\b(ignore|forget|disregard)\b.{0,40}\b(instructions?|rules|prompt)\b|\bsystem prompt\b|\bpretend (you are|to be)\b/i;
+const NOT_PLANNING_TASK = /\b(write|compose|tell me)\b(\s+\S+){0,4}?\s+(poem|essay|story|song|joke|code|script)\b|\b(python|javascript|homework)\b|\bjokes?\b|لطیفہ/i;
+const EVENT_WORD = /\b(wedding|shaadi|shadi|mehndi|baraat|walima|nikah|engagement|birthday|guests?|vendors?|quote|event|party)\b|شادی|مہندی|ولیمہ/i;
+const OTHER_SUBJECT = /\b(cricket|match|election|politics|stocks?|bitcoin|phone|laptop|car|weather|recipe|doctor|medicine|visa|movie)\b|موسم/i;
+const FIXTURE_OFF_TOPIC =
+  'Sample reply: I can only help with planning your event in Lahore: what each service usually costs, vendors that fit your event, whether a quote you received is fair, how to split your budget, and planning advice. What are you planning?';
+
+function offTopic(text: string): boolean {
+  if (INJECTION.test(text) || NOT_PLANNING_TASK.test(text)) return true;
+  return !EVENT_WORD.test(text) && servicesNamed(text).length === 0 && OTHER_SUBJECT.test(text);
+}
 
 function messageIntent(text: string): AssistantIntent | undefined {
   if (GREETING.test(text)) return 'greeting';
@@ -365,6 +378,19 @@ export function fixtureAssistantChat(request: AssistantChatRequest, today: strin
   const perMessage = userMessages.map((message) => extractPlanParams(message, today));
   const extracted: ExtractedPlan = Object.assign({}, ...perMessage);
   const last = userMessages[userMessages.length - 1] ?? '';
+  if (offTopic(last)) {
+    return {
+      language: detectLanguage(last),
+      intent: 'off_topic',
+      extracted: {},
+      missing: [],
+      estimate: null,
+      recommendations: null,
+      fallback_to_form: false,
+      model_version: FIXTURE_MODEL_VERSION,
+      reply: FIXTURE_OFF_TOPIC,
+    };
+  }
   const asking = [...userMessages].reverse().findIndex((message) => messageIntent(message) !== undefined);
   const askedAt = asking === -1 ? -1 : userMessages.length - 1 - asking;
   const intent: AssistantIntent = askedAt === -1 ? 'advice' : messageIntent(userMessages[askedAt]!)!;

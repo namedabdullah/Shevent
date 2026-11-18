@@ -241,6 +241,24 @@ and run again for v2 on 12 Nov:
 - Reproduce: `cd server && python -m eval.assistant_eval [--cases holdout] [--llm-replies]`; the reports go to
   `testing/reports/assistant-eval*.md`.
 
+### Staying on topic (18 Nov)
+
+The assistant now answers only questions about planning an event; anything else gets a fixed reply that says what it
+can help with. Rules decide most messages (`server/app/assistant/scope.py`), the 3B model the rest. Measured on
+messages that are half on topic and half off, in English, Roman Urdu and Urdu (`python -m eval.assistant_scope`):
+
+| Set | Off-topic refused | On-topic wrongly refused |
+|---|---|---|
+| Development, 120 written by the rule writer and used to write the rules | 63/63 | 0/57 |
+| Blind 1, 60 by a separate writer who never saw the rules, first scoring | 19/30 (63%) | 2/30 |
+| **Blind 2, 60 more written the same way after the rules were fixed, scored once** | **21/30 (70%)** | **2/30 (7%)** |
+| Blind 2, the model alone on every message | 24/30 (80%) | 6/30 (20%) |
+
+Blind 2 is the number to quote. Blind 1's failures (personal questions wrapped around a wedding, Urdu-script
+injections) shaped the rules, so it became development data. The misses that remain are off-topic questions phrased
+around an event in words the rules don't list; the model alone refuses more of them but turns away one real question
+in five, so the rules stay first. More blind rounds, or a larger model for the yes/no, would move these numbers.
+
 ## Keeping bookings on Shevent (rules, not a model)
 
 Before a booking, chat messages, quotes, vendor listings and booking reviews are checked in the database (migration
@@ -271,12 +289,12 @@ visit stays on record. Once a visit is confirmed, the chat may talk about meetin
 | Suite | Result |
 |---|---|
 | `ml/` pytest, including the CLIP test | 180 passed (185 on 12 Nov) |
-| `server/` pytest (API, contracts, assistant, review insights) | 90 passed (132 on 12 Nov, after the assistant v2 and services changes) |
-| `packages/core` and `apps/web` Vitest | 195 and 38 passed (199 and 38 on 12 Nov) |
+| `server/` pytest (API, contracts, assistant, review insights) | 90 passed (132 on 12 Nov, after the assistant v2 and services changes; 160 on 18 Nov with the topic check) |
+| `packages/core` and `apps/web` Vitest | 195 and 38 passed (199 and 38 on 12 Nov; 211 and 45 on 18 Nov) |
 | Lint, typecheck, production build | clean |
 | Database (pgTAP: row-level security, functions) | 84 passed; generated types current; schema lint clean. 17 Nov: 113 passed (29 new for keeping bookings on Shevent). 18 Nov: 137 passed (24 new for venue visits) |
 | Model server, live, real models (every endpoint but feedback) | 39 of 39 checks; `/v1/estimate` 48 ms median warm |
-| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass. 17 Nov, Chrome only: vendor and host journeys 9 of 9, including the new chat test (blocked phone number and meeting, outside payment, quote notes, contact details allowed after booking); accessibility, security and double-submit 23 passed, 1 by-design skip on a rerun (the first run, on 1.8 GB of free memory, had 2 failures). 18 Nov, Chrome only: venue visits (full loop, live updates, axe on the card), vendor and host journeys and accessibility: 18 of 18 |
+| Playwright (Chrome, Firefox, WebKit, Pixel 7, iPhone 14) | 385 passed, 0 failed, 0 retries, 15 by-design skips; security 14/14 with the key. 15 Nov, Chrome only: 84 passed, 1 by-design skip, 3 failed. Two were assistant tests written for v2 and never run (one counted every table row on the page, one expected a split for a message that didn't ask for one): fixed and passing. The third, security's "no model server" check, failed only because the model server was running; 13/13 with it stopped. The two new tests (#6 on profiles, #7 photo check) pass. 17 Nov, Chrome only: vendor and host journeys 9 of 9, including the new chat test (blocked phone number and meeting, outside payment, quote notes, contact details allowed after booking); accessibility, security and double-submit 23 passed, 1 by-design skip on a rerun (the first run, on 1.8 GB of free memory, had 2 failures). 18 Nov, Chrome only: venue visits (full loop, live updates, axe on the card), vendor and host journeys and accessibility: 18 of 18. The assistant spec, with the new off-topic test: 6 of 6 |
 | Retraining #1, #2, #6 from the committed data | Identical versions and results |
 | Lighthouse, landing page (mobile) | Accessibility, best practices, SEO 100; performance 77 locally, 62 on Vercel (target 90) |
 
